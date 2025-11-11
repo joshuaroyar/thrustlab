@@ -318,13 +318,6 @@
 		margin: 0;
 	}
 
-	.subtitle {
-		font-family: 'Roboto', sans-serif;
-		font-size: 1.2rem;
-		color: #666;
-		margin: 0;
-	}
-
 	.content-section {
 		background: white;
 		padding: 2.5rem;

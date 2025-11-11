@@ -590,14 +590,6 @@
 		transform: translateY(-3px);
 	}
 
-	.navigation-buttons {
-		display: flex;
-		justify-content: space-between;
-		gap: 1rem;
-		margin-top: 3rem;
-		flex-wrap: wrap;
-	}
-
 	.section-nav {
 		display: flex;
 		justify-content: space-between;
