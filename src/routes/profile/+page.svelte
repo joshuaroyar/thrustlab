@@ -1,6 +1,6 @@
 <script lang="ts">
 	import type { PageData } from './$types';
-	import AnimatedBackground from '$lib/components/AnimatedBackground.svelte';
+	import AnimatedBackground from '$lib/components/ui/AnimatedBackground.svelte';
 
 	let { data } = $props<{ data: PageData }>();
 </script>

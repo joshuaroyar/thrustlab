@@ -1,8 +1,8 @@
 <script lang="ts">
-	import { page } from '$app/stores';
+	import { page } from '$app/state';
 	import { onMount } from 'svelte';
 
-	let { user = null } = $props<{ user: any }>();
+	let { user = null, isTransparent = false } = $props<{ user: any; isTransparent?: boolean }>();
 
 	let mobileMenuOpen = $state(false);
 	let isScrolled = $state(false);
@@ -51,7 +51,7 @@
 	}
 </script>
 
-<nav class="navbar" class:scrolled={isScrolled}>
+<nav class="navbar" class:scrolled={isScrolled} class:transparent={isTransparent && !isScrolled}>
 	<div class="navbar-container">
 		<!-- Logo -->
 		<div class="navbar-brand">
@@ -67,7 +67,7 @@
 				<a
 					href={link.href}
 					class="nav-link"
-					class:active={$page.url.pathname === link.href}
+					class:active={page.url.pathname === link.href}
 				>
 					{link.label}
 				</a>
@@ -79,7 +79,7 @@
 					<a
 						href={link.href}
 						class="nav-link"
-						class:active={$page.url.pathname === link.href}
+						class:active={page.url.pathname === link.href}
 					>
 						{link.label}
 					</a>
@@ -92,7 +92,7 @@
 					<a
 						href={link.href}
 						class="nav-link"
-						class:active={$page.url.pathname === link.href}
+						class:active={page.url.pathname === link.href}
 					>
 						{link.label}
 					</a>
@@ -121,7 +121,7 @@
 				<a
 					href={link.href}
 					class="mobile-nav-link"
-					class:active={$page.url.pathname === link.href}
+					class:active={page.url.pathname === link.href}
 					onclick={closeMobileMenu}
 				>
 					{link.label}
@@ -133,7 +133,7 @@
 					<a
 						href={link.href}
 						class="mobile-nav-link"
-						class:active={$page.url.pathname === link.href}
+						class:active={page.url.pathname === link.href}
 						onclick={closeMobileMenu}
 					>
 						{link.label}
@@ -147,7 +147,7 @@
 					<a
 						href={link.href}
 						class="mobile-nav-link"
-						class:active={$page.url.pathname === link.href}
+						class:active={page.url.pathname === link.href}
 						onclick={closeMobileMenu}
 					>
 						{link.label}
@@ -160,11 +160,11 @@
 
 <style>
 	.navbar {
-		background: #223A5E; /* Solid Deep Blue by default */
-		backdrop-filter: none;
-		-webkit-backdrop-filter: none;
+		background: rgba(34, 58, 94, 0.95); /* Deep Blue with transparency */
+		backdrop-filter: blur(10px);
+		-webkit-backdrop-filter: blur(10px);
 		box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-		border-bottom: 1px solid rgba(56, 193, 114, 0);
+		border-bottom: 1px solid rgba(56, 193, 114, 0.2);
 		position: sticky;
 		top: 0;
 		z-index: 1000;
@@ -172,12 +172,26 @@
 		transition: all 0.3s ease;
 	}
 
+	.navbar.transparent {
+		background: transparent; /* Fully transparent on home page */
+		backdrop-filter: none;
+		-webkit-backdrop-filter: none;
+		box-shadow: none;
+		border-bottom: none;
+	}
+
+	/* Add text shadow for better readability on transparent navbar */
+	.navbar.transparent .logo-text,
+	.navbar.transparent .nav-link {
+		text-shadow: 0 2px 8px rgba(0, 0, 0, 0.5), 0 1px 3px rgba(0, 0, 0, 0.7);
+	}
+
 	.navbar.scrolled {
-		background: rgba(34, 58, 94, 0.7); /* Transparent when scrolled */
+		background: rgba(34, 58, 94, 0.95); /* Solid when scrolled */
 		backdrop-filter: blur(10px);
 		-webkit-backdrop-filter: blur(10px);
 		box-shadow: 0 2px 20px rgba(0, 0, 0, 0.1);
-		border-bottom: 1px solid rgba(56, 193, 114, 0.1);
+		border-bottom: 1px solid rgba(56, 193, 114, 0.2);
 	}
 
 	.navbar-container {
@@ -203,7 +217,7 @@
 		font-family: 'Montserrat', sans-serif;
 		font-size: 1.75rem;
 		font-weight: 700;
-		color: #38C172; /* Fresh Green */
+		color: #F6F7FA; /* Soft Slate */
 		letter-spacing: 0.5px;
 		transition: color 0.3s ease;
 	}

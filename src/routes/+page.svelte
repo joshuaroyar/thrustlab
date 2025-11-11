@@ -1,24 +1,51 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import ParticleEffect from '$lib/components/ParticleEffect.svelte';
-	import PageLoader from '$lib/components/PageLoader.svelte';
-	import AnimatedBackground from '$lib/components/AnimatedBackground.svelte';
+	import PageLoader from '$lib/components/ui/PageLoader.svelte';
 	
-	let mouseX = $state(0);
-	let mouseY = $state(0);
 	let heroRef: HTMLElement;
 	let isHovering = $state(false);
 	let mounted = $state(false);
+	let mouseX = $state(0);
+	let mouseY = $state(0);
+	let normalizedMouseX = $state(0); // -1 to 1
+	let normalizedMouseY = $state(0); // -1 to 1
+
+	// Canvas references for each layer
+	let skyCanvas: HTMLCanvasElement;
+	let farCloudsCanvas: HTMLCanvasElement;
+	let midCloudsCanvas: HTMLCanvasElement;
+	let nearCloudsCanvas: HTMLCanvasElement;
+
+	// Animation frame for drift
+	let driftOffset = $state(0);
+	let animationFrameId: number;
 
 	onMount(() => {
 		mounted = true;
-		
+
+		// Generate cloud layers on canvases
+		generateSkyLayer();
+		generateFarClouds();
+		generateMidClouds();
+		generateNearClouds();
+
 		const handleMouseMove = (e: MouseEvent) => {
 			mouseX = e.clientX;
 			mouseY = e.clientY;
+			
+			// Normalize to -1 to 1 range (center is 0)
+			normalizedMouseX = (e.clientX / window.innerWidth) * 2 - 1;
+			normalizedMouseY = (e.clientY / window.innerHeight) * 2 - 1;
 		};
 
 		window.addEventListener('mousemove', handleMouseMove);
+
+		// Continuous drift animation
+		const animate = () => {
+			driftOffset += 0.1; // Slow drift speed
+			animationFrameId = requestAnimationFrame(animate);
+		};
+		animate();
 
 		// Scroll-triggered animations
 		const observerOptions = {
@@ -42,15 +69,282 @@
 
 		return () => {
 			window.removeEventListener('mousemove', handleMouseMove);
+			cancelAnimationFrame(animationFrameId);
 			observer.disconnect();
 		};
 	});
 
-	function handleParallax(depth: number) {
+	// Generate static night sky gradient with stars
+	function generateSkyLayer() {
+		if (!skyCanvas) return;
+		const ctx = skyCanvas.getContext('2d');
+		if (!ctx) return;
+
+		const width = skyCanvas.width;
+		const height = skyCanvas.height;
+
+		// Night sky gradient - deep blue to lighter blue
+		const gradient = ctx.createLinearGradient(0, 0, 0, height);
+		gradient.addColorStop(0, '#0a1628');    // Deep navy
+		gradient.addColorStop(0.3, '#1a2847');  // Dark blue
+		gradient.addColorStop(0.6, '#2d3f66');  // Medium blue
+		gradient.addColorStop(1, '#4a5f8f');    // Lighter blue at bottom
+
+		ctx.fillStyle = gradient;
+		ctx.fillRect(0, 0, width, height);
+
+		// Add stars
+		ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
+		for (let i = 0; i < 150; i++) {
+			const x = Math.random() * width;
+			const y = Math.random() * height * 0.6; // Stars in upper portion
+			const radius = Math.random() * 1.5 + 0.5;
+			
+			ctx.beginPath();
+			ctx.arc(x, y, radius, 0, Math.PI * 2);
+			ctx.fill();
+		}
+
+		// Add moon
+		const moonX = width * 0.85;
+		const moonY = height * 0.15;
+		const moonRadius = 50;
+
+		// Moon glow
+		const moonGlow = ctx.createRadialGradient(moonX, moonY, moonRadius * 0.5, moonX, moonY, moonRadius * 3);
+		moonGlow.addColorStop(0, 'rgba(255, 255, 255, 0.1)');
+		moonGlow.addColorStop(1, 'rgba(255, 255, 255, 0)');
+		ctx.fillStyle = moonGlow;
+		ctx.fillRect(moonX - moonRadius * 3, moonY - moonRadius * 3, moonRadius * 6, moonRadius * 6);
+
+		// Moon body
+		const moonGradient = ctx.createRadialGradient(moonX - 15, moonY - 15, 10, moonX, moonY, moonRadius);
+		moonGradient.addColorStop(0, '#fffef0');
+		moonGradient.addColorStop(1, '#e8e6d5');
+		ctx.fillStyle = moonGradient;
+		ctx.beginPath();
+		ctx.arc(moonX, moonY, moonRadius, 0, Math.PI * 2);
+		ctx.fill();
+
+		// Moon craters (subtle)
+		ctx.fillStyle = 'rgba(200, 200, 180, 0.3)';
+		ctx.beginPath();
+		ctx.arc(moonX - 10, moonY + 10, 12, 0, Math.PI * 2);
+		ctx.fill();
+		ctx.beginPath();
+		ctx.arc(moonX + 15, moonY - 5, 8, 0, Math.PI * 2);
+		ctx.fill();
+	}
+
+	// Generate far clouds (small, wispy, low opacity)
+	function generateFarClouds() {
+		if (!farCloudsCanvas) return;
+		const ctx = farCloudsCanvas.getContext('2d');
+		if (!ctx) return;
+
+		const width = farCloudsCanvas.width;
+		const height = farCloudsCanvas.height;
+
+		ctx.clearRect(0, 0, width, height);
+
+		// Create 10-12 small wispy clouds with padding to prevent cutoff
+		const cloudCount = 11;
+		const padding = 150; // Extra padding to prevent edge cutoff
+		for (let i = 0; i < cloudCount; i++) {
+			const x = padding + ((width - padding * 2) / cloudCount) * i + Math.random() * 80;
+			const y = Math.random() * height * 0.5 + height * 0.1;
+			drawAnimeCloud(ctx, x, y, 80, 40, 'rgba(140, 165, 210, 0.65)', 4); // Crisp with texture
+		}
+	}
+
+	// Generate mid clouds (medium, fluffy)
+	function generateMidClouds() {
+		if (!midCloudsCanvas) return;
+		const ctx = midCloudsCanvas.getContext('2d');
+		if (!ctx) return;
+
+		const width = midCloudsCanvas.width;
+		const height = midCloudsCanvas.height;
+
+		ctx.clearRect(0, 0, width, height);
+
+		// Create 6-7 medium clouds with proper spacing
+		const clouds = [
+			{ x: width * 0.08, y: height * 0.25, w: 180, h: 80 },
+			{ x: width * 0.25, y: height * 0.15, w: 200, h: 90 },
+			{ x: width * 0.45, y: height * 0.3, w: 170, h: 75 },
+			{ x: width * 0.60, y: height * 0.18, w: 190, h: 85 },
+			{ x: width * 0.75, y: height * 0.55, w: 185, h: 80 },
+			{ x: width * 0.90, y: height * 0.35, w: 175, h: 78 },
+		];
+
+		clouds.forEach(cloud => {
+			drawAnimeCloud(ctx, cloud.x, cloud.y, cloud.w, cloud.h, 'rgba(160, 185, 230, 0.78)', 6); // Sharp with good texture
+		});
+	}
+
+	// Generate near clouds (large, prominent)
+	function generateNearClouds() {
+		if (!nearCloudsCanvas) return;
+		const ctx = nearCloudsCanvas.getContext('2d');
+		if (!ctx) return;
+
+		const width = nearCloudsCanvas.width;
+		const height = nearCloudsCanvas.height;
+
+		ctx.clearRect(0, 0, width, height);
+
+		// Create 4 large foreground clouds with good spacing
+		const clouds = [
+			{ x: width * 0.08, y: height * 0.3, w: 280, h: 120 },
+			{ x: width * 0.35, y: height * 0.5, w: 300, h: 130 },
+			{ x: width * 0.60, y: height * 0.7, w: 260, h: 110 },
+			{ x: width * 0.85, y: height * 0.4, w: 270, h: 115 },
+		];
+
+		clouds.forEach(cloud => {
+			drawAnimeCloud(ctx, cloud.x, cloud.y, cloud.w, cloud.h, 'rgba(180, 200, 240, 0.88)', 8); // Very defined with rich texture
+		});
+	}
+
+	// Draw anime-style fluffy cloud with texture and definition
+	function drawAnimeCloud(
+		ctx: CanvasRenderingContext2D,
+		x: number,
+		y: number,
+		width: number,
+		height: number,
+		color: string,
+		blur: number
+	) {
+		// Extract RGBA values from color string
+		const rgbaMatch = color.match(/rgba?\((\d+),\s*(\d+),\s*(\d+),?\s*([\d.]+)?\)/);
+		if (!rgbaMatch) return;
+		
+		const [, r, g, b, a = '1'] = rgbaMatch;
+		const baseAlpha = parseFloat(a);
+
+		// Create more detailed cloud structure with 8 puffs for better texture
+		const puffs = [
+			{ offsetX: 0, offsetY: 0, scale: 1.0, alpha: baseAlpha },
+			{ offsetX: width * 0.35, offsetY: -height * 0.25, scale: 0.85, alpha: baseAlpha * 0.95 },
+			{ offsetX: -width * 0.3, offsetY: -height * 0.2, scale: 0.75, alpha: baseAlpha * 0.9 },
+			{ offsetX: width * 0.6, offsetY: 0, scale: 0.8, alpha: baseAlpha * 0.92 },
+			{ offsetX: -width * 0.5, offsetY: 0.05, scale: 0.7, alpha: baseAlpha * 0.88 },
+			{ offsetX: width * 0.45, offsetY: height * 0.15, scale: 0.65, alpha: baseAlpha * 0.85 },
+			{ offsetX: -width * 0.35, offsetY: height * 0.12, scale: 0.6, alpha: baseAlpha * 0.8 },
+			{ offsetX: width * 0.15, offsetY: -height * 0.15, scale: 0.55, alpha: baseAlpha * 0.75 },
+		];
+
+		// Draw cloud without blur first for sharp edges
+		ctx.save();
+		ctx.filter = 'none';
+		
+		puffs.forEach(puff => {
+			// Create gradient for each puff to add depth
+			const puffX = x + puff.offsetX;
+			const puffY = y + puff.offsetY;
+			const radiusX = (width * 0.4) * puff.scale;
+			const radiusY = (height * 0.5) * puff.scale;
+			
+			const gradient = ctx.createRadialGradient(
+				puffX, puffY, 0,
+				puffX, puffY, Math.max(radiusX, radiusY)
+			);
+			
+			// Add texture with gradient stops
+			gradient.addColorStop(0, `rgba(${r}, ${g}, ${b}, ${puff.alpha})`);
+			gradient.addColorStop(0.6, `rgba(${r}, ${g}, ${b}, ${puff.alpha * 0.8})`);
+			gradient.addColorStop(1, `rgba(${r}, ${g}, ${b}, ${puff.alpha * 0.3})`);
+			
+			ctx.fillStyle = gradient;
+			ctx.beginPath();
+			ctx.ellipse(puffX, puffY, radiusX, radiusY, 0, 0, Math.PI * 2);
+			ctx.fill();
+		});
+
+		ctx.restore();
+
+		// Add subtle blur layer on top for softness (much less than before)
+		if (blur > 0) {
+			ctx.save();
+			ctx.filter = `blur(${blur * 0.4}px)`; // Reduced blur
+			ctx.globalAlpha = 0.6;
+
+			puffs.slice(0, 5).forEach(puff => {
+				ctx.fillStyle = color;
+				ctx.beginPath();
+				ctx.ellipse(
+					x + puff.offsetX,
+					y + puff.offsetY,
+					(width * 0.35) * puff.scale,
+					(height * 0.45) * puff.scale,
+					0,
+					0,
+					Math.PI * 2
+				);
+				ctx.fill();
+			});
+
+			ctx.restore();
+		}
+
+		// Add highlights for extra texture
+		ctx.save();
+		ctx.filter = 'none';
+		ctx.globalAlpha = 0.3;
+		
+		const highlightGradient = ctx.createRadialGradient(
+			x - width * 0.1, y - height * 0.15, 0,
+			x - width * 0.1, y - height * 0.15, width * 0.3
+		);
+		highlightGradient.addColorStop(0, `rgba(255, 255, 255, 0.6)`);
+		highlightGradient.addColorStop(1, `rgba(255, 255, 255, 0)`);
+		
+		ctx.fillStyle = highlightGradient;
+		ctx.beginPath();
+		ctx.ellipse(x - width * 0.1, y - height * 0.15, width * 0.25, height * 0.2, 0, 0, Math.PI * 2);
+		ctx.fill();
+		
+		ctx.restore();
+	}
+
+	// Calculate parallax transform with drift and cursor interaction
+	function getParallaxStyle(layer: 'far' | 'mid' | 'near') {
 		if (!mounted) return '';
-		const moveX = (mouseX - window.innerWidth / 2) * depth;
-		const moveY = (mouseY - window.innerHeight / 2) * depth;
-		return `transform: translate(${moveX}px, ${moveY}px)`;
+
+		const speeds = {
+			far: 0.5,   // Slowest movement
+			mid: 1.2,   // Medium movement
+			near: 2.0   // Fastest movement
+		};
+
+		const speed = speeds[layer];
+
+		// Continuous left-to-right drift
+		const drift = (driftOffset * speed) % window.innerWidth;
+
+		// Improved cursor-based parallax with better responsiveness
+		// Use actual pixel position instead of normalized for better control
+		const centerX = window.innerWidth / 2;
+		const centerY = window.innerHeight / 2;
+		
+		// Calculate distance from center (in pixels)
+		const deltaX = mouseX - centerX;
+		const deltaY = mouseY - centerY;
+		
+		// Apply parallax multiplier (negative so clouds move opposite to cursor)
+		const parallaxMultiplier = {
+			far: 15,   // Subtle movement
+			mid: 35,   // Medium movement  
+			near: 60   // Strong movement
+		};
+		
+		const multiplier = parallaxMultiplier[layer];
+		const cursorOffsetX = -(deltaX / centerX) * multiplier;
+		const cursorOffsetY = -(deltaY / centerY) * multiplier * 0.6; // Less vertical movement
+
+		return `transform: translate3d(${drift + cursorOffsetX}px, ${cursorOffsetY}px, 0);`;
 	}
 
 	const features = [
@@ -113,19 +407,48 @@
 </script>
 
 <PageLoader />
-<AnimatedBackground variant="default" />
+
+<!-- Anime-Style Parallax Background System - Full Page Coverage -->
+<div class="parallax-background-system">
+	<!-- Static Sky Layer with Stars & Moon -->
+	<canvas 
+		bind:this={skyCanvas}
+		class="parallax-layer sky-layer"
+		width="2560"
+		height="1440"
+	></canvas>
+
+	<!-- Far Clouds Layer (slowest parallax) -->
+	<canvas 
+		bind:this={farCloudsCanvas}
+		class="parallax-layer far-clouds-layer"
+		width="2560"
+		height="1440"
+		style={getParallaxStyle('far')}
+	></canvas>
+
+	<!-- Mid Clouds Layer (medium parallax) -->
+	<canvas 
+		bind:this={midCloudsCanvas}
+		class="parallax-layer mid-clouds-layer"
+		width="2560"
+		height="1440"
+		style={getParallaxStyle('mid')}
+	></canvas>
+
+	<!-- Near Clouds Layer (fastest parallax) -->
+	<canvas 
+		bind:this={nearCloudsCanvas}
+		class="parallax-layer near-clouds-layer"
+		width="2560"
+		height="1440"
+		style={getParallaxStyle('near')}
+	></canvas>
+</div>
 
 <div class="homepage">
-	<!-- Particle Background -->
-	<ParticleEffect />
-
 	<!-- Hero Section -->
 	<section class="hero" bind:this={heroRef}>
-		<div class="hero-background">
-			<div class="parallax-layer layer-1" style={handleParallax(0.02)}></div>
-			<div class="parallax-layer layer-2" style={handleParallax(0.04)}></div>
-			<div class="parallax-layer layer-3" style={handleParallax(0.06)}></div>
-		</div>
 		
 		<div class="hero-content">
 			<h1 class="hero-title animate-in">
@@ -142,17 +465,6 @@
 				<a 
 					href="/sign-up" 
 					class="cta-button primary"
-					onmousemove={(e) => {
-						const btn = e.currentTarget;
-						const rect = btn.getBoundingClientRect();
-						const x = e.clientX - rect.left - rect.width / 2;
-						const y = e.clientY - rect.top - rect.height / 2;
-						btn.style.transform = `translate(${x * 0.2}px, ${y * 0.2}px)`;
-					}}
-					onmouseleave={(e) => {
-						const btn = e.currentTarget;
-						btn.style.transform = '';
-					}}
 				>
 					Get Started
 					<span class="button-shine"></span>
@@ -160,17 +472,6 @@
 				<a 
 					href="/login" 
 					class="cta-button secondary"
-					onmousemove={(e) => {
-						const btn = e.currentTarget;
-						const rect = btn.getBoundingClientRect();
-						const x = e.clientX - rect.left - rect.width / 2;
-						const y = e.clientY - rect.top - rect.height / 2;
-						btn.style.transform = `translate(${x * 0.2}px, ${y * 0.2}px)`;
-					}}
-					onmouseleave={(e) => {
-						const btn = e.currentTarget;
-						btn.style.transform = '';
-					}}
 				>
 					Log In
 				</a>
@@ -296,6 +597,8 @@
 	.homepage {
 		width: 100%;
 		overflow-x: hidden;
+		background: transparent;
+		position: relative;
 	}
 
 	/* Hero Section */
@@ -306,36 +609,81 @@
 		align-items: center;
 		justify-content: center;
 		overflow: hidden;
-		background: #0a1628;
 	}
 
-	.hero-background {
-		position: absolute;
-		inset: 0;
+	/* ===== ANIME-STYLE PARALLAX BACKGROUND SYSTEM ===== */
+	.parallax-background-system {
+		position: fixed;
+		top: 0;
+		left: 0;
+		width: 100%;
+		height: 100%;
 		overflow: hidden;
+		pointer-events: none;
+		z-index: -1;
+	}
+
+	/* Add gradient mask at bottom to fade into CTA section */
+	.parallax-background-system::after {
+		content: '';
+		position: absolute;
+		bottom: 0;
+		left: 0;
+		right: 0;
+		height: 200px;
+		background: linear-gradient(
+			to bottom,
+			transparent 0%,
+			rgba(34, 58, 94, 0.5) 50%,
+			rgba(34, 58, 94, 0.9) 100%
+		);
+		z-index: 10;
+		pointer-events: none;
 	}
 
 	.parallax-layer {
 		position: absolute;
-		inset: -10%;
-		transition: transform 0.3s ease-out;
+		top: 0;
+		left: 0;
+		width: 100%;
+		height: 100%;
+		object-fit: cover;
+		will-change: transform;
+		pointer-events: none;
 	}
 
-	.layer-1 {
-		background: radial-gradient(circle at 30% 50%, rgba(56, 193, 114, 0.15) 0%, transparent 50%);
+	/* Sky Layer - Static, no movement */
+	.sky-layer {
+		z-index: 1;
+		/* No transform, stays fixed */
 	}
 
-	.layer-2 {
-		background: radial-gradient(circle at 70% 50%, rgba(255, 167, 38, 0.1) 0%, transparent 50%);
+	/* Far Clouds - Slowest parallax */
+	.far-clouds-layer {
+		z-index: 2;
+		transition: transform 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+		opacity: 0.95;
 	}
 
-	.layer-3 {
-		background: radial-gradient(circle at 50% 80%, rgba(255, 60, 126, 0.1) 0%, transparent 50%);
+	/* Mid Clouds - Medium parallax */
+	.mid-clouds-layer {
+		z-index: 3;
+		transition: transform 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+		opacity: 0.95;
 	}
+
+	/* Near Clouds - Fastest parallax */
+	.near-clouds-layer {
+		z-index: 4;
+		transition: transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+		opacity: 0.95;
+	}
+
+
 
 	.hero-content {
 		position: relative;
-		z-index: 2;
+		z-index: 10;
 		text-align: center;
 		max-width: 900px;
 		padding: 2rem;
@@ -450,8 +798,8 @@
 		bottom: 2rem;
 		left: 50%;
 		transform: translateX(-50%);
-		color: rgba(255, 255, 255, 0.6);
-		z-index: 2;
+		color: rgba(255, 255, 255, 0.8);
+		z-index: 10;
 	}
 
 	/* Animations */
@@ -484,7 +832,9 @@
 	/* Features Section */
 	.features-section {
 		padding: 6rem 2rem;
-		background: #F6F7FA;
+		background: transparent;
+		position: relative;
+		z-index: 1;
 	}
 
 	.container {
@@ -496,7 +846,8 @@
 		font-family: 'Montserrat', sans-serif;
 		font-size: clamp(2rem, 4vw, 3rem);
 		font-weight: 700;
-		color: #223A5E;
+		color: #FFFFFF;
+		text-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
 		text-align: center;
 		margin: 0 0 3rem 0;
 	}
@@ -509,10 +860,13 @@
 
 	.feature-card {
 		position: relative;
-		background: white;
+		background: rgba(255, 255, 255, 0.92);
+		backdrop-filter: blur(10px);
+		-webkit-backdrop-filter: blur(10px);
 		padding: 2.5rem;
 		border-radius: 1.5rem;
-		box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+		box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+		border: 1px solid rgba(255, 255, 255, 0.3);
 		transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 		overflow: hidden;
 		opacity: 0;
@@ -533,6 +887,12 @@
 		transition: width 0.6s ease, height 0.6s ease;
 		opacity: 0;
 		pointer-events: none;
+	}
+
+	.feature-card:hover {
+		transform: translateY(-10px);
+		box-shadow: 0 15px 50px rgba(0, 0, 0, 0.4);
+		background: rgba(255, 255, 255, 0.96);
 	}
 
 	.feature-card:hover::after {
@@ -616,7 +976,9 @@
 	/* Zones Section */
 	.zones-section {
 		padding: 6rem 2rem;
-		background: linear-gradient(180deg, #F6F7FA 0%, #E8EAF0 100%);
+		background: transparent;
+		position: relative;
+		z-index: 1;
 	}
 
 	.zones-grid {
@@ -636,6 +998,8 @@
 		opacity: 0;
 		transform: scale(0.9);
 		will-change: transform;
+		box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4);
+		border: 1px solid rgba(255, 255, 255, 0.2);
 	}
 
 	.zone-card::after {
@@ -723,6 +1087,8 @@
 		padding: 6rem 2rem;
 		background: linear-gradient(135deg, #223A5E 0%, #38C172 100%);
 		color: white;
+		position: relative;
+		z-index: 1;
 	}
 
 	.cta-content {

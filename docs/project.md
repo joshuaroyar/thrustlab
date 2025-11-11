@@ -12,6 +12,8 @@ ThrustLab is a web-based educational platform that enables students and instruct
 ## Tech Stack
 
 - SvelteKit for frontend and backend
+- TypeScript for type-safe development
+- Tailwind CSS for styling
 - PostgreSQL + Drizzle ORM for database
 - Lucia for authentication and session management
 - Three.js with STLLoader for 3D model visualization

@@ -1,5 +1,5 @@
 <script lang="ts">
-	import AnimatedBackground from '$lib/components/AnimatedBackground.svelte';
+	import AnimatedBackground from '$lib/components/ui/AnimatedBackground.svelte';
 	import { goto } from '$app/navigation';
 
 	let selectedComponent = $state<'intake' | 'compressor' | 'combustion' | 'turbine' | 'exhaust'>('intake');

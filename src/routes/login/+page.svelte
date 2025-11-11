@@ -1,6 +1,6 @@
 <script lang="ts">
 	import type { ActionData } from './$types';
-	import AnimatedBackground from '$lib/components/AnimatedBackground.svelte';
+	import AnimatedBackground from '$lib/components/ui/AnimatedBackground.svelte';
 
 	let { form } = $props<{ form?: ActionData }>();
 </script>

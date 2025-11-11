@@ -1,18 +1,20 @@
 <script lang="ts">
 	import '../app.css';
 	import { onMount } from 'svelte';
-	import { page } from '$app/stores';
+	import { page } from '$app/state';
 	import favicon from '$lib/assets/favicon.svg';
 	import Navbar from '$lib/components/navbar/Navbar.svelte';
-	import CustomCursor from '$lib/components/CustomCursor.svelte';
-	import ParallaxBackground from '$lib/components/ParallaxBackground.svelte';
+	import CustomCursor from '$lib/components/ui/CustomCursor.svelte';
+	import ParallaxBackground from '$lib/components/ui/ParallaxBackground.svelte';
 	import ChatbotPopup from '$lib/components/chatbot/ChatbotPopup.svelte';
 	import type { LayoutData } from './$types';
 
 	let { children, data } = $props<{ children: any; data: LayoutData }>();
 	
 	// Check if we're on the JAJA page to hide the popup
-	let isJajaPage = $derived($page.url.pathname === '/jaja');
+	let isJajaPage = $derived(page.url.pathname === '/jaja');
+	// Check if we're on the home page for transparent navbar
+	let isHomePage = $derived(page.url.pathname === '/');
 
 	onMount(() => {
 		// Scroll-triggered animations
@@ -49,12 +51,17 @@
 	/>
 </svelte:head>
 
+{#if !isHomePage}
+	<div class="global-background">
+		<div class="image-overlay"></div>
+	</div>
+{/if}
 <ParallaxBackground />
 <CustomCursor />
 
-<Navbar user={data.user} />
+<Navbar user={data.user} isTransparent={isHomePage} />
 
-<main>
+<main class:home-page={isHomePage}>
 	{@render children()}
 </main>
 
@@ -63,10 +70,25 @@
 {/if}
 
 <style>
+	.global-background {
+		position: fixed;
+		inset: 0;
+		z-index: -1;
+		overflow: hidden;
+		background: linear-gradient(135deg, #0a1628 0%, #2d3f66 100%);
+	}
+
+	.image-overlay {
+		position: absolute;
+		inset: 0;
+		background: rgba(10, 22, 40, 0.2);
+		z-index: 1;
+	}
+
 	:global(body) {
 		margin: 0;
 		padding: 0;
-		background-color: #F6F7FA; /* Soft Slate */
+		background-color: transparent;
 		color: #222831; /* Charcoal Gray */
 		font-family: 'Roboto', sans-serif;
 		cursor: none;
@@ -79,6 +101,11 @@
 
 	main {
 		min-height: 100vh;
+		position: relative;
+	}
+
+	/* Add padding for non-home pages */
+	main:not(.home-page) {
 		padding-top: 64px;
 		margin-top: -64px;
 	}
