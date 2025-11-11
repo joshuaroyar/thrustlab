@@ -10,24 +10,51 @@
 	let normalizedMouseX = $state(0); // -1 to 1
 	let normalizedMouseY = $state(0); // -1 to 1
 
-	// Canvas references for each layer
-	let skyCanvas: HTMLCanvasElement;
-	let farCloudsCanvas: HTMLCanvasElement;
-	let midCloudsCanvas: HTMLCanvasElement;
-	let nearCloudsCanvas: HTMLCanvasElement;
+	// Canvas references for each layer - Morning (Hero section)
+	let morningSkyCanvas: HTMLCanvasElement;
+	let morningFarCloudsCanvas: HTMLCanvasElement;
+	let morningMidCloudsCanvas: HTMLCanvasElement;
+	let morningNearCloudsCanvas: HTMLCanvasElement;
+
+	// Canvas references for each layer - Evening (Key Features section)
+	let eveningSkyCanvas: HTMLCanvasElement;
+	let eveningFarCloudsCanvas: HTMLCanvasElement;
+	let eveningMidCloudsCanvas: HTMLCanvasElement;
+	let eveningNearCloudsCanvas: HTMLCanvasElement;
+
+	// Canvas references for each layer - Night (Learning Zones section)
+	let nightSkyCanvas: HTMLCanvasElement;
+	let nightFarCloudsCanvas: HTMLCanvasElement;
+	let nightMidCloudsCanvas: HTMLCanvasElement;
+	let nightNearCloudsCanvas: HTMLCanvasElement;
 
 	// Animation frame for drift
 	let driftOffset = $state(0);
 	let animationFrameId: number;
+	
+	// Scroll-based transitions
+	let morningOpacity = $state(1);    // Starts at 1, fades to 0
+	let eveningOpacity = $state(0);    // Fades in at Key Features
+	let nightOpacity = $state(0);      // Fades in at Learning Zones
 
 	onMount(() => {
 		mounted = true;
 
-		// Generate cloud layers on canvases
-		generateSkyLayer();
-		generateFarClouds();
-		generateMidClouds();
-		generateNearClouds();
+		// Generate all sky layers on canvases
+		generateMorningSkyLayer();
+		generateMorningFarClouds();
+		generateMorningMidClouds();
+		generateMorningNearClouds();
+
+		generateEveningSkyLayer();
+		generateEveningFarClouds();
+		generateEveningMidClouds();
+		generateEveningNearClouds();
+
+		generateNightSkyLayer();
+		generateNightFarClouds();
+		generateNightMidClouds();
+		generateNightNearClouds();
 
 		const handleMouseMove = (e: MouseEvent) => {
 			mouseX = e.clientX;
@@ -38,7 +65,68 @@
 			normalizedMouseY = (e.clientY / window.innerHeight) * 2 - 1;
 		};
 
+		const handleScroll = () => {
+			const scrollY = window.scrollY;
+			const viewportHeight = window.innerHeight;
+			
+			// Get section positions
+			const featuresSection = document.querySelector('.features-section');
+			const zonesSection = document.querySelector('.zones-section');
+			const ctaSection = document.querySelector('.cta-section');
+			
+			const featuresTop = featuresSection ? featuresSection.getBoundingClientRect().top + scrollY : viewportHeight * 1.2;
+			const zonesTop = zonesSection ? zonesSection.getBoundingClientRect().top + scrollY : viewportHeight * 2.5;
+			const ctaTop = ctaSection ? ctaSection.getBoundingClientRect().top + scrollY : viewportHeight * 3.5;
+			
+			// Define smoother transition ranges with easing
+			// Morning to Evening: smoother, longer transition
+			const morningToEveningStart = featuresTop - viewportHeight * 0.5;
+			const morningToEveningEnd = featuresTop + viewportHeight * 0.3;
+			
+			// Evening to Night: start transition earlier for smoother effect
+			const eveningToNightStart = zonesTop - viewportHeight * 0.4;
+			const eveningToNightEnd = zonesTop + viewportHeight * 0.5;
+			
+			// Easing function for smoother transitions (ease-in-out)
+			const easeInOutCubic = (t: number) => {
+				return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+			};
+			
+			// Calculate transition progress with easing
+			if (scrollY < morningToEveningStart) {
+				// Pure morning
+				morningOpacity = 1;
+				eveningOpacity = 0;
+				nightOpacity = 0;
+			} else if (scrollY < morningToEveningEnd) {
+				// Transitioning from morning to evening with easing
+				const rawProgress = (scrollY - morningToEveningStart) / (morningToEveningEnd - morningToEveningStart);
+				const progress = easeInOutCubic(rawProgress);
+				morningOpacity = 1 - progress;
+				eveningOpacity = progress;
+				nightOpacity = 0;
+			} else if (scrollY < eveningToNightStart) {
+				// Pure evening
+				morningOpacity = 0;
+				eveningOpacity = 1;
+				nightOpacity = 0;
+			} else if (scrollY < eveningToNightEnd) {
+				// Transitioning from evening to night with easing
+				const rawProgress = (scrollY - eveningToNightStart) / (eveningToNightEnd - eveningToNightStart);
+				const progress = easeInOutCubic(rawProgress);
+				morningOpacity = 0;
+				eveningOpacity = 1 - progress;
+				nightOpacity = progress;
+			} else {
+				// Pure night (extends through CTA section and beyond)
+				morningOpacity = 0;
+				eveningOpacity = 0;
+				nightOpacity = 1;
+			}
+		};
+
 		window.addEventListener('mousemove', handleMouseMove);
+		window.addEventListener('scroll', handleScroll);
 
 		// Continuous drift animation
 		const animate = () => {
@@ -69,19 +157,20 @@
 
 		return () => {
 			window.removeEventListener('mousemove', handleMouseMove);
+			window.removeEventListener('scroll', handleScroll);
 			cancelAnimationFrame(animationFrameId);
 			observer.disconnect();
 		};
 	});
 
 	// Generate static night sky gradient with stars
-	function generateSkyLayer() {
-		if (!skyCanvas) return;
-		const ctx = skyCanvas.getContext('2d');
+	function generateNightSkyLayer() {
+		if (!nightSkyCanvas) return;
+		const ctx = nightSkyCanvas.getContext('2d');
 		if (!ctx) return;
 
-		const width = skyCanvas.width;
-		const height = skyCanvas.height;
+		const width = nightSkyCanvas.width;
+		const height = nightSkyCanvas.height;
 
 		// Night sky gradient - deep blue to lighter blue
 		const gradient = ctx.createLinearGradient(0, 0, 0, height);
@@ -136,14 +225,14 @@
 		ctx.fill();
 	}
 
-	// Generate far clouds (small, wispy, low opacity)
-	function generateFarClouds() {
-		if (!farCloudsCanvas) return;
-		const ctx = farCloudsCanvas.getContext('2d');
+	// Generate night far clouds (small, wispy, low opacity)
+	function generateNightFarClouds() {
+		if (!nightFarCloudsCanvas) return;
+		const ctx = nightFarCloudsCanvas.getContext('2d');
 		if (!ctx) return;
 
-		const width = farCloudsCanvas.width;
-		const height = farCloudsCanvas.height;
+		const width = nightFarCloudsCanvas.width;
+		const height = nightFarCloudsCanvas.height;
 
 		ctx.clearRect(0, 0, width, height);
 
@@ -155,16 +244,27 @@
 			const y = Math.random() * height * 0.5 + height * 0.1;
 			drawAnimeCloud(ctx, x, y, 80, 40, 'rgba(140, 165, 210, 0.65)', 4); // Crisp with texture
 		}
+
+		// Add extra clouds in the left-bottom region
+		const leftBottomClouds = [
+			{ x: width * 0.12, y: height * 0.65, w: 75, h: 38 },
+			{ x: width * 0.05, y: height * 0.75, w: 70, h: 35 },
+			{ x: width * 0.18, y: height * 0.80, w: 85, h: 42 },
+			{ x: width * 0.08, y: height * 0.88, w: 65, h: 33 },
+		];
+		leftBottomClouds.forEach(cloud => {
+			drawAnimeCloud(ctx, cloud.x, cloud.y, cloud.w, cloud.h, 'rgba(140, 165, 210, 0.65)', 4);
+		});
 	}
 
-	// Generate mid clouds (medium, fluffy)
-	function generateMidClouds() {
-		if (!midCloudsCanvas) return;
-		const ctx = midCloudsCanvas.getContext('2d');
+	// Generate night mid clouds (medium, fluffy)
+	function generateNightMidClouds() {
+		if (!nightMidCloudsCanvas) return;
+		const ctx = nightMidCloudsCanvas.getContext('2d');
 		if (!ctx) return;
 
-		const width = midCloudsCanvas.width;
-		const height = midCloudsCanvas.height;
+		const width = nightMidCloudsCanvas.width;
+		const height = nightMidCloudsCanvas.height;
 
 		ctx.clearRect(0, 0, width, height);
 
@@ -176,6 +276,10 @@
 			{ x: width * 0.60, y: height * 0.18, w: 190, h: 85 },
 			{ x: width * 0.75, y: height * 0.55, w: 185, h: 80 },
 			{ x: width * 0.90, y: height * 0.35, w: 175, h: 78 },
+			// Additional clouds for left-bottom region
+			{ x: width * 0.15, y: height * 0.68, w: 165, h: 73 },
+			{ x: width * 0.05, y: height * 0.82, w: 155, h: 70 },
+			{ x: width * 0.22, y: height * 0.88, w: 170, h: 75 },
 		];
 
 		clouds.forEach(cloud => {
@@ -183,14 +287,14 @@
 		});
 	}
 
-	// Generate near clouds (large, prominent)
-	function generateNearClouds() {
-		if (!nearCloudsCanvas) return;
-		const ctx = nearCloudsCanvas.getContext('2d');
+	// Generate night near clouds (large, prominent)
+	function generateNightNearClouds() {
+		if (!nightNearCloudsCanvas) return;
+		const ctx = nightNearCloudsCanvas.getContext('2d');
 		if (!ctx) return;
 
-		const width = nearCloudsCanvas.width;
-		const height = nearCloudsCanvas.height;
+		const width = nightNearCloudsCanvas.width;
+		const height = nightNearCloudsCanvas.height;
 
 		ctx.clearRect(0, 0, width, height);
 
@@ -200,6 +304,9 @@
 			{ x: width * 0.35, y: height * 0.5, w: 300, h: 130 },
 			{ x: width * 0.60, y: height * 0.7, w: 260, h: 110 },
 			{ x: width * 0.85, y: height * 0.4, w: 270, h: 115 },
+			// Additional large clouds for left-bottom region
+			{ x: width * 0.12, y: height * 0.75, w: 250, h: 108 },
+			{ x: width * 0.02, y: height * 0.88, w: 240, h: 105 },
 		];
 
 		clouds.forEach(cloud => {
@@ -309,6 +416,331 @@
 		ctx.restore();
 	}
 
+	// ==================== MORNING SKY GENERATION ====================
+
+	// Generate morning sky gradient with sun
+	function generateMorningSkyLayer() {
+		if (!morningSkyCanvas) return;
+		const ctx = morningSkyCanvas.getContext('2d');
+		if (!ctx) return;
+
+		const width = morningSkyCanvas.width;
+		const height = morningSkyCanvas.height;
+
+		// Morning sky gradient - warm sunrise colors
+		const gradient = ctx.createLinearGradient(0, 0, 0, height);
+		gradient.addColorStop(0, '#87CEEB');    // Sky blue
+		gradient.addColorStop(0.3, '#B0E0E6');  // Powder blue
+		gradient.addColorStop(0.6, '#FFD6A5');  // Warm peach
+		gradient.addColorStop(1, '#FFA07A');    // Light salmon at bottom
+
+		ctx.fillStyle = gradient;
+		ctx.fillRect(0, 0, width, height);
+
+		// Add sun
+		const sunX = width * 0.85;
+		const sunY = height * 0.15;
+		const sunRadius = 55;
+
+		// Sun rays
+		ctx.save();
+		ctx.globalAlpha = 0.2;
+		for (let i = 0; i < 12; i++) {
+			const angle = (i * Math.PI * 2) / 12;
+			const rayLength = 150;
+			
+			ctx.beginPath();
+			ctx.strokeStyle = '#FFD700';
+			ctx.lineWidth = 3;
+			ctx.moveTo(sunX + Math.cos(angle) * sunRadius, sunY + Math.sin(angle) * sunRadius);
+			ctx.lineTo(sunX + Math.cos(angle) * (sunRadius + rayLength), sunY + Math.sin(angle) * (sunRadius + rayLength));
+			ctx.stroke();
+		}
+		ctx.restore();
+
+		// Sun glow
+		const sunGlow = ctx.createRadialGradient(sunX, sunY, sunRadius * 0.5, sunX, sunY, sunRadius * 4);
+		sunGlow.addColorStop(0, 'rgba(255, 223, 0, 0.4)');
+		sunGlow.addColorStop(0.5, 'rgba(255, 165, 0, 0.2)');
+		sunGlow.addColorStop(1, 'rgba(255, 165, 0, 0)');
+		ctx.fillStyle = sunGlow;
+		ctx.fillRect(sunX - sunRadius * 4, sunY - sunRadius * 4, sunRadius * 8, sunRadius * 8);
+
+		// Sun body
+		const sunGradient = ctx.createRadialGradient(sunX - 10, sunY - 10, 10, sunX, sunY, sunRadius);
+		sunGradient.addColorStop(0, '#FFF8DC');
+		sunGradient.addColorStop(0.5, '#FFD700');
+		sunGradient.addColorStop(1, '#FFA500');
+		ctx.fillStyle = sunGradient;
+		ctx.beginPath();
+		ctx.arc(sunX, sunY, sunRadius, 0, Math.PI * 2);
+		ctx.fill();
+
+		// Add some birds (optional decorative element)
+		ctx.strokeStyle = 'rgba(0, 0, 0, 0.3)';
+		ctx.lineWidth = 2;
+		const birds = [
+			{ x: width * 0.3, y: height * 0.2 },
+			{ x: width * 0.35, y: height * 0.25 },
+			{ x: width * 0.6, y: height * 0.3 },
+		];
+		birds.forEach(bird => {
+			// Simple V-shaped birds
+			ctx.beginPath();
+			ctx.moveTo(bird.x - 10, bird.y);
+			ctx.lineTo(bird.x, bird.y - 5);
+			ctx.lineTo(bird.x + 10, bird.y);
+			ctx.stroke();
+		});
+	}
+
+	// Generate morning far clouds (light and fluffy)
+	function generateMorningFarClouds() {
+		if (!morningFarCloudsCanvas) return;
+		const ctx = morningFarCloudsCanvas.getContext('2d');
+		if (!ctx) return;
+
+		const width = morningFarCloudsCanvas.width;
+		const height = morningFarCloudsCanvas.height;
+
+		ctx.clearRect(0, 0, width, height);
+
+		// Create small morning clouds
+		const cloudCount = 11;
+		const padding = 150;
+		for (let i = 0; i < cloudCount; i++) {
+			const x = padding + ((width - padding * 2) / cloudCount) * i + Math.random() * 80;
+			const y = Math.random() * height * 0.5 + height * 0.1;
+			drawAnimeCloud(ctx, x, y, 80, 40, 'rgba(255, 255, 255, 0.7)', 4);
+		}
+
+		// Add extra clouds in the left-bottom region
+		const leftBottomClouds = [
+			{ x: width * 0.12, y: height * 0.65, w: 75, h: 38 },
+			{ x: width * 0.05, y: height * 0.75, w: 70, h: 35 },
+			{ x: width * 0.18, y: height * 0.80, w: 85, h: 42 },
+			{ x: width * 0.08, y: height * 0.88, w: 65, h: 33 },
+		];
+		leftBottomClouds.forEach(cloud => {
+			drawAnimeCloud(ctx, cloud.x, cloud.y, cloud.w, cloud.h, 'rgba(255, 255, 255, 0.7)', 4);
+		});
+	}
+
+	// Generate morning mid clouds
+	function generateMorningMidClouds() {
+		if (!morningMidCloudsCanvas) return;
+		const ctx = morningMidCloudsCanvas.getContext('2d');
+		if (!ctx) return;
+
+		const width = morningMidCloudsCanvas.width;
+		const height = morningMidCloudsCanvas.height;
+
+		ctx.clearRect(0, 0, width, height);
+
+		const clouds = [
+			{ x: width * 0.08, y: height * 0.25, w: 180, h: 80 },
+			{ x: width * 0.25, y: height * 0.15, w: 200, h: 90 },
+			{ x: width * 0.45, y: height * 0.3, w: 170, h: 75 },
+			{ x: width * 0.60, y: height * 0.18, w: 190, h: 85 },
+			{ x: width * 0.75, y: height * 0.55, w: 185, h: 80 },
+			{ x: width * 0.90, y: height * 0.35, w: 175, h: 78 },
+			// Additional clouds for left-bottom region
+			{ x: width * 0.15, y: height * 0.68, w: 165, h: 73 },
+			{ x: width * 0.05, y: height * 0.82, w: 155, h: 70 },
+			{ x: width * 0.22, y: height * 0.88, w: 170, h: 75 },
+		];
+
+		clouds.forEach(cloud => {
+			drawAnimeCloud(ctx, cloud.x, cloud.y, cloud.w, cloud.h, 'rgba(255, 255, 255, 0.85)', 6);
+		});
+	}
+
+	// Generate morning near clouds
+	function generateMorningNearClouds() {
+		if (!morningNearCloudsCanvas) return;
+		const ctx = morningNearCloudsCanvas.getContext('2d');
+		if (!ctx) return;
+
+		const width = morningNearCloudsCanvas.width;
+		const height = morningNearCloudsCanvas.height;
+
+		ctx.clearRect(0, 0, width, height);
+
+		const clouds = [
+			{ x: width * 0.08, y: height * 0.3, w: 280, h: 120 },
+			{ x: width * 0.35, y: height * 0.5, w: 300, h: 130 },
+			{ x: width * 0.60, y: height * 0.7, w: 260, h: 110 },
+			{ x: width * 0.85, y: height * 0.4, w: 270, h: 115 },
+			// Additional large clouds for left-bottom region
+			{ x: width * 0.12, y: height * 0.75, w: 250, h: 108 },
+			{ x: width * 0.02, y: height * 0.88, w: 240, h: 105 },
+		];
+
+		clouds.forEach(cloud => {
+			drawAnimeCloud(ctx, cloud.x, cloud.y, cloud.w, cloud.h, 'rgba(255, 255, 255, 0.92)', 8);
+		});
+	}
+
+	// ==================== EVENING SKY GENERATION ====================
+
+	// Generate evening sky gradient with setting sun
+	function generateEveningSkyLayer() {
+		if (!eveningSkyCanvas) return;
+		const ctx = eveningSkyCanvas.getContext('2d');
+		if (!ctx) return;
+
+		const width = eveningSkyCanvas.width;
+		const height = eveningSkyCanvas.height;
+
+		// Evening sky gradient - warm sunset colors
+		const gradient = ctx.createLinearGradient(0, 0, 0, height);
+		gradient.addColorStop(0, '#1e3a5f');    // Deep twilight blue
+		gradient.addColorStop(0.3, '#4a5f8f');  // Medium blue
+		gradient.addColorStop(0.5, '#e17055');  // Warm orange
+		gradient.addColorStop(0.7, '#fab1a0');  // Soft peach
+		gradient.addColorStop(1, '#ffeaa7');    // Golden yellow at bottom
+
+		ctx.fillStyle = gradient;
+		ctx.fillRect(0, 0, width, height);
+
+		// Add setting sun (lower position than morning)
+		const sunX = width * 0.15; // Left side for setting sun
+		const sunY = height * 0.7;  // Lower position
+		const sunRadius = 60;
+
+		// Sun rays
+		ctx.save();
+		ctx.globalAlpha = 0.25;
+		for (let i = 0; i < 16; i++) {
+			const angle = (i * Math.PI * 2) / 16;
+			const rayLength = 120;
+			
+			ctx.beginPath();
+			ctx.strokeStyle = '#ff7675';
+			ctx.lineWidth = 4;
+			ctx.moveTo(sunX + Math.cos(angle) * sunRadius, sunY + Math.sin(angle) * sunRadius);
+			ctx.lineTo(sunX + Math.cos(angle) * (sunRadius + rayLength), sunY + Math.sin(angle) * (sunRadius + rayLength));
+			ctx.stroke();
+		}
+		ctx.restore();
+
+		// Sun glow - more dramatic for sunset
+		const sunGlow = ctx.createRadialGradient(sunX, sunY, sunRadius * 0.5, sunX, sunY, sunRadius * 5);
+		sunGlow.addColorStop(0, 'rgba(255, 107, 107, 0.5)');
+		sunGlow.addColorStop(0.3, 'rgba(255, 165, 0, 0.3)');
+		sunGlow.addColorStop(1, 'rgba(255, 165, 0, 0)');
+		ctx.fillStyle = sunGlow;
+		ctx.fillRect(sunX - sunRadius * 5, sunY - sunRadius * 5, sunRadius * 10, sunRadius * 10);
+
+		// Sun body - warmer colors for evening
+		const sunGradient = ctx.createRadialGradient(sunX - 10, sunY - 10, 10, sunX, sunY, sunRadius);
+		sunGradient.addColorStop(0, '#ffe5b4');
+		sunGradient.addColorStop(0.5, '#ff8c42');
+		sunGradient.addColorStop(1, '#fd7272');
+		ctx.fillStyle = sunGradient;
+		ctx.beginPath();
+		ctx.arc(sunX, sunY, sunRadius, 0, Math.PI * 2);
+		ctx.fill();
+
+		// Add some stars starting to appear
+		ctx.fillStyle = 'rgba(255, 255, 255, 0.3)';
+		for (let i = 0; i < 50; i++) {
+			const x = Math.random() * width;
+			const y = Math.random() * height * 0.4; // Stars in upper portion
+			const radius = Math.random() * 1 + 0.3;
+			
+			ctx.beginPath();
+			ctx.arc(x, y, radius, 0, Math.PI * 2);
+			ctx.fill();
+		}
+	}
+
+	// Generate evening far clouds
+	function generateEveningFarClouds() {
+		if (!eveningFarCloudsCanvas) return;
+		const ctx = eveningFarCloudsCanvas.getContext('2d');
+		if (!ctx) return;
+
+		const width = eveningFarCloudsCanvas.width;
+		const height = eveningFarCloudsCanvas.height;
+
+		ctx.clearRect(0, 0, width, height);
+
+		const cloudCount = 11;
+		const padding = 150;
+		for (let i = 0; i < cloudCount; i++) {
+			const x = padding + ((width - padding * 2) / cloudCount) * i + Math.random() * 80;
+			const y = Math.random() * height * 0.5 + height * 0.1;
+			drawAnimeCloud(ctx, x, y, 80, 40, 'rgba(255, 180, 150, 0.6)', 4);
+		}
+
+		// Add extra clouds in the left-bottom region
+		const leftBottomClouds = [
+			{ x: width * 0.12, y: height * 0.65, w: 75, h: 38 },
+			{ x: width * 0.05, y: height * 0.75, w: 70, h: 35 },
+			{ x: width * 0.18, y: height * 0.80, w: 85, h: 42 },
+			{ x: width * 0.08, y: height * 0.88, w: 65, h: 33 },
+		];
+		leftBottomClouds.forEach(cloud => {
+			drawAnimeCloud(ctx, cloud.x, cloud.y, cloud.w, cloud.h, 'rgba(255, 180, 150, 0.6)', 4);
+		});
+	}
+
+	// Generate evening mid clouds
+	function generateEveningMidClouds() {
+		if (!eveningMidCloudsCanvas) return;
+		const ctx = eveningMidCloudsCanvas.getContext('2d');
+		if (!ctx) return;
+
+		const width = eveningMidCloudsCanvas.width;
+		const height = eveningMidCloudsCanvas.height;
+
+		ctx.clearRect(0, 0, width, height);
+
+		const clouds = [
+			{ x: width * 0.08, y: height * 0.25, w: 180, h: 80 },
+			{ x: width * 0.25, y: height * 0.15, w: 200, h: 90 },
+			{ x: width * 0.45, y: height * 0.3, w: 170, h: 75 },
+			{ x: width * 0.60, y: height * 0.18, w: 190, h: 85 },
+			{ x: width * 0.75, y: height * 0.55, w: 185, h: 80 },
+			{ x: width * 0.90, y: height * 0.35, w: 175, h: 78 },
+			// Additional clouds for left-bottom region
+			{ x: width * 0.15, y: height * 0.68, w: 165, h: 73 },
+			{ x: width * 0.05, y: height * 0.82, w: 155, h: 70 },
+			{ x: width * 0.22, y: height * 0.88, w: 170, h: 75 },
+		];
+
+		clouds.forEach(cloud => {
+			drawAnimeCloud(ctx, cloud.x, cloud.y, cloud.w, cloud.h, 'rgba(255, 200, 170, 0.75)', 6);
+		});
+	}
+
+	// Generate evening near clouds
+	function generateEveningNearClouds() {
+		if (!eveningNearCloudsCanvas) return;
+		const ctx = eveningNearCloudsCanvas.getContext('2d');
+		if (!ctx) return;
+
+		const width = eveningNearCloudsCanvas.width;
+		const height = eveningNearCloudsCanvas.height;
+
+		ctx.clearRect(0, 0, width, height);
+
+		const clouds = [
+			{ x: width * 0.08, y: height * 0.3, w: 280, h: 120 },
+			{ x: width * 0.35, y: height * 0.5, w: 300, h: 130 },
+			{ x: width * 0.60, y: height * 0.7, w: 260, h: 110 },
+			{ x: width * 0.85, y: height * 0.4, w: 270, h: 115 },
+			// Additional large clouds for left-bottom region
+			{ x: width * 0.12, y: height * 0.75, w: 250, h: 108 },
+			{ x: width * 0.02, y: height * 0.88, w: 240, h: 105 },
+		];
+
+		clouds.forEach(cloud => {
+			drawAnimeCloud(ctx, cloud.x, cloud.y, cloud.w, cloud.h, 'rgba(255, 210, 180, 0.85)', 8);
+		});
+	}
+
 	// Calculate parallax transform with drift and cursor interaction
 	function getParallaxStyle(layer: 'far' | 'mid' | 'near') {
 		if (!mounted) return '';
@@ -410,39 +842,103 @@
 
 <!-- Anime-Style Parallax Background System - Full Page Coverage -->
 <div class="parallax-background-system">
-	<!-- Static Sky Layer with Stars & Moon -->
+	<!-- MORNING SKY LAYERS (Hero Section - Default) -->
 	<canvas 
-		bind:this={skyCanvas}
-		class="parallax-layer sky-layer"
+		bind:this={morningSkyCanvas}
+		class="parallax-layer morning-sky-layer"
 		width="2560"
 		height="1440"
+		style="opacity: {morningOpacity};"
 	></canvas>
 
-	<!-- Far Clouds Layer (slowest parallax) -->
 	<canvas 
-		bind:this={farCloudsCanvas}
-		class="parallax-layer far-clouds-layer"
+		bind:this={morningFarCloudsCanvas}
+		class="parallax-layer morning-far-clouds-layer"
 		width="2560"
 		height="1440"
-		style={getParallaxStyle('far')}
+		style="{getParallaxStyle('far')} opacity: {morningOpacity};"
 	></canvas>
 
-	<!-- Mid Clouds Layer (medium parallax) -->
 	<canvas 
-		bind:this={midCloudsCanvas}
-		class="parallax-layer mid-clouds-layer"
+		bind:this={morningMidCloudsCanvas}
+		class="parallax-layer morning-mid-clouds-layer"
 		width="2560"
 		height="1440"
-		style={getParallaxStyle('mid')}
+		style="{getParallaxStyle('mid')} opacity: {morningOpacity};"
 	></canvas>
 
-	<!-- Near Clouds Layer (fastest parallax) -->
 	<canvas 
-		bind:this={nearCloudsCanvas}
-		class="parallax-layer near-clouds-layer"
+		bind:this={morningNearCloudsCanvas}
+		class="parallax-layer morning-near-clouds-layer"
 		width="2560"
 		height="1440"
-		style={getParallaxStyle('near')}
+		style="{getParallaxStyle('near')} opacity: {morningOpacity};"
+	></canvas>
+
+	<!-- EVENING SKY LAYERS (Key Features Section) -->
+	<canvas 
+		bind:this={eveningSkyCanvas}
+		class="parallax-layer evening-sky-layer"
+		width="2560"
+		height="1440"
+		style="opacity: {eveningOpacity};"
+	></canvas>
+
+	<canvas 
+		bind:this={eveningFarCloudsCanvas}
+		class="parallax-layer evening-far-clouds-layer"
+		width="2560"
+		height="1440"
+		style="{getParallaxStyle('far')} opacity: {eveningOpacity};"
+	></canvas>
+
+	<canvas 
+		bind:this={eveningMidCloudsCanvas}
+		class="parallax-layer evening-mid-clouds-layer"
+		width="2560"
+		height="1440"
+		style="{getParallaxStyle('mid')} opacity: {eveningOpacity};"
+	></canvas>
+
+	<canvas 
+		bind:this={eveningNearCloudsCanvas}
+		class="parallax-layer evening-near-clouds-layer"
+		width="2560"
+		height="1440"
+		style="{getParallaxStyle('near')} opacity: {eveningOpacity};"
+	></canvas>
+
+	<!-- NIGHT SKY LAYERS (Learning Zones Section) -->
+	<canvas 
+		bind:this={nightSkyCanvas}
+		class="parallax-layer night-sky-layer"
+		width="2560"
+		height="1440"
+		style="opacity: {nightOpacity};"
+	></canvas>
+
+	<canvas 
+		bind:this={nightFarCloudsCanvas}
+		class="parallax-layer night-far-clouds-layer"
+		width="2560"
+		height="1440"
+		style="{getParallaxStyle('far')} opacity: {nightOpacity};"
+	></canvas>
+
+	<canvas 
+		bind:this={nightMidCloudsCanvas}
+		class="parallax-layer night-mid-clouds-layer"
+		width="2560"
+		height="1440"
+		style="{getParallaxStyle('mid')} opacity: {nightOpacity};"
+	></canvas>
+
+	<canvas 
+		bind:this={nightNearCloudsCanvas}
+		class="parallax-layer night-near-clouds-layer"
+		width="2560"
+		height="1440"
+		style="{getParallaxStyle('near')} opacity: {nightOpacity};"
 	></canvas>
 </div>
 
@@ -652,34 +1148,37 @@
 		pointer-events: none;
 	}
 
-	/* Sky Layer - Static, no movement */
-	.sky-layer {
+	/* Sky Layers - Static, no movement */
+	.morning-sky-layer,
+	.evening-sky-layer,
+	.night-sky-layer {
 		z-index: 1;
-		/* No transform, stays fixed */
+		transition: opacity 0.8s ease-in-out;
 	}
 
 	/* Far Clouds - Slowest parallax */
-	.far-clouds-layer {
+	.morning-far-clouds-layer,
+	.evening-far-clouds-layer,
+	.night-far-clouds-layer {
 		z-index: 2;
-		transition: transform 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-		opacity: 0.95;
+		transition: transform 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94), opacity 0.8s ease-in-out;
 	}
 
 	/* Mid Clouds - Medium parallax */
-	.mid-clouds-layer {
+	.morning-mid-clouds-layer,
+	.evening-mid-clouds-layer,
+	.night-mid-clouds-layer {
 		z-index: 3;
-		transition: transform 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-		opacity: 0.95;
+		transition: transform 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94), opacity 0.8s ease-in-out;
 	}
 
 	/* Near Clouds - Fastest parallax */
-	.near-clouds-layer {
+	.morning-near-clouds-layer,
+	.evening-near-clouds-layer,
+	.night-near-clouds-layer {
 		z-index: 4;
-		transition: transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-		opacity: 0.95;
+		transition: transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94), opacity 0.8s ease-in-out;
 	}
-
-
 
 	.hero-content {
 		position: relative;
@@ -860,13 +1359,13 @@
 
 	.feature-card {
 		position: relative;
-		background: rgba(255, 255, 255, 0.92);
-		backdrop-filter: blur(10px);
-		-webkit-backdrop-filter: blur(10px);
+		background: rgba(255, 255, 255, 0.15);
+		backdrop-filter: blur(12px);
+		-webkit-backdrop-filter: blur(12px);
 		padding: 2.5rem;
 		border-radius: 1.5rem;
-		box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
-		border: 1px solid rgba(255, 255, 255, 0.3);
+		box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+		border: 1px solid rgba(255, 255, 255, 0.25);
 		transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 		overflow: hidden;
 		opacity: 0;
@@ -891,8 +1390,8 @@
 
 	.feature-card:hover {
 		transform: translateY(-10px);
-		box-shadow: 0 15px 50px rgba(0, 0, 0, 0.4);
-		background: rgba(255, 255, 255, 0.96);
+		box-shadow: 0 15px 50px rgba(0, 0, 0, 0.3);
+		background: rgba(255, 255, 255, 0.25);
 	}
 
 	.feature-card:hover::after {
@@ -916,6 +1415,7 @@
 		font-size: 4rem;
 		margin-bottom: 1.5rem;
 		animation: float 3s ease-in-out infinite;
+		filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.3));
 	}
 
 	@keyframes float {
@@ -926,15 +1426,18 @@
 	.feature-card h3 {
 		font-family: 'Montserrat', sans-serif;
 		font-size: 1.5rem;
-		color: #223A5E;
+		color: #fff;
 		margin: 0 0 1rem 0;
+		text-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+		font-weight: 600;
 	}
 
 	.feature-card p {
 		font-family: 'Roboto', sans-serif;
-		color: #666;
+		color: rgba(255, 255, 255, 0.95);
 		line-height: 1.6;
 		margin: 0;
+		text-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
 	}
 
 	.feature-glow {
@@ -998,8 +1501,22 @@
 		opacity: 0;
 		transform: scale(0.9);
 		will-change: transform;
-		box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4);
-		border: 1px solid rgba(255, 255, 255, 0.2);
+		box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+		border: 1px solid rgba(255, 255, 255, 0.25);
+		backdrop-filter: blur(10px);
+		-webkit-backdrop-filter: blur(10px);
+	}
+	
+	.zone-card::before {
+		content: '';
+		position: absolute;
+		top: 0;
+		left: 0;
+		right: 0;
+		bottom: 0;
+		background: inherit;
+		opacity: 0.2;
+		z-index: -1;
 	}
 
 	.zone-card::after {
@@ -1029,17 +1546,8 @@
 		transition-delay: var(--delay, 0s);
 	}
 
-	.zone-card::before {
-		content: '';
-		position: absolute;
-		inset: 0;
-		background: rgba(0, 0, 0, 0.2);
-		opacity: 0;
-		transition: opacity 0.4s ease;
-	}
-
 	.zone-card:hover::before {
-		opacity: 1;
+		opacity: 0.35;
 	}
 
 	.zone-card:hover {
@@ -1051,6 +1559,7 @@
 		font-size: 4rem;
 		margin-bottom: 1rem;
 		transition: transform 0.4s ease;
+		filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.4));
 	}
 
 	.zone-card:hover .zone-icon {
@@ -1061,6 +1570,8 @@
 		font-family: 'Montserrat', sans-serif;
 		font-size: 1.8rem;
 		margin: 0 0 0.75rem 0;
+		text-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+		font-weight: 600;
 	}
 
 	.zone-card p {
@@ -1068,6 +1579,7 @@
 		line-height: 1.6;
 		margin: 0 0 1.5rem 0;
 		opacity: 0.95;
+		text-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
 	}
 
 	.zone-arrow {
@@ -1085,7 +1597,7 @@
 	/* CTA Section */
 	.cta-section {
 		padding: 6rem 2rem;
-		background: linear-gradient(135deg, #223A5E 0%, #38C172 100%);
+		background: transparent;
 		color: white;
 		position: relative;
 		z-index: 1;
