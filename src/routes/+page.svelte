@@ -129,12 +129,12 @@
 			midBottomColor = '#2d3f66'; // Medium blue
 			bottomColor = '#4a5f8f';    // Lighter blue
 		} else {
-			// Midnight (0.75 to 1) - Purple gradient
+			// Midnight (0.75 to 1) - Black gradient
 			const t = (scrollProgress - 0.75) / 0.25; // Normalize to 0-1
-			topColor = interpolateColor('#0a1628', '#1a0a2e', t);       // Deep navy → Deep purple
-			midTopColor = interpolateColor('#1a2847', '#2d1b4e', t);    // Dark blue → Purple
-			midBottomColor = interpolateColor('#2d3f66', '#4a2e6b', t); // Medium blue → Medium purple
-			bottomColor = interpolateColor('#4a5f8f', '#6b4a8d', t);    // Lighter blue → Light purple
+			topColor = interpolateColor('#0a1628', '#000000', t);       // Deep navy → Pure black
+			midTopColor = interpolateColor('#1a2847', '#0a0a0a', t);    // Dark blue → Near black
+			midBottomColor = interpolateColor('#2d3f66', '#1a1a1a', t); // Medium blue → Dark gray
+			bottomColor = interpolateColor('#4a5f8f', '#2a2a2a', t);    // Lighter blue → Charcoal
 		}
 
 		// Create gradient with interpolated colors
@@ -661,35 +661,35 @@
 			title: 'HANGAR ZONE',
 			description: 'A learning space where students explore the history and evolution of gas turbine engines, including their types and developments over time.',
 			link: '/hangar-zone',
-			icon: '/src/lib/assets/hangar-zone-icon.png',
+			icon: '/icons/hangar-zone.png',
 			gradient: 'linear-gradient(135deg, #223A5E 0%, #74B3D4 100%)'
 		},
 		{
 			title: 'TURBOFAN ZONE',
 			description: 'An immersive hub where students explore a fully rotatable 3D turbofan engine, interact with its components, and discover each section that powers modern flight.',
 			link: '/turbofan-zone',
-			icon: '/src/lib/assets/turbofan-engine-icon.png',
+			icon: '/icons/turbofan-engine.png',
 			gradient: 'linear-gradient(135deg, #74B3D4 0%, #D75E2E 100%)'
 		},
 		{
 			title: 'OVERHAUL STATION',
 			description: 'A hands-on virtual workshop where students experience the assembly and disassembly of turbofan engine parts while learning the fundamentals of gas turbine engine overhaul.',
 			link: '/overhaul-station',
-			icon: '/src/lib/assets/overhaul-station-icon.png',
+			icon: '/icons/overhaul-station.png',
 			gradient: 'linear-gradient(135deg, #D75E2E 0%, #9B8AA4 100%)'
 		},
 		{
 			title: 'TEST BAY',
 			description: 'A checkpoint where students test their knowledge from the Hangar Zone, Turbofan Engine, and Overhaul Bay—time to prove your skills!',
 			link: '/test-bay',
-			icon: '/src/lib/assets/test-bay-icon.png',
+			icon: '/icons/test-bay.png',
 			gradient: 'linear-gradient(135deg, #9B8AA4 0%, #223A5E 100%)'
 		},
 		{
 			title: 'JAJA AI-ASSISTANT',
 			description: 'Your co-engineer specialized in turbofan engines—ready to answer your questions, guide your learning, and keep your curiosity soaring!',
 			link: '/jaja',
-			icon: '/src/lib/assets/jaja-head.png',
+			icon: '/icons/jaja.png',
 			gradient: 'linear-gradient(135deg, #223A5E 0%, #74B3D4 100%)'
 		}
 	];
