@@ -1,1 +1,51 @@
 @import 'tailwindcss';
+
+/* Font Families */
+:root {
+	/* Poppins Black for headings */
+	--font-heading: 'Poppins', sans-serif;
+	/* Inter Regular for body text */
+	--font-body: 'Inter', sans-serif;
+	/* Concert One for special elements */
+	--font-special: 'Concert One', cursive;
+	
+	/* Background Colors - From Color Palette */
+	--bg-primary: #223A5E; /* Deep Blue/Navy */
+	--bg-secondary: #D75E2E; /* Orange */
+	--bg-tertiary: #74B3D4; /* Light Blue */
+	--bg-quaternary: #9B8AA4; /* Purple/Mauve */
+	
+	/* Font Colors - From Color Palette */
+	--font-primary: #1E3A5F; /* Dark Navy Blue */
+	--font-secondary: #FFFFFF; /* White */
+	--font-accent-cyan: #00CED1; /* Cyan */
+	--font-accent-yellow: #FFE66D; /* Yellow */
+	--font-accent-green: #4CAF50; /* Green */
+	
+	/* UI Element Colors - From "Others" Palette */
+	--ui-dark-teal: #0A2F35; /* Dark Teal */
+	--ui-slate: #657786; /* Slate Gray */
+	--ui-navy: #1C2E3A; /* Navy */
+	--ui-deep-navy: #243447; /* Deep Navy */
+	--ui-yellow: #FFD966; /* Yellow */
+	--ui-light-blue: #87CEEB; /* Light Blue */
+}
+
+/* Apply default font family */
+body {
+	font-family: var(--font-body);
+	color: var(--font-primary);
+	/* Custom paper plane cursor */
+	cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='white' stroke='%23223A5E' stroke-width='1'%3E%3Cpath d='M3 3l18 9-18 9 3-9-3-9z'/%3E%3C/svg%3E") 12 12, auto;
+}
+
+/* Heading styles with Poppins Black */
+h1, h2, h3, h4, h5, h6 {
+	font-family: var(--font-heading);
+	font-weight: 900;
+}
+
+/* Custom cursor for interactive elements */
+a, button, input[type="submit"], input[type="button"] {
+	cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='%23FFD966' stroke='%23223A5E' stroke-width='1.5'%3E%3Cpath d='M3 3l18 9-18 9 3-9-3-9z'/%3E%3C/svg%3E") 12 12, pointer;
+}
