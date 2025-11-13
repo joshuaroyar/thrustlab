@@ -1,8 +1,10 @@
 <script lang="ts">
-	import AnimatedBackground from '$lib/components/ui/AnimatedBackground.svelte';
 </script>
 
-<AnimatedBackground variant="green" />
+<!-- Parallax Background matching homepage -->
+<div class="parallax-background">
+	<canvas class="sky-layer" width="1920" height="1080"></canvas>
+</div>
 
 <div class="signup-container">
 	<div class="signup-card animate-scale">
@@ -52,40 +54,60 @@
 </div>
 
 <style>
+	/* Parallax Background */
+	.parallax-background {
+		position: fixed;
+		top: 0;
+		left: 0;
+		width: 100%;
+		height: 100vh;
+		z-index: 0;
+		overflow: hidden;
+		background: linear-gradient(to bottom, #87CEEB 0%, #5FA3C8 50%, #4A8BB5 100%);
+	}
+
+	.sky-layer {
+		position: absolute;
+		top: 0;
+		left: 0;
+		width: 100%;
+		height: 100%;
+	}
+
 	.signup-container {
+		position: relative;
+		z-index: 1;
 		min-height: calc(100vh - 64px);
 		display: flex;
 		align-items: center;
 		justify-content: center;
 		padding: 2rem;
-		background: linear-gradient(135deg, var(--bg-primary) 0%, var(--bg-secondary) 50%, var(--bg-quaternary) 100%);
 	}
 
 	.signup-card {
-		/* Glassmorphism Effect */
+		/* Glassmorphism Effect matching homepage */
 		background: rgba(10, 47, 53, 0.6);
 		backdrop-filter: blur(20px) saturate(180%);
 		-webkit-backdrop-filter: blur(20px) saturate(180%);
-		border: 1px solid rgba(135, 206, 235, 0.3);
 		border-radius: 1.5rem;
 		padding: 3rem;
 		max-width: 500px;
 		width: 100%;
 		box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+		border: 1px solid rgba(135, 206, 235, 0.3);
 		transition: all 0.4s ease;
 	}
 
 	.signup-card:hover {
 		transform: translateY(-5px);
-		box-shadow: 0 12px 40px rgba(0, 0, 0, 0.6);
-		border-color: rgba(255, 217, 102, 0.4);
+		box-shadow: 0 12px 40px rgba(255, 217, 102, 0.3);
 	}
 
 	h1 {
 		font-family: var(--font-heading);
 		font-size: 2.5rem;
 		font-weight: 900;
-		color: var(--font-secondary);
+		color: #FFE66D;
 		margin: 0 0 0.5rem 0;
 		text-align: center;
 		text-shadow: 0 2px 8px rgba(0, 0, 0, 0.8);
@@ -93,7 +115,7 @@
 
 	.subtitle {
 		font-family: var(--font-body);
-		color: var(--ui-light-blue);
+		color: var(--font-secondary);
 		text-align: center;
 		margin: 0 0 2rem 0;
 		font-size: 1rem;
@@ -128,8 +150,9 @@
 		font-family: var(--font-body);
 		font-size: 1rem;
 		transition: all 0.3s ease;
-		background: rgba(28, 46, 58, 0.5);
+		background: rgba(28, 46, 58, 0.4);
 		color: var(--font-secondary);
+		backdrop-filter: blur(10px);
 	}
 
 	input::placeholder {
@@ -140,13 +163,13 @@
 		outline: none;
 		border-color: var(--ui-yellow);
 		box-shadow: 0 0 0 3px rgba(255, 217, 102, 0.2);
-		background: rgba(28, 46, 58, 0.7);
+		background: rgba(28, 46, 58, 0.6);
 	}
 
 	.signup-button {
 		position: relative;
 		background: var(--ui-yellow);
-		color: var(--ui-dark-teal);
+		color: #000000;
 		border: none;
 		padding: 1.25rem 2rem;
 		border-radius: 50px;
@@ -155,7 +178,7 @@
 		font-weight: 600;
 		cursor: pointer;
 		transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-		box-shadow: 0 6px 20px rgba(255, 217, 102, 0.4);
+		box-shadow: 0 6px 20px rgba(255, 217, 102, 0.5);
 		overflow: hidden;
 	}
 
@@ -178,9 +201,9 @@
 	}
 
 	.signup-button:hover {
+		background: #FFE66D;
 		transform: translateY(-3px);
-		background: var(--font-accent-yellow);
-		box-shadow: 0 10px 30px rgba(255, 217, 102, 0.6), 0 0 30px rgba(255, 217, 102, 0.3);
+		box-shadow: 0 10px 30px rgba(255, 217, 102, 0.6), 0 0 40px rgba(255, 217, 102, 0.3);
 	}
 
 	.divider {
@@ -200,10 +223,10 @@
 	}
 
 	.divider span {
-		background: rgba(10, 47, 53, 0.8);
+		background: rgba(10, 47, 53, 0.6);
 		padding: 0 1rem;
 		position: relative;
-		color: var(--ui-light-blue);
+		color: rgba(255, 255, 255, 0.7);
 		font-family: var(--font-body);
 		font-size: 0.9rem;
 	}
@@ -225,14 +248,14 @@
 	.login-link a:hover {
 		color: var(--font-accent-yellow);
 		text-decoration: underline;
-		text-shadow: 0 0 10px rgba(255, 217, 102, 0.5);
 	}
 
 	.features-list {
-		background: rgba(28, 46, 58, 0.7);
+		background: rgba(28, 46, 58, 0.6);
 		padding: 1.5rem;
 		border-radius: 1rem;
-		border: 1px solid rgba(135, 206, 235, 0.3);
+		border: 2px solid rgba(135, 206, 235, 0.3);
+		backdrop-filter: blur(10px);
 	}
 
 	.features-list h3 {

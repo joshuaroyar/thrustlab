@@ -10,32 +10,15 @@
 	let normalizedMouseX = $state(0); // -1 to 1
 	let normalizedMouseY = $state(0); // -1 to 1
 
-	// Canvas references for each layer - Morning (Hero section)
-	let morningSkyCanvas: HTMLCanvasElement;
-	let morningFarCloudsCanvas: HTMLCanvasElement;
-	let morningMidCloudsCanvas: HTMLCanvasElement;
-	let morningNearCloudsCanvas: HTMLCanvasElement;
-
-	// Canvas references for each layer - Evening (Key Features section)
-	let eveningSkyCanvas: HTMLCanvasElement;
-	let eveningFarCloudsCanvas: HTMLCanvasElement;
-	let eveningMidCloudsCanvas: HTMLCanvasElement;
-	let eveningNearCloudsCanvas: HTMLCanvasElement;
-
-	// Canvas references for each layer - Night (Learning Zones section)
-	let nightSkyCanvas: HTMLCanvasElement;
-	let nightFarCloudsCanvas: HTMLCanvasElement;
-	let nightMidCloudsCanvas: HTMLCanvasElement;
-	let nightNearCloudsCanvas: HTMLCanvasElement;
+	// Canvas references for each layer
+	let skyCanvas: HTMLCanvasElement;
+	let farCloudsCanvas: HTMLCanvasElement;
+	let midCloudsCanvas: HTMLCanvasElement;
+	let nearCloudsCanvas: HTMLCanvasElement;
 
 	// Animation frame for drift
 	let driftOffset = $state(0);
 	let animationFrameId: number;
-	
-	// Scroll-based transitions
-	let morningOpacity = $state(1);    // Starts at 1, fades to 0
-	let eveningOpacity = $state(0);    // Fades in at Key Features
-	let nightOpacity = $state(0);      // Fades in at Learning Zones
 
 	// Scroll-based background transition
 	let scrollProgress = $state(0); // 0 = day, 0.5 = evening, 1 = night
@@ -43,21 +26,11 @@
 	onMount(() => {
 		mounted = true;
 
-		// Generate all sky layers on canvases
-		generateMorningSkyLayer();
-		generateMorningFarClouds();
-		generateMorningMidClouds();
-		generateMorningNearClouds();
-
-		generateEveningSkyLayer();
-		generateEveningFarClouds();
-		generateEveningMidClouds();
-		generateEveningNearClouds();
-
-		generateNightSkyLayer();
-		generateNightFarClouds();
-		generateNightMidClouds();
-		generateNightNearClouds();
+		// Generate cloud layers on canvases
+		generateSkyLayer();
+		generateFarClouds();
+		generateMidClouds();
+		generateNearClouds();
 
 		const handleMouseMove = (e: MouseEvent) => {
 			mouseX = e.clientX;
@@ -68,68 +41,7 @@
 			normalizedMouseY = (e.clientY / window.innerHeight) * 2 - 1;
 		};
 
-		const handleScroll = () => {
-			const scrollY = window.scrollY;
-			const viewportHeight = window.innerHeight;
-			
-			// Get section positions
-			const featuresSection = document.querySelector('.features-section');
-			const zonesSection = document.querySelector('.zones-section');
-			const ctaSection = document.querySelector('.cta-section');
-			
-			const featuresTop = featuresSection ? featuresSection.getBoundingClientRect().top + scrollY : viewportHeight * 1.2;
-			const zonesTop = zonesSection ? zonesSection.getBoundingClientRect().top + scrollY : viewportHeight * 2.5;
-			const ctaTop = ctaSection ? ctaSection.getBoundingClientRect().top + scrollY : viewportHeight * 3.5;
-			
-			// Define smoother transition ranges with easing
-			// Morning to Evening: smoother, longer transition
-			const morningToEveningStart = featuresTop - viewportHeight * 0.5;
-			const morningToEveningEnd = featuresTop + viewportHeight * 0.3;
-			
-			// Evening to Night: start transition earlier for smoother effect
-			const eveningToNightStart = zonesTop - viewportHeight * 0.4;
-			const eveningToNightEnd = zonesTop + viewportHeight * 0.5;
-			
-			// Easing function for smoother transitions (ease-in-out)
-			const easeInOutCubic = (t: number) => {
-				return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
-			};
-			
-			// Calculate transition progress with easing
-			if (scrollY < morningToEveningStart) {
-				// Pure morning
-				morningOpacity = 1;
-				eveningOpacity = 0;
-				nightOpacity = 0;
-			} else if (scrollY < morningToEveningEnd) {
-				// Transitioning from morning to evening with easing
-				const rawProgress = (scrollY - morningToEveningStart) / (morningToEveningEnd - morningToEveningStart);
-				const progress = easeInOutCubic(rawProgress);
-				morningOpacity = 1 - progress;
-				eveningOpacity = progress;
-				nightOpacity = 0;
-			} else if (scrollY < eveningToNightStart) {
-				// Pure evening
-				morningOpacity = 0;
-				eveningOpacity = 1;
-				nightOpacity = 0;
-			} else if (scrollY < eveningToNightEnd) {
-				// Transitioning from evening to night with easing
-				const rawProgress = (scrollY - eveningToNightStart) / (eveningToNightEnd - eveningToNightStart);
-				const progress = easeInOutCubic(rawProgress);
-				morningOpacity = 0;
-				eveningOpacity = 1 - progress;
-				nightOpacity = progress;
-			} else {
-				// Pure night (extends through CTA section and beyond)
-				morningOpacity = 0;
-				eveningOpacity = 0;
-				nightOpacity = 1;
-			}
-		};
-
 		window.addEventListener('mousemove', handleMouseMove);
-		window.addEventListener('scroll', handleScroll);
 
 		// Scroll handler for background transition
 		const handleScroll = () => {
@@ -181,21 +93,14 @@
 		};
 	});
 
-<<<<<<< HEAD
-	// Generate static night sky gradient with stars
-	function generateNightSkyLayer() {
-		if (!nightSkyCanvas) return;
-		const ctx = nightSkyCanvas.getContext('2d');
-=======
 	// Generate dynamic sky gradient with stars based on scroll progress
 	function generateSkyLayer() {
 		if (!skyCanvas) return;
 		const ctx = skyCanvas.getContext('2d');
->>>>>>> d471e82 (Updated Home Page Layout)
 		if (!ctx) return;
 
-		const width = nightSkyCanvas.width;
-		const height = nightSkyCanvas.height;
+		const width = skyCanvas.width;
+		const height = skyCanvas.height;
 
 		// Clear canvas
 		ctx.clearRect(0, 0, width, height);
@@ -355,23 +260,36 @@
 			}
 
 			// Bigger midnight moon (visible during midnight phase 0.75 - 1.0)
+			// Moon grows and centers as user scrolls to end
 			if (scrollProgress >= 0.75) {
 				const midnightMoonOpacity = Math.min((scrollProgress - 0.75) / 0.1, 1); // Fade in
 				
-				const moonX = width * 0.82;
-				const moonY = height * 0.2;
-				const moonRadius = 80; // Bigger moon for midnight
+				// Center the moon
+				const moonX = width * 0.5;
+				const moonY = height * 0.4;
+				
+				// Moon grows from 80px to 200px as scroll progresses from 0.75 to 1.0
+				const growthProgress = (scrollProgress - 0.75) / 0.25; // 0 to 1
+				const moonRadius = 80 + (120 * growthProgress); // Grows from 80 to 200
 
-				// Enhanced moon glow with purple tint
-				const moonGlow = ctx.createRadialGradient(moonX, moonY, moonRadius * 0.5, moonX, moonY, moonRadius * 4);
-				moonGlow.addColorStop(0, `rgba(200, 180, 255, ${midnightMoonOpacity * 0.15})`);
-				moonGlow.addColorStop(0.5, `rgba(180, 160, 255, ${midnightMoonOpacity * 0.08})`);
+				// Enhanced moon glow with purple tint - grows with moon
+				const glowSize = moonRadius * 4;
+				const moonGlow = ctx.createRadialGradient(moonX, moonY, moonRadius * 0.5, moonX, moonY, glowSize);
+				moonGlow.addColorStop(0, `rgba(200, 180, 255, ${midnightMoonOpacity * 0.2})`);
+				moonGlow.addColorStop(0.5, `rgba(180, 160, 255, ${midnightMoonOpacity * 0.12})`);
 				moonGlow.addColorStop(1, 'rgba(160, 140, 255, 0)');
 				ctx.fillStyle = moonGlow;
-				ctx.fillRect(moonX - moonRadius * 4, moonY - moonRadius * 4, moonRadius * 8, moonRadius * 8);
+				ctx.fillRect(moonX - glowSize, moonY - glowSize, glowSize * 2, glowSize * 2);
 
 				// Moon body with slight purple tint
-				const moonGradient = ctx.createRadialGradient(moonX - 20, moonY - 20, 15, moonX, moonY, moonRadius);
+				const moonGradient = ctx.createRadialGradient(
+					moonX - moonRadius * 0.25, 
+					moonY - moonRadius * 0.25, 
+					moonRadius * 0.2, 
+					moonX, 
+					moonY, 
+					moonRadius
+				);
 				moonGradient.addColorStop(0, '#fffef5');
 				moonGradient.addColorStop(0.6, '#f0ebf0');
 				moonGradient.addColorStop(1, '#e0d8e8');
@@ -381,28 +299,26 @@
 				ctx.arc(moonX, moonY, moonRadius, 0, Math.PI * 2);
 				ctx.fill();
 
-				// Moon craters (more detailed for bigger moon)
+				// Moon craters (scale with moon size)
+				const craterScale = moonRadius / 80; // Scale factor based on growth
 				ctx.fillStyle = 'rgba(190, 180, 200, 0.3)';
 				ctx.beginPath();
-				ctx.arc(moonX - 15, moonY + 15, 18, 0, Math.PI * 2);
+				ctx.arc(moonX - 15 * craterScale, moonY + 15 * craterScale, 18 * craterScale, 0, Math.PI * 2);
 				ctx.fill();
 				ctx.beginPath();
-				ctx.arc(moonX + 25, moonY - 8, 12, 0, Math.PI * 2);
+				ctx.arc(moonX + 25 * craterScale, moonY - 8 * craterScale, 12 * craterScale, 0, Math.PI * 2);
 				ctx.fill();
 				ctx.beginPath();
-				ctx.arc(moonX - 30, moonY - 20, 10, 0, Math.PI * 2);
+				ctx.arc(moonX - 30 * craterScale, moonY - 20 * craterScale, 10 * craterScale, 0, Math.PI * 2);
+				ctx.fill();
+				ctx.beginPath();
+				ctx.arc(moonX + 10 * craterScale, moonY + 35 * craterScale, 8 * craterScale, 0, Math.PI * 2);
 				ctx.fill();
 				ctx.globalAlpha = 1; // Reset alpha
 			}
 		}
 	}
 
-<<<<<<< HEAD
-	// Generate night far clouds (small, wispy, low opacity)
-	function generateNightFarClouds() {
-		if (!nightFarCloudsCanvas) return;
-		const ctx = nightFarCloudsCanvas.getContext('2d');
-=======
 	// Helper function to interpolate between two hex colors
 	function interpolateColor(color1: string, color2: string, t: number): string {
 		const c1 = parseInt(color1.slice(1), 16);
@@ -427,11 +343,10 @@
 	function generateFarClouds() {
 		if (!farCloudsCanvas) return;
 		const ctx = farCloudsCanvas.getContext('2d');
->>>>>>> d471e82 (Updated Home Page Layout)
 		if (!ctx) return;
 
-		const width = nightFarCloudsCanvas.width;
-		const height = nightFarCloudsCanvas.height;
+		const width = farCloudsCanvas.width;
+		const height = farCloudsCanvas.height;
 
 		ctx.clearRect(0, 0, width, height);
 
@@ -447,25 +362,6 @@
 			const y = Math.random() * height * 0.6 + height * 0.1;
 			cloudData.push({ x, y, w: 85, h: 42, color: 'rgba(200, 215, 240, 0.75)', blur: 2 });
 		}
-<<<<<<< HEAD
-
-		// Add extra clouds in the left-bottom region
-		const leftBottomClouds = [
-			{ x: width * 0.12, y: height * 0.65, w: 75, h: 38 },
-			{ x: width * 0.05, y: height * 0.75, w: 70, h: 35 },
-			{ x: width * 0.18, y: height * 0.80, w: 85, h: 42 },
-			{ x: width * 0.08, y: height * 0.88, w: 65, h: 33 },
-		];
-		leftBottomClouds.forEach(cloud => {
-			drawAnimeCloud(ctx, cloud.x, cloud.y, cloud.w, cloud.h, 'rgba(140, 165, 210, 0.65)', 4);
-		});
-	}
-
-	// Generate night mid clouds (medium, fluffy)
-	function generateNightMidClouds() {
-		if (!nightMidCloudsCanvas) return;
-		const ctx = nightMidCloudsCanvas.getContext('2d');
-=======
 		
 		// Add additional scattered clouds
 		for (let i = 0; i < 8; i++) {
@@ -494,28 +390,16 @@
 	function generateMidClouds() {
 		if (!midCloudsCanvas) return;
 		const ctx = midCloudsCanvas.getContext('2d');
->>>>>>> d471e82 (Updated Home Page Layout)
 		if (!ctx) return;
 
-		const width = nightMidCloudsCanvas.width;
-		const height = nightMidCloudsCanvas.height;
+		const width = midCloudsCanvas.width;
+		const height = midCloudsCanvas.height;
 
 		ctx.clearRect(0, 0, width, height);
 
 		// Generate clouds evenly distributed across full width
 		const clouds = [
 			{ x: width * 0.08, y: height * 0.25, w: 180, h: 80 },
-<<<<<<< HEAD
-			{ x: width * 0.25, y: height * 0.15, w: 200, h: 90 },
-			{ x: width * 0.45, y: height * 0.3, w: 170, h: 75 },
-			{ x: width * 0.60, y: height * 0.18, w: 190, h: 85 },
-			{ x: width * 0.75, y: height * 0.55, w: 185, h: 80 },
-			{ x: width * 0.90, y: height * 0.35, w: 175, h: 78 },
-			// Additional clouds for left-bottom region
-			{ x: width * 0.15, y: height * 0.68, w: 165, h: 73 },
-			{ x: width * 0.05, y: height * 0.82, w: 155, h: 70 },
-			{ x: width * 0.22, y: height * 0.88, w: 170, h: 75 },
-=======
 			{ x: width * 0.20, y: height * 0.15, w: 200, h: 90 },
 			{ x: width * 0.33, y: height * 0.35, w: 185, h: 82 },
 			{ x: width * 0.45, y: height * 0.22, w: 170, h: 75 },
@@ -525,7 +409,6 @@
 			{ x: width * 0.87, y: height * 0.35, w: 175, h: 78 },
 			{ x: width * 0.96, y: height * 0.48, w: 180, h: 80 },
 			{ x: width * 0.12, y: height * 0.58, w: 190, h: 84 },
->>>>>>> d471e82 (Updated Home Page Layout)
 		];
 
 		// Draw all clouds and duplicate at edges for seamless wrapping
@@ -544,42 +427,26 @@
 		});
 	}
 
-<<<<<<< HEAD
-	// Generate night near clouds (large, prominent)
-	function generateNightNearClouds() {
-		if (!nightNearCloudsCanvas) return;
-		const ctx = nightNearCloudsCanvas.getContext('2d');
-=======
 	// Generate near clouds (large, prominent) - seamless infinite wrapping
 	function generateNearClouds() {
 		if (!nearCloudsCanvas) return;
 		const ctx = nearCloudsCanvas.getContext('2d');
->>>>>>> d471e82 (Updated Home Page Layout)
 		if (!ctx) return;
 
-		const width = nightNearCloudsCanvas.width;
-		const height = nightNearCloudsCanvas.height;
+		const width = nearCloudsCanvas.width;
+		const height = nearCloudsCanvas.height;
 
 		ctx.clearRect(0, 0, width, height);
 
 		// Generate clouds evenly across full canvas width
 		const clouds = [
 			{ x: width * 0.08, y: height * 0.3, w: 280, h: 120 },
-<<<<<<< HEAD
-			{ x: width * 0.35, y: height * 0.5, w: 300, h: 130 },
-			{ x: width * 0.60, y: height * 0.7, w: 260, h: 110 },
-			{ x: width * 0.85, y: height * 0.4, w: 270, h: 115 },
-			// Additional large clouds for left-bottom region
-			{ x: width * 0.12, y: height * 0.75, w: 250, h: 108 },
-			{ x: width * 0.02, y: height * 0.88, w: 240, h: 105 },
-=======
 			{ x: width * 0.26, y: height * 0.5, w: 300, h: 130 },
 			{ x: width * 0.42, y: height * 0.25, w: 275, h: 118 },
 			{ x: width * 0.57, y: height * 0.65, w: 260, h: 110 },
 			{ x: width * 0.71, y: height * 0.42, w: 285, h: 122 },
 			{ x: width * 0.86, y: height * 0.55, w: 270, h: 115 },
 			{ x: width * 0.16, y: height * 0.72, w: 290, h: 125 },
->>>>>>> d471e82 (Updated Home Page Layout)
 		];
 
 		// Draw all clouds and duplicate at edges for seamless wrapping
@@ -723,336 +590,7 @@
 		ctx.restore();
 	}
 
-<<<<<<< HEAD
-	// ==================== MORNING SKY GENERATION ====================
-
-	// Generate morning sky gradient with sun
-	function generateMorningSkyLayer() {
-		if (!morningSkyCanvas) return;
-		const ctx = morningSkyCanvas.getContext('2d');
-		if (!ctx) return;
-
-		const width = morningSkyCanvas.width;
-		const height = morningSkyCanvas.height;
-
-		// Morning sky gradient - warm sunrise colors
-		const gradient = ctx.createLinearGradient(0, 0, 0, height);
-		gradient.addColorStop(0, '#87CEEB');    // Sky blue
-		gradient.addColorStop(0.3, '#B0E0E6');  // Powder blue
-		gradient.addColorStop(0.6, '#FFD6A5');  // Warm peach
-		gradient.addColorStop(1, '#FFA07A');    // Light salmon at bottom
-
-		ctx.fillStyle = gradient;
-		ctx.fillRect(0, 0, width, height);
-
-		// Add sun
-		const sunX = width * 0.85;
-		const sunY = height * 0.15;
-		const sunRadius = 55;
-
-		// Sun rays
-		ctx.save();
-		ctx.globalAlpha = 0.2;
-		for (let i = 0; i < 12; i++) {
-			const angle = (i * Math.PI * 2) / 12;
-			const rayLength = 150;
-			
-			ctx.beginPath();
-			ctx.strokeStyle = '#FFD700';
-			ctx.lineWidth = 3;
-			ctx.moveTo(sunX + Math.cos(angle) * sunRadius, sunY + Math.sin(angle) * sunRadius);
-			ctx.lineTo(sunX + Math.cos(angle) * (sunRadius + rayLength), sunY + Math.sin(angle) * (sunRadius + rayLength));
-			ctx.stroke();
-		}
-		ctx.restore();
-
-		// Sun glow
-		const sunGlow = ctx.createRadialGradient(sunX, sunY, sunRadius * 0.5, sunX, sunY, sunRadius * 4);
-		sunGlow.addColorStop(0, 'rgba(255, 223, 0, 0.4)');
-		sunGlow.addColorStop(0.5, 'rgba(255, 165, 0, 0.2)');
-		sunGlow.addColorStop(1, 'rgba(255, 165, 0, 0)');
-		ctx.fillStyle = sunGlow;
-		ctx.fillRect(sunX - sunRadius * 4, sunY - sunRadius * 4, sunRadius * 8, sunRadius * 8);
-
-		// Sun body
-		const sunGradient = ctx.createRadialGradient(sunX - 10, sunY - 10, 10, sunX, sunY, sunRadius);
-		sunGradient.addColorStop(0, '#FFF8DC');
-		sunGradient.addColorStop(0.5, '#FFD700');
-		sunGradient.addColorStop(1, '#FFA500');
-		ctx.fillStyle = sunGradient;
-		ctx.beginPath();
-		ctx.arc(sunX, sunY, sunRadius, 0, Math.PI * 2);
-		ctx.fill();
-
-		// Add some birds (optional decorative element)
-		ctx.strokeStyle = 'rgba(0, 0, 0, 0.3)';
-		ctx.lineWidth = 2;
-		const birds = [
-			{ x: width * 0.3, y: height * 0.2 },
-			{ x: width * 0.35, y: height * 0.25 },
-			{ x: width * 0.6, y: height * 0.3 },
-		];
-		birds.forEach(bird => {
-			// Simple V-shaped birds
-			ctx.beginPath();
-			ctx.moveTo(bird.x - 10, bird.y);
-			ctx.lineTo(bird.x, bird.y - 5);
-			ctx.lineTo(bird.x + 10, bird.y);
-			ctx.stroke();
-		});
-	}
-
-	// Generate morning far clouds (light and fluffy)
-	function generateMorningFarClouds() {
-		if (!morningFarCloudsCanvas) return;
-		const ctx = morningFarCloudsCanvas.getContext('2d');
-		if (!ctx) return;
-
-		const width = morningFarCloudsCanvas.width;
-		const height = morningFarCloudsCanvas.height;
-
-		ctx.clearRect(0, 0, width, height);
-
-		// Create small morning clouds
-		const cloudCount = 11;
-		const padding = 150;
-		for (let i = 0; i < cloudCount; i++) {
-			const x = padding + ((width - padding * 2) / cloudCount) * i + Math.random() * 80;
-			const y = Math.random() * height * 0.5 + height * 0.1;
-			drawAnimeCloud(ctx, x, y, 80, 40, 'rgba(255, 255, 255, 0.7)', 4);
-		}
-
-		// Add extra clouds in the left-bottom region
-		const leftBottomClouds = [
-			{ x: width * 0.12, y: height * 0.65, w: 75, h: 38 },
-			{ x: width * 0.05, y: height * 0.75, w: 70, h: 35 },
-			{ x: width * 0.18, y: height * 0.80, w: 85, h: 42 },
-			{ x: width * 0.08, y: height * 0.88, w: 65, h: 33 },
-		];
-		leftBottomClouds.forEach(cloud => {
-			drawAnimeCloud(ctx, cloud.x, cloud.y, cloud.w, cloud.h, 'rgba(255, 255, 255, 0.7)', 4);
-		});
-	}
-
-	// Generate morning mid clouds
-	function generateMorningMidClouds() {
-		if (!morningMidCloudsCanvas) return;
-		const ctx = morningMidCloudsCanvas.getContext('2d');
-		if (!ctx) return;
-
-		const width = morningMidCloudsCanvas.width;
-		const height = morningMidCloudsCanvas.height;
-
-		ctx.clearRect(0, 0, width, height);
-
-		const clouds = [
-			{ x: width * 0.08, y: height * 0.25, w: 180, h: 80 },
-			{ x: width * 0.25, y: height * 0.15, w: 200, h: 90 },
-			{ x: width * 0.45, y: height * 0.3, w: 170, h: 75 },
-			{ x: width * 0.60, y: height * 0.18, w: 190, h: 85 },
-			{ x: width * 0.75, y: height * 0.55, w: 185, h: 80 },
-			{ x: width * 0.90, y: height * 0.35, w: 175, h: 78 },
-			// Additional clouds for left-bottom region
-			{ x: width * 0.15, y: height * 0.68, w: 165, h: 73 },
-			{ x: width * 0.05, y: height * 0.82, w: 155, h: 70 },
-			{ x: width * 0.22, y: height * 0.88, w: 170, h: 75 },
-		];
-
-		clouds.forEach(cloud => {
-			drawAnimeCloud(ctx, cloud.x, cloud.y, cloud.w, cloud.h, 'rgba(255, 255, 255, 0.85)', 6);
-		});
-	}
-
-	// Generate morning near clouds
-	function generateMorningNearClouds() {
-		if (!morningNearCloudsCanvas) return;
-		const ctx = morningNearCloudsCanvas.getContext('2d');
-		if (!ctx) return;
-
-		const width = morningNearCloudsCanvas.width;
-		const height = morningNearCloudsCanvas.height;
-
-		ctx.clearRect(0, 0, width, height);
-
-		const clouds = [
-			{ x: width * 0.08, y: height * 0.3, w: 280, h: 120 },
-			{ x: width * 0.35, y: height * 0.5, w: 300, h: 130 },
-			{ x: width * 0.60, y: height * 0.7, w: 260, h: 110 },
-			{ x: width * 0.85, y: height * 0.4, w: 270, h: 115 },
-			// Additional large clouds for left-bottom region
-			{ x: width * 0.12, y: height * 0.75, w: 250, h: 108 },
-			{ x: width * 0.02, y: height * 0.88, w: 240, h: 105 },
-		];
-
-		clouds.forEach(cloud => {
-			drawAnimeCloud(ctx, cloud.x, cloud.y, cloud.w, cloud.h, 'rgba(255, 255, 255, 0.92)', 8);
-		});
-	}
-
-	// ==================== EVENING SKY GENERATION ====================
-
-	// Generate evening sky gradient with setting sun
-	function generateEveningSkyLayer() {
-		if (!eveningSkyCanvas) return;
-		const ctx = eveningSkyCanvas.getContext('2d');
-		if (!ctx) return;
-
-		const width = eveningSkyCanvas.width;
-		const height = eveningSkyCanvas.height;
-
-		// Evening sky gradient - warm sunset colors
-		const gradient = ctx.createLinearGradient(0, 0, 0, height);
-		gradient.addColorStop(0, '#1e3a5f');    // Deep twilight blue
-		gradient.addColorStop(0.3, '#4a5f8f');  // Medium blue
-		gradient.addColorStop(0.5, '#e17055');  // Warm orange
-		gradient.addColorStop(0.7, '#fab1a0');  // Soft peach
-		gradient.addColorStop(1, '#ffeaa7');    // Golden yellow at bottom
-
-		ctx.fillStyle = gradient;
-		ctx.fillRect(0, 0, width, height);
-
-		// Add setting sun (lower position than morning)
-		const sunX = width * 0.15; // Left side for setting sun
-		const sunY = height * 0.7;  // Lower position
-		const sunRadius = 60;
-
-		// Sun rays
-		ctx.save();
-		ctx.globalAlpha = 0.25;
-		for (let i = 0; i < 16; i++) {
-			const angle = (i * Math.PI * 2) / 16;
-			const rayLength = 120;
-			
-			ctx.beginPath();
-			ctx.strokeStyle = '#ff7675';
-			ctx.lineWidth = 4;
-			ctx.moveTo(sunX + Math.cos(angle) * sunRadius, sunY + Math.sin(angle) * sunRadius);
-			ctx.lineTo(sunX + Math.cos(angle) * (sunRadius + rayLength), sunY + Math.sin(angle) * (sunRadius + rayLength));
-			ctx.stroke();
-		}
-		ctx.restore();
-
-		// Sun glow - more dramatic for sunset
-		const sunGlow = ctx.createRadialGradient(sunX, sunY, sunRadius * 0.5, sunX, sunY, sunRadius * 5);
-		sunGlow.addColorStop(0, 'rgba(255, 107, 107, 0.5)');
-		sunGlow.addColorStop(0.3, 'rgba(255, 165, 0, 0.3)');
-		sunGlow.addColorStop(1, 'rgba(255, 165, 0, 0)');
-		ctx.fillStyle = sunGlow;
-		ctx.fillRect(sunX - sunRadius * 5, sunY - sunRadius * 5, sunRadius * 10, sunRadius * 10);
-
-		// Sun body - warmer colors for evening
-		const sunGradient = ctx.createRadialGradient(sunX - 10, sunY - 10, 10, sunX, sunY, sunRadius);
-		sunGradient.addColorStop(0, '#ffe5b4');
-		sunGradient.addColorStop(0.5, '#ff8c42');
-		sunGradient.addColorStop(1, '#fd7272');
-		ctx.fillStyle = sunGradient;
-		ctx.beginPath();
-		ctx.arc(sunX, sunY, sunRadius, 0, Math.PI * 2);
-		ctx.fill();
-
-		// Add some stars starting to appear
-		ctx.fillStyle = 'rgba(255, 255, 255, 0.3)';
-		for (let i = 0; i < 50; i++) {
-			const x = Math.random() * width;
-			const y = Math.random() * height * 0.4; // Stars in upper portion
-			const radius = Math.random() * 1 + 0.3;
-			
-			ctx.beginPath();
-			ctx.arc(x, y, radius, 0, Math.PI * 2);
-			ctx.fill();
-		}
-	}
-
-	// Generate evening far clouds
-	function generateEveningFarClouds() {
-		if (!eveningFarCloudsCanvas) return;
-		const ctx = eveningFarCloudsCanvas.getContext('2d');
-		if (!ctx) return;
-
-		const width = eveningFarCloudsCanvas.width;
-		const height = eveningFarCloudsCanvas.height;
-
-		ctx.clearRect(0, 0, width, height);
-
-		const cloudCount = 11;
-		const padding = 150;
-		for (let i = 0; i < cloudCount; i++) {
-			const x = padding + ((width - padding * 2) / cloudCount) * i + Math.random() * 80;
-			const y = Math.random() * height * 0.5 + height * 0.1;
-			drawAnimeCloud(ctx, x, y, 80, 40, 'rgba(255, 180, 150, 0.6)', 4);
-		}
-
-		// Add extra clouds in the left-bottom region
-		const leftBottomClouds = [
-			{ x: width * 0.12, y: height * 0.65, w: 75, h: 38 },
-			{ x: width * 0.05, y: height * 0.75, w: 70, h: 35 },
-			{ x: width * 0.18, y: height * 0.80, w: 85, h: 42 },
-			{ x: width * 0.08, y: height * 0.88, w: 65, h: 33 },
-		];
-		leftBottomClouds.forEach(cloud => {
-			drawAnimeCloud(ctx, cloud.x, cloud.y, cloud.w, cloud.h, 'rgba(255, 180, 150, 0.6)', 4);
-		});
-	}
-
-	// Generate evening mid clouds
-	function generateEveningMidClouds() {
-		if (!eveningMidCloudsCanvas) return;
-		const ctx = eveningMidCloudsCanvas.getContext('2d');
-		if (!ctx) return;
-
-		const width = eveningMidCloudsCanvas.width;
-		const height = eveningMidCloudsCanvas.height;
-
-		ctx.clearRect(0, 0, width, height);
-
-		const clouds = [
-			{ x: width * 0.08, y: height * 0.25, w: 180, h: 80 },
-			{ x: width * 0.25, y: height * 0.15, w: 200, h: 90 },
-			{ x: width * 0.45, y: height * 0.3, w: 170, h: 75 },
-			{ x: width * 0.60, y: height * 0.18, w: 190, h: 85 },
-			{ x: width * 0.75, y: height * 0.55, w: 185, h: 80 },
-			{ x: width * 0.90, y: height * 0.35, w: 175, h: 78 },
-			// Additional clouds for left-bottom region
-			{ x: width * 0.15, y: height * 0.68, w: 165, h: 73 },
-			{ x: width * 0.05, y: height * 0.82, w: 155, h: 70 },
-			{ x: width * 0.22, y: height * 0.88, w: 170, h: 75 },
-		];
-
-		clouds.forEach(cloud => {
-			drawAnimeCloud(ctx, cloud.x, cloud.y, cloud.w, cloud.h, 'rgba(255, 200, 170, 0.75)', 6);
-		});
-	}
-
-	// Generate evening near clouds
-	function generateEveningNearClouds() {
-		if (!eveningNearCloudsCanvas) return;
-		const ctx = eveningNearCloudsCanvas.getContext('2d');
-		if (!ctx) return;
-
-		const width = eveningNearCloudsCanvas.width;
-		const height = eveningNearCloudsCanvas.height;
-
-		ctx.clearRect(0, 0, width, height);
-
-		const clouds = [
-			{ x: width * 0.08, y: height * 0.3, w: 280, h: 120 },
-			{ x: width * 0.35, y: height * 0.5, w: 300, h: 130 },
-			{ x: width * 0.60, y: height * 0.7, w: 260, h: 110 },
-			{ x: width * 0.85, y: height * 0.4, w: 270, h: 115 },
-			// Additional large clouds for left-bottom region
-			{ x: width * 0.12, y: height * 0.75, w: 250, h: 108 },
-			{ x: width * 0.02, y: height * 0.88, w: 240, h: 105 },
-		];
-
-		clouds.forEach(cloud => {
-			drawAnimeCloud(ctx, cloud.x, cloud.y, cloud.w, cloud.h, 'rgba(255, 210, 180, 0.85)', 8);
-		});
-	}
-
-	// Calculate parallax transform with drift and cursor interaction
-=======
 	// Calculate parallax transform with drift and cursor interaction - infinite wrapping
->>>>>>> d471e82 (Updated Home Page Layout)
 	function getParallaxStyle(layer: 'far' | 'mid' | 'near') {
 		if (!mounted) return '';
 
@@ -1161,134 +699,39 @@
 
 <!-- Anime-Style Parallax Background System - Full Page Coverage -->
 <div class="parallax-background-system">
-	<!-- MORNING SKY LAYERS (Hero Section - Default) -->
+	<!-- Static Sky Layer with Stars & Moon -->
 	<canvas 
-<<<<<<< HEAD
-		bind:this={morningSkyCanvas}
-		class="parallax-layer morning-sky-layer"
-		width="2560"
-		height="1440"
-		style="opacity: {morningOpacity};"
-=======
 		bind:this={skyCanvas}
 		class="parallax-layer sky-layer"
 		width="3200"
 		height="1800"
->>>>>>> d471e82 (Updated Home Page Layout)
 	></canvas>
 
+	<!-- Far Clouds Layer (slowest parallax) -->
 	<canvas 
-<<<<<<< HEAD
-		bind:this={morningFarCloudsCanvas}
-		class="parallax-layer morning-far-clouds-layer"
-		width="2560"
-		height="1440"
-		style="{getParallaxStyle('far')} opacity: {morningOpacity};"
-=======
 		bind:this={farCloudsCanvas}
 		class="parallax-layer far-clouds-layer"
 		width="3200"
 		height="1800"
 		style={getParallaxStyle('far')}
->>>>>>> d471e82 (Updated Home Page Layout)
 	></canvas>
 
+	<!-- Mid Clouds Layer (medium parallax) -->
 	<canvas 
-<<<<<<< HEAD
-		bind:this={morningMidCloudsCanvas}
-		class="parallax-layer morning-mid-clouds-layer"
-		width="2560"
-		height="1440"
-		style="{getParallaxStyle('mid')} opacity: {morningOpacity};"
-=======
 		bind:this={midCloudsCanvas}
 		class="parallax-layer mid-clouds-layer"
 		width="3200"
 		height="1800"
 		style={getParallaxStyle('mid')}
->>>>>>> d471e82 (Updated Home Page Layout)
 	></canvas>
 
+	<!-- Near Clouds Layer (fastest parallax) -->
 	<canvas 
-<<<<<<< HEAD
-		bind:this={morningNearCloudsCanvas}
-		class="parallax-layer morning-near-clouds-layer"
-		width="2560"
-		height="1440"
-		style="{getParallaxStyle('near')} opacity: {morningOpacity};"
-	></canvas>
-
-	<!-- EVENING SKY LAYERS (Key Features Section) -->
-	<canvas 
-		bind:this={eveningSkyCanvas}
-		class="parallax-layer evening-sky-layer"
-		width="2560"
-		height="1440"
-		style="opacity: {eveningOpacity};"
-	></canvas>
-
-	<canvas 
-		bind:this={eveningFarCloudsCanvas}
-		class="parallax-layer evening-far-clouds-layer"
-		width="2560"
-		height="1440"
-		style="{getParallaxStyle('far')} opacity: {eveningOpacity};"
-	></canvas>
-
-	<canvas 
-		bind:this={eveningMidCloudsCanvas}
-		class="parallax-layer evening-mid-clouds-layer"
-		width="2560"
-		height="1440"
-		style="{getParallaxStyle('mid')} opacity: {eveningOpacity};"
-	></canvas>
-
-	<canvas 
-		bind:this={eveningNearCloudsCanvas}
-		class="parallax-layer evening-near-clouds-layer"
-		width="2560"
-		height="1440"
-		style="{getParallaxStyle('near')} opacity: {eveningOpacity};"
-	></canvas>
-
-	<!-- NIGHT SKY LAYERS (Learning Zones Section) -->
-	<canvas 
-		bind:this={nightSkyCanvas}
-		class="parallax-layer night-sky-layer"
-		width="2560"
-		height="1440"
-		style="opacity: {nightOpacity};"
-	></canvas>
-
-	<canvas 
-		bind:this={nightFarCloudsCanvas}
-		class="parallax-layer night-far-clouds-layer"
-		width="2560"
-		height="1440"
-		style="{getParallaxStyle('far')} opacity: {nightOpacity};"
-	></canvas>
-
-	<canvas 
-		bind:this={nightMidCloudsCanvas}
-		class="parallax-layer night-mid-clouds-layer"
-		width="2560"
-		height="1440"
-		style="{getParallaxStyle('mid')} opacity: {nightOpacity};"
-	></canvas>
-
-	<canvas 
-		bind:this={nightNearCloudsCanvas}
-		class="parallax-layer night-near-clouds-layer"
-		width="2560"
-		height="1440"
-		style="{getParallaxStyle('near')} opacity: {nightOpacity};"
-=======
 		bind:this={nearCloudsCanvas}
 		class="parallax-layer near-clouds-layer"
 		width="3200"
 		height="1800"
 		style={getParallaxStyle('near')}
->>>>>>> d471e82 (Updated Home Page Layout)
 	></canvas>
 </div>
 
@@ -1514,52 +957,34 @@
 		transform-origin: center center;
 	}
 
-	/* Sky Layers - Static, no movement */
-	.morning-sky-layer,
-	.evening-sky-layer,
-	.night-sky-layer {
+	/* Sky Layer - Static, no movement */
+	.sky-layer {
 		z-index: 1;
-		transition: opacity 0.8s ease-in-out;
+		/* No transform, stays fixed */
 	}
 
-<<<<<<< HEAD
-	/* Far Clouds - Slowest parallax */
-	.morning-far-clouds-layer,
-	.evening-far-clouds-layer,
-	.night-far-clouds-layer {
-=======
 	/* Far Clouds - Slowest parallax with seamless wrapping */
 	.far-clouds-layer {
->>>>>>> d471e82 (Updated Home Page Layout)
 		z-index: 2;
-		transition: transform 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94), opacity 0.8s ease-in-out;
+		transition: transform 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+		opacity: 0.95;
 	}
 
-<<<<<<< HEAD
-	/* Mid Clouds - Medium parallax */
-	.morning-mid-clouds-layer,
-	.evening-mid-clouds-layer,
-	.night-mid-clouds-layer {
-=======
 	/* Mid Clouds - Medium parallax with seamless wrapping */
 	.mid-clouds-layer {
->>>>>>> d471e82 (Updated Home Page Layout)
 		z-index: 3;
-		transition: transform 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94), opacity 0.8s ease-in-out;
+		transition: transform 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+		opacity: 0.95;
 	}
 
-<<<<<<< HEAD
-	/* Near Clouds - Fastest parallax */
-	.morning-near-clouds-layer,
-	.evening-near-clouds-layer,
-	.night-near-clouds-layer {
-=======
 	/* Near Clouds - Fastest parallax with seamless wrapping */
 	.near-clouds-layer {
->>>>>>> d471e82 (Updated Home Page Layout)
 		z-index: 4;
-		transition: transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94), opacity 0.8s ease-in-out;
+		transition: transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+		opacity: 0.95;
 	}
+
+
 
 	.hero-content {
 		position: relative;
@@ -1620,41 +1045,71 @@
 
 	.cta-button {
 		position: relative;
-		font-family: var(--font-body);
-		font-size: 1.1rem;
-		font-weight: 600;
-		padding: 1rem 2.5rem;
+		font-family: var(--font-heading);
+		font-size: 1.15rem;
+		font-weight: 700;
+		padding: 1.25rem 3rem;
 		border-radius: 50px;
 		text-decoration: none;
-		transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+		text-transform: uppercase;
+		letter-spacing: 1px;
+		transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 		overflow: hidden;
 		display: inline-flex;
 		align-items: center;
-		gap: 0.5rem;
+		gap: 0.75rem;
 		will-change: transform;
+		cursor: pointer;
+	}
+
+	.cta-button::before {
+		content: '';
+		position: absolute;
+		top: 50%;
+		left: 50%;
+		width: 0;
+		height: 0;
+		border-radius: 50%;
+		background: rgba(255, 255, 255, 0.3);
+		transform: translate(-50%, -50%);
+		transition: width 0.6s ease, height 0.6s ease;
+		pointer-events: none;
+	}
+
+	.cta-button:hover::before {
+		width: 400px;
+		height: 400px;
 	}
 
 	.cta-button.primary {
-		background: linear-gradient(135deg, var(--ui-yellow) 0%, #FFB84D 100%);
-		color: var(--ui-dark-teal);
-		box-shadow: 0 10px 30px rgba(255, 217, 102, 0.4);
-		font-weight: 600;
+		background: linear-gradient(135deg, var(--ui-yellow) 0%, #FFE66D 100%);
+		color: #000000;
+		border: 3px solid var(--ui-yellow);
+		box-shadow: 0 6px 20px rgba(255, 217, 102, 0.5), 0 0 40px rgba(255, 217, 102, 0.2);
+		font-weight: 700;
 	}
 
 	.cta-button.primary:hover {
-		box-shadow: 0 15px 40px rgba(255, 217, 102, 0.6);
-		transform: translateY(-2px);
+		background: linear-gradient(135deg, #FFE66D 0%, var(--ui-yellow) 100%);
+		transform: translateY(-5px) scale(1.05);
+		box-shadow: 0 12px 35px rgba(255, 217, 102, 0.7), 0 0 60px rgba(255, 217, 102, 0.4);
+		border-color: #FFE66D;
 	}
 
 	.cta-button.secondary {
-		background: transparent;
+		background: rgba(10, 47, 53, 0.6);
+		backdrop-filter: blur(10px);
+		-webkit-backdrop-filter: blur(10px);
 		color: var(--font-secondary);
-		border: 2px solid var(--font-accent-cyan);
+		border: 3px solid rgba(135, 206, 235, 0.5);
+		box-shadow: 0 4px 15px rgba(135, 206, 235, 0.3);
 	}
 
 	.cta-button.secondary:hover {
-		background: rgba(0, 206, 209, 0.2);
+		background: rgba(135, 206, 235, 0.3);
 		border-color: var(--ui-light-blue);
+		transform: translateY(-5px) scale(1.05);
+		box-shadow: 0 8px 25px rgba(135, 206, 235, 0.5), 0 0 40px rgba(135, 206, 235, 0.3);
 	}
 
 	.button-shine {
@@ -1663,8 +1118,9 @@
 		left: -100%;
 		width: 100%;
 		height: 100%;
-		background: linear-gradient(90deg, transparent, rgba(255, 217, 102, 0.4), transparent);
-		transition: left 0.5s ease;
+		background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.5), transparent);
+		transition: left 0.6s ease;
+		pointer-events: none;
 	}
 
 	.cta-button:hover .button-shine {
@@ -1738,15 +1194,6 @@
 
 	.feature-card {
 		position: relative;
-<<<<<<< HEAD
-		background: rgba(255, 255, 255, 0.15);
-		backdrop-filter: blur(12px);
-		-webkit-backdrop-filter: blur(12px);
-		padding: 2.5rem;
-		border-radius: 1.5rem;
-		box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
-		border: 1px solid rgba(255, 255, 255, 0.25);
-=======
 		/* Glassmorphism / Liquid Glass Effect with UI colors */
 		background: rgba(10, 47, 53, 0.4); /* Dark Teal with transparency */
 		backdrop-filter: blur(20px) saturate(180%);
@@ -1755,7 +1202,6 @@
 		border-radius: 1.5rem;
 		box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
 		border: 1px solid rgba(135, 206, 235, 0.3); /* Light Blue border */
->>>>>>> d471e82 (Updated Home Page Layout)
 		transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 		overflow: hidden;
 		opacity: 0;
@@ -1780,14 +1226,9 @@
 
 	.feature-card:hover {
 		transform: translateY(-10px);
-<<<<<<< HEAD
-		box-shadow: 0 15px 50px rgba(0, 0, 0, 0.3);
-		background: rgba(255, 255, 255, 0.25);
-=======
 		box-shadow: 0 15px 50px rgba(0, 206, 209, 0.3); /* Cyan glow */
 		background: rgba(28, 62, 74, 0.5); /* Darker on hover */
 		border: 1px solid var(--font-accent-cyan);
->>>>>>> d471e82 (Updated Home Page Layout)
 	}
 
 	.feature-card:hover::after {
@@ -1811,7 +1252,6 @@
 		font-size: 4rem;
 		margin-bottom: 1.5rem;
 		animation: float 3s ease-in-out infinite;
-		filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.3));
 	}
 
 	@keyframes float {
@@ -1822,30 +1262,18 @@
 	.feature-card h3 {
 		font-family: var(--font-heading);
 		font-size: 1.5rem;
-<<<<<<< HEAD
-		color: #fff;
-=======
 		font-weight: 900;
 		color: var(--font-accent-yellow);
 		text-shadow: 0 2px 8px rgba(0, 0, 0, 0.6);
->>>>>>> d471e82 (Updated Home Page Layout)
 		margin: 0 0 1rem 0;
-		text-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
-		font-weight: 600;
 	}
 
 	.feature-card p {
-<<<<<<< HEAD
-		font-family: 'Roboto', sans-serif;
-		color: rgba(255, 255, 255, 0.95);
-=======
 		font-family: var(--font-body);
 		color: var(--font-secondary);
 		text-shadow: 0 1px 4px rgba(0, 0, 0, 0.5);
->>>>>>> d471e82 (Updated Home Page Layout)
 		line-height: 1.6;
 		margin: 0;
-		text-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
 	}
 
 	.feature-glow {
@@ -1911,24 +1339,6 @@
 		opacity: 0;
 		transform: scale(0.9);
 		will-change: transform;
-<<<<<<< HEAD
-		box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
-		border: 1px solid rgba(255, 255, 255, 0.25);
-		backdrop-filter: blur(10px);
-		-webkit-backdrop-filter: blur(10px);
-	}
-	
-	.zone-card::before {
-		content: '';
-		position: absolute;
-		top: 0;
-		left: 0;
-		right: 0;
-		bottom: 0;
-		background: inherit;
-		opacity: 0.2;
-		z-index: -1;
-=======
 		/* Glassmorphism Effect */
 		background: rgba(10, 47, 53, 0.4) !important;
 		backdrop-filter: blur(20px) saturate(180%);
@@ -1938,7 +1348,6 @@
 		display: flex;
 		flex-direction: column;
 		min-height: 380px;
->>>>>>> d471e82 (Updated Home Page Layout)
 	}
 
 	.zone-card::after {
@@ -1968,8 +1377,17 @@
 		transition-delay: var(--delay, 0s);
 	}
 
+	.zone-card::before {
+		content: '';
+		position: absolute;
+		inset: 0;
+		background: rgba(0, 0, 0, 0.2);
+		opacity: 0;
+		transition: opacity 0.4s ease;
+	}
+
 	.zone-card:hover::before {
-		opacity: 0.35;
+		opacity: 1;
 	}
 
 	.zone-card:hover {
@@ -1983,12 +1401,8 @@
 		font-size: 3rem;
 		margin-bottom: 1rem;
 		transition: transform 0.4s ease;
-<<<<<<< HEAD
-		filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.4));
-=======
 		flex-shrink: 0;
 		filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.5));
->>>>>>> d471e82 (Updated Home Page Layout)
 	}
 
 	.zone-card:hover .zone-icon {
@@ -2001,13 +1415,8 @@
 		font-size: 1.3rem;
 		font-weight: 900;
 		margin: 0 0 0.75rem 0;
-<<<<<<< HEAD
-		text-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
-		font-weight: 600;
-=======
 		line-height: 1.3;
 		color: var(--font-accent-yellow);
->>>>>>> d471e82 (Updated Home Page Layout)
 	}
 
 	.zone-card p {
@@ -2015,13 +1424,8 @@
 		font-size: 0.9rem;
 		line-height: 1.5;
 		margin: 0 0 1.5rem 0;
-<<<<<<< HEAD
-		opacity: 0.95;
-		text-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
-=======
 		color: var(--font-secondary);
 		flex-grow: 1;
->>>>>>> d471e82 (Updated Home Page Layout)
 	}
 
 	.zone-arrow {
@@ -2112,9 +1516,9 @@
 	.researchers-grid {
 		display: grid;
 		grid-template-columns: repeat(4, 1fr);
-		gap: 2rem;
+		gap: 3rem;
 		margin: 3rem 0;
-		max-width: 1100px;
+		max-width: 1200px;
 		margin-left: auto;
 		margin-right: auto;
 		width: 100%;
@@ -2124,68 +1528,126 @@
 		display: flex;
 		flex-direction: column;
 		align-items: center;
-		gap: 1rem;
+		gap: 1.5rem;
+		padding: 2rem 1.5rem;
+		/* Enhanced glassmorphism card */
+		background: rgba(10, 47, 53, 0.4);
+		backdrop-filter: blur(15px) saturate(180%);
+		-webkit-backdrop-filter: blur(15px) saturate(180%);
+		border-radius: 1.5rem;
+		border: 2px solid rgba(135, 206, 235, 0.3);
+		transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+		position: relative;
+		overflow: hidden;
+	}
+
+	.researcher::before {
+		content: '';
+		position: absolute;
+		top: 0;
+		left: 0;
+		width: 100%;
+		height: 100%;
+		background: radial-gradient(circle at center, rgba(255, 217, 102, 0.1) 0%, transparent 70%);
+		opacity: 0;
+		transition: opacity 0.4s ease;
+		pointer-events: none;
+	}
+
+	.researcher:hover {
+		transform: translateY(-10px);
+		border-color: var(--ui-yellow);
+		box-shadow: 0 15px 40px rgba(255, 217, 102, 0.3), 0 0 60px rgba(255, 217, 102, 0.15);
+		background: rgba(10, 47, 53, 0.6);
+	}
+
+	.researcher:hover::before {
+		opacity: 1;
 	}
 
 	.researcher-photo {
-		width: 150px;
-		height: 150px;
+		width: 180px;
+		height: 180px;
 		border-radius: 50%;
 		overflow: hidden;
-		border: 3px solid rgba(135, 206, 235, 0.4); /* Light Blue */
-		box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
-		transition: transform 0.3s ease, box-shadow 0.3s ease, border 0.3s ease;
-		/* Glassmorphism ring effect */
-		background: rgba(10, 47, 53, 0.3); /* Dark Teal */
-		backdrop-filter: blur(10px);
-		-webkit-backdrop-filter: blur(10px);
+		border: 4px solid rgba(135, 206, 235, 0.5);
+		box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5), 0 0 40px rgba(135, 206, 235, 0.2);
+		transition: all 0.4s ease;
+		position: relative;
+		background: linear-gradient(135deg, rgba(10, 47, 53, 0.6), rgba(135, 206, 235, 0.3));
+		padding: 4px;
 	}
 
-	.researcher-photo:hover {
-		transform: scale(1.08);
-		box-shadow: 0 12px 32px rgba(255, 217, 102, 0.5); /* Yellow glow */
-		border: 3px solid var(--ui-yellow);
+	.researcher:hover .researcher-photo {
+		transform: scale(1.1) rotate(5deg);
+		box-shadow: 0 15px 40px rgba(255, 217, 102, 0.6), 0 0 60px rgba(255, 217, 102, 0.4);
+		border-color: var(--ui-yellow);
 	}
 
 	.researcher-photo img {
 		width: 100%;
 		height: 100%;
 		object-fit: cover;
+		border-radius: 50%;
 	}
 
 	.researcher h3 {
 		font-family: var(--font-heading);
-		font-size: 1.1rem;
+		font-size: 1.15rem;
 		font-weight: 900;
 		text-align: center;
 		margin: 0;
 		color: var(--font-accent-yellow);
+		text-shadow: 0 2px 8px rgba(0, 0, 0, 0.8);
+		transition: all 0.3s ease;
+	}
+
+	.researcher:hover h3 {
+		color: #FFFFFF;
+		text-shadow: 0 2px 8px rgba(255, 217, 102, 0.8), 0 0 20px rgba(255, 217, 102, 0.5);
 	}
 
 	.research-info {
-		margin-top: 3rem;
+		margin-top: 4rem;
 		text-align: center;
-		padding: 2rem;
-		/* Glassmorphism Effect with UI colors */
-		background: rgba(28, 46, 58, 0.6); /* Navy */
-		backdrop-filter: blur(15px) saturate(150%);
-		-webkit-backdrop-filter: blur(15px) saturate(150%);
-		border-radius: 1rem;
-		border: 1px solid rgba(135, 206, 235, 0.25); /* Light Blue */
+		padding: 2.5rem 3rem;
+		/* Enhanced glassmorphism box */
+		background: rgba(28, 46, 58, 0.7);
+		backdrop-filter: blur(20px) saturate(180%);
+		-webkit-backdrop-filter: blur(20px) saturate(180%);
+		border-radius: 1.5rem;
+		border: 2px solid rgba(135, 206, 235, 0.4);
+		box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5), 0 0 60px rgba(135, 206, 235, 0.1);
+		position: relative;
+		overflow: hidden;
+	}
+
+	.research-info::before {
+		content: '';
+		position: absolute;
+		top: 0;
+		left: 0;
+		width: 100%;
+		height: 100%;
+		background: linear-gradient(135deg, rgba(135, 206, 235, 0.1) 0%, rgba(255, 217, 102, 0.05) 100%);
+		pointer-events: none;
 	}
 
 	.batch-info,
 	.adviser-info {
 		font-family: var(--font-body);
-		font-size: 1.1rem;
-		margin: 0.5rem 0;
+		font-size: 1.2rem;
+		margin: 0.75rem 0;
 		color: var(--font-secondary);
-		text-shadow: 0 1px 4px rgba(0, 0, 0, 0.5);
+		text-shadow: 0 2px 6px rgba(0, 0, 0, 0.6);
+		position: relative;
 	}
 
 	.adviser-info {
-		font-weight: 600;
+		font-weight: 700;
 		color: var(--font-accent-cyan);
+		font-size: 1.3rem;
+		text-shadow: 0 2px 8px rgba(0, 206, 209, 0.6), 0 0 20px rgba(0, 206, 209, 0.3);
 	}
 
 	/* Scroll animations */

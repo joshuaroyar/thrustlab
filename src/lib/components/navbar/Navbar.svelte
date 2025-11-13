@@ -297,9 +297,9 @@
 	}
 
 	.nav-link {
-		font-family: var(--font-heading); /* Match site title font */
+		font-family: var(--font-heading); /* Match logo/title font */
 		font-size: 1rem;
-		font-weight: 500;
+		font-weight: 700;
 		color: #FFFFFF; /* Pure white for maximum readability */
 		text-decoration: none;
 		padding: 0.5rem 1rem;
@@ -308,7 +308,7 @@
 		white-space: nowrap;
 		text-shadow: 0 1px 3px rgba(0, 0, 0, 0.8);
 		text-transform: uppercase; /* ALL CAPS */
-		letter-spacing: 0.5px; /* Better spacing for uppercase */
+		letter-spacing: 0.5px;
 	}
 
 	.nav-link:hover {
@@ -370,16 +370,16 @@
 	}
 
 	.mobile-nav-link {
-		font-family: var(--font-heading); /* Match site title font */
+		font-family: var(--font-heading); /* Match logo/title font */
 		font-size: 1rem;
-		font-weight: 500;
+		font-weight: 700;
 		color: #FFFFFF; /* Pure white for maximum readability */
 		text-decoration: none;
 		padding: 0.75rem 1rem;
 		border-radius: 0.375rem;
 		transition: all 0.3s ease;
 		text-transform: uppercase; /* ALL CAPS */
-		letter-spacing: 0.5px; /* Better spacing for uppercase */
+		letter-spacing: 0.5px;
 		margin-bottom: 0.25rem;
 		text-shadow: 0 1px 3px rgba(0, 0, 0, 0.8);
 	}

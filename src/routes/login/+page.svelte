@@ -1,11 +1,13 @@
 <script lang="ts">
 	import type { ActionData } from './$types';
-	import AnimatedBackground from '$lib/components/ui/AnimatedBackground.svelte';
 
 	let { form } = $props<{ form?: ActionData }>();
 </script>
 
-<AnimatedBackground variant="blue" />
+<!-- Parallax Background matching homepage -->
+<div class="parallax-background">
+	<canvas class="sky-layer" width="1920" height="1080"></canvas>
+</div>
 
 <div class="login-container">
 	<div class="login-card animate-scale">
@@ -39,40 +41,60 @@
 </div>
 
 <style>
+	/* Parallax Background */
+	.parallax-background {
+		position: fixed;
+		top: 0;
+		left: 0;
+		width: 100%;
+		height: 100vh;
+		z-index: 0;
+		overflow: hidden;
+		background: linear-gradient(to bottom, #87CEEB 0%, #5FA3C8 50%, #4A8BB5 100%);
+	}
+
+	.sky-layer {
+		position: absolute;
+		top: 0;
+		left: 0;
+		width: 100%;
+		height: 100%;
+	}
+
 	.login-container {
+		position: relative;
+		z-index: 1;
 		min-height: calc(100vh - 64px);
 		display: flex;
 		align-items: center;
 		justify-content: center;
 		padding: 2rem;
-		background: linear-gradient(135deg, var(--bg-primary) 0%, var(--bg-tertiary) 100%);
 	}
 
 	.login-card {
-		/* Glassmorphism Effect */
+		/* Glassmorphism Effect matching homepage */
 		background: rgba(10, 47, 53, 0.6);
 		backdrop-filter: blur(20px) saturate(180%);
 		-webkit-backdrop-filter: blur(20px) saturate(180%);
-		border: 1px solid rgba(135, 206, 235, 0.3);
 		border-radius: 1.5rem;
 		padding: 2.5rem;
 		max-width: 500px;
 		width: 100%;
 		box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+		border: 1px solid rgba(135, 206, 235, 0.3);
 		transition: all 0.4s ease;
 	}
 
 	.login-card:hover {
 		transform: translateY(-5px);
-		box-shadow: 0 12px 40px rgba(0, 0, 0, 0.6);
-		border-color: rgba(255, 217, 102, 0.4);
+		box-shadow: 0 12px 40px rgba(255, 217, 102, 0.3);
 	}
 
 	h1 {
 		font-family: var(--font-heading);
 		font-size: 2rem;
 		font-weight: 900;
-		color: var(--font-secondary);
+		color: #FFE66D;
 		margin: 0 0 0.5rem 0;
 		text-align: center;
 		text-shadow: 0 2px 8px rgba(0, 0, 0, 0.8);
@@ -80,7 +102,7 @@
 
 	.subtitle {
 		font-family: var(--font-body);
-		color: var(--ui-light-blue);
+		color: var(--font-secondary);
 		text-align: center;
 		margin: 0 0 2rem 0;
 		font-size: 0.95rem;
@@ -94,11 +116,11 @@
 	}
 
 	.info-box {
-		background: rgba(28, 46, 58, 0.7);
+		background: rgba(28, 46, 58, 0.6);
 		border-left: 4px solid var(--ui-yellow);
 		padding: 1.5rem;
 		border-radius: 0.5rem;
-		border: 1px solid rgba(135, 206, 235, 0.2);
+		backdrop-filter: blur(10px);
 	}
 
 	.info-box h3 {
@@ -130,7 +152,7 @@
 
 	.note {
 		font-size: 0.9rem;
-		color: var(--ui-light-blue);
+		color: rgba(255, 255, 255, 0.7);
 		font-style: italic;
 		margin-top: 1rem !important;
 	}
@@ -138,7 +160,7 @@
 	.login-button {
 		position: relative;
 		background: var(--ui-yellow);
-		color: var(--ui-dark-teal);
+		color: #000000;
 		border: none;
 		padding: 1rem 2rem;
 		border-radius: 50px;
@@ -147,7 +169,7 @@
 		font-weight: 600;
 		cursor: pointer;
 		transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-		box-shadow: 0 4px 12px rgba(255, 217, 102, 0.4);
+		box-shadow: 0 4px 12px rgba(255, 217, 102, 0.5);
 		overflow: hidden;
 	}
 
@@ -170,9 +192,9 @@
 	}
 
 	.login-button:hover {
-		background: var(--font-accent-yellow);
+		background: #FFE66D;
 		transform: translateY(-2px);
-		box-shadow: 0 6px 16px rgba(255, 217, 102, 0.6), 0 0 30px rgba(255, 217, 102, 0.3);
+		box-shadow: 0 6px 20px rgba(255, 217, 102, 0.6), 0 0 30px rgba(255, 217, 102, 0.3);
 	}
 
 	.login-button:active {
@@ -196,10 +218,10 @@
 	}
 
 	.divider span {
-		background: rgba(10, 47, 53, 0.8);
+		background: rgba(10, 47, 53, 0.6);
 		padding: 0 1rem;
 		position: relative;
-		color: var(--ui-light-blue);
+		color: rgba(255, 255, 255, 0.7);
 		font-family: var(--font-body);
 		font-size: 0.9rem;
 	}
@@ -221,6 +243,5 @@
 	.signup-link a:hover {
 		color: var(--font-accent-yellow);
 		text-decoration: underline;
-		text-shadow: 0 0 10px rgba(255, 217, 102, 0.5);
 	}
 </style>
