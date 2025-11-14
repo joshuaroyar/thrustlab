@@ -1,9 +1,3 @@
-<script lang="ts">
-	import AnimatedBackground from '$lib/components/ui/AnimatedBackground.svelte';
-</script>
-
-<AnimatedBackground variant="orange" />
-
 <div class="page-container">
 	<div class="hero-section animate-on-scroll">
 		<h1>🔧 Overhaul Station</h1>

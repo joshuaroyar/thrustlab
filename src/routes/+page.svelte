@@ -1,6 +1,5 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import PageLoader from '$lib/components/ui/PageLoader.svelte';
 	
 	let heroRef: HTMLElement;
 	let isHovering = $state(false);
@@ -695,8 +694,6 @@
 	];
 </script>
 
-<PageLoader />
-
 <!-- Anime-Style Parallax Background System - Full Page Coverage -->
 <div class="parallax-background-system">
 	<!-- Static Sky Layer with Stars & Moon -->
@@ -843,45 +840,94 @@
 		</div>
 	</section>
 
-	<!-- CTA Section -->
-	<section class="cta-section">
+	<!-- Researchers Section -->
+	<section class="researchers-section">
 		<div class="container">
-			<div class="cta-content animate-on-scroll">
-				<h2>Meet the Researchers</h2>
-				
-				<div class="researchers-grid">
-					<div class="researcher">
-						<div class="researcher-photo">
-							<img src="https://via.placeholder.com/150/223A5E/FFFFFF?text=JMC" alt="Jannah Michellaine C. Cristobal" />
+			<!-- Section Header -->
+			<div class="section-header animate-on-scroll">
+				<div class="header-line"></div>
+				<h2 class="section-title">Meet the Researchers</h2>
+			</div>
+
+			<!-- Researchers Cards -->
+			<div class="researchers-container animate-on-scroll">
+				<div class="researcher-card" style="--delay: 0s">
+					<div class="card-inner">
+						<div class="card-front">
+							<div class="photo-wrapper">
+								<div class="photo-glow"></div>
+								<img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 200'%3E%3Crect fill='%23e0e0e0' width='200' height='200'/%3E%3Cpath fill='%23b0b0b0' d='M100 95c13.8 0 25-11.2 25-25s-11.2-25-25-25-25 11.2-25 25 11.2 25 25 25zm0 12.5c-16.7 0-50 8.4-50 25v18.8c0 3.4 2.8 6.2 6.2 6.2h87.5c3.4 0 6.2-2.8 6.2-6.2v-18.8c0-16.6-33.2-25-49.9-25z'/%3E%3C/svg%3E" alt="Jannah Michellaine C. Cristobal" />
+							</div>
+							<div class="card-info">
+								<h3>Jannah Michellaine C. Cristobal</h3>
+								<div class="role-badge">Researcher</div>
+							</div>
 						</div>
-						<h3>Jannah Michellaine C. Cristobal</h3>
-					</div>
-					
-					<div class="researcher">
-						<div class="researcher-photo">
-							<img src="https://via.placeholder.com/150/38C172/FFFFFF?text=ARD" alt="Alfred Rupert D. De Guzman" />
-						</div>
-						<h3>Alfred Rupert D. De Guzman</h3>
-					</div>
-					
-					<div class="researcher">
-						<div class="researcher-photo">
-							<img src="https://via.placeholder.com/150/FFA726/FFFFFF?text=JMP" alt="Janssen M. Palac" />
-						</div>
-						<h3>Janssen M. Palac</h3>
-					</div>
-					
-					<div class="researcher">
-						<div class="researcher-photo">
-							<img src="https://via.placeholder.com/150/FF3C7E/FFFFFF?text=MAVS" alt="Marc Ashriel V. San Pedro" />
-						</div>
-						<h3>Marc Ashriel V. San Pedro</h3>
 					</div>
 				</div>
-				
-				<div class="research-info">
-					<p class="batch-info">From Batch 2025-2026</p>
-					<p class="adviser-info">Research Adviser: Engr. Johannah Marie T. Reynaldo</p>
+
+				<div class="researcher-card" style="--delay: 0.1s">
+					<div class="card-inner">
+						<div class="card-front">
+							<div class="photo-wrapper">
+								<div class="photo-glow"></div>
+								<img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 200'%3E%3Crect fill='%23e0e0e0' width='200' height='200'/%3E%3Cpath fill='%23b0b0b0' d='M100 95c13.8 0 25-11.2 25-25s-11.2-25-25-25-25 11.2-25 25 11.2 25 25 25zm0 12.5c-16.7 0-50 8.4-50 25v18.8c0 3.4 2.8 6.2 6.2 6.2h87.5c3.4 0 6.2-2.8 6.2-6.2v-18.8c0-16.6-33.2-25-49.9-25z'/%3E%3C/svg%3E" alt="Alfred Rupert D. De Guzman" />
+							</div>
+							<div class="card-info">
+								<h3>Alfred Rupert D. De Guzman</h3>
+								<div class="role-badge">Researcher</div>
+							</div>
+						</div>
+					</div>
+				</div>
+
+				<div class="researcher-card" style="--delay: 0.2s">
+					<div class="card-inner">
+						<div class="card-front">
+							<div class="photo-wrapper">
+								<div class="photo-glow"></div>
+								<img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 200'%3E%3Crect fill='%23e0e0e0' width='200' height='200'/%3E%3Cpath fill='%23b0b0b0' d='M100 95c13.8 0 25-11.2 25-25s-11.2-25-25-25-25 11.2-25 25 11.2 25 25 25zm0 12.5c-16.7 0-50 8.4-50 25v18.8c0 3.4 2.8 6.2 6.2 6.2h87.5c3.4 0 6.2-2.8 6.2-6.2v-18.8c0-16.6-33.2-25-49.9-25z'/%3E%3C/svg%3E" alt="Janssen M. Palac" />
+							</div>
+							<div class="card-info">
+								<h3>Janssen M. Palac</h3>
+								<div class="role-badge">Researcher</div>
+							</div>
+						</div>
+					</div>
+				</div>
+
+				<div class="researcher-card" style="--delay: 0.3s">
+					<div class="card-inner">
+						<div class="card-front">
+							<div class="photo-wrapper">
+								<div class="photo-glow"></div>
+								<img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 200'%3E%3Crect fill='%23e0e0e0' width='200' height='200'/%3E%3Cpath fill='%23b0b0b0' d='M100 95c13.8 0 25-11.2 25-25s-11.2-25-25-25-25 11.2-25 25 11.2 25 25 25zm0 12.5c-16.7 0-50 8.4-50 25v18.8c0 3.4 2.8 6.2 6.2 6.2h87.5c3.4 0 6.2-2.8 6.2-6.2v-18.8c0-16.6-33.2-25-49.9-25z'/%3E%3C/svg%3E" alt="Marc Ashriel V. San Pedro" />
+							</div>
+							<div class="card-info">
+								<h3>Marc Ashriel V. San Pedro</h3>
+								<div class="role-badge">Researcher</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+
+			<!-- Bottom Info Bar -->
+			<div class="info-bar animate-on-scroll">
+				<div class="info-item">
+					<div class="info-icon">🎓</div>
+					<div class="info-text">
+						<span class="info-label">Academic Year</span>
+						<span class="info-value">2025-2026</span>
+					</div>
+				</div>
+				<div class="info-divider"></div>
+				<div class="info-item">
+					<div class="info-icon">👨‍🏫</div>
+					<div class="info-text">
+						<span class="info-label">Research Adviser</span>
+						<span class="info-value">Engr. Johannah Marie T. Reynaldo</span>
+					</div>
 				</div>
 			</div>
 		</div>
@@ -994,32 +1040,43 @@
 		padding: 2rem;
 	}
 
+	/* Unified Animated Gradient for All Main Headings */
+	@keyframes gradient-flash {
+		0%, 100% {
+			background-position: 0% 50%;
+		}
+		25% {
+			background-position: 50% 50%;
+		}
+		50% {
+			background-position: 100% 50%;
+		}
+		75% {
+			background-position: 50% 50%;
+		}
+	}
+
 	.hero-title {
 		font-family: var(--font-heading);
 		font-size: clamp(2.5rem, 6vw, 4.5rem);
 		font-weight: 900;
-		color: #FFFFFF;
 		margin: 0 0 1rem 0;
 		line-height: 1.2;
-		text-shadow: 0 4px 12px rgba(0, 0, 0, 0.9), 0 2px 6px rgba(0, 0, 0, 0.8);
+		color: white;
+		text-shadow: 0 3px 10px rgba(0, 0, 0, 0.9), 0 2px 5px rgba(0, 0, 0, 0.8);
 	}
 
 	.gradient-text {
-		color: #FFD966;
-		text-shadow: 0 4px 12px rgba(0, 0, 0, 0.9), 0 2px 6px rgba(0, 0, 0, 0.8), 0 0 30px rgba(255, 217, 102, 0.5);
-	}
-
-	@keyframes gradient-shift {
-		0%, 100% { background-position: 0% 50%; }
-		50% { background-position: 100% 50%; }
+		color: var(--ui-yellow);
+		text-shadow: 0 3px 10px rgba(0, 0, 0, 0.9), 0 2px 5px rgba(0, 0, 0, 0.8);
 	}
 
 	.hero-subtitle {
 		font-family: var(--font-special);
 		font-size: clamp(1.2rem, 3vw, 1.8rem);
-		color: #FFE66D;
 		margin: 0 0 1.5rem 0;
 		font-weight: 400;
+		color: var(--ui-yellow);
 		text-shadow: 0 3px 10px rgba(0, 0, 0, 0.9), 0 2px 5px rgba(0, 0, 0, 0.8);
 	}
 
@@ -1180,10 +1237,22 @@
 		font-family: var(--font-heading);
 		font-size: clamp(2rem, 4vw, 3rem);
 		font-weight: 900;
-		color: var(--font-accent-yellow);
-		text-shadow: 0 3px 12px rgba(0, 0, 0, 0.6), 0 2px 4px rgba(0, 0, 0, 0.8);
 		text-align: center;
 		margin: 0 0 3rem 0;
+		background: linear-gradient(
+			90deg,
+			var(--ui-yellow) 0%,
+			var(--font-accent-cyan) 25%,
+			var(--ui-light-blue) 50%,
+			var(--font-accent-cyan) 75%,
+			var(--ui-yellow) 100%
+		);
+		background-size: 300% 100%;
+		-webkit-background-clip: text;
+		-webkit-text-fill-color: transparent;
+		background-clip: text;
+		animation: gradient-flash 4s ease-in-out infinite;
+		filter: drop-shadow(0 3px 12px rgba(0, 0, 0, 0.8)) drop-shadow(0 0 20px rgba(255, 217, 102, 0.3));
 	}
 
 	.features-grid {
@@ -1263,9 +1332,19 @@
 		font-family: var(--font-heading);
 		font-size: 1.5rem;
 		font-weight: 900;
-		color: var(--font-accent-yellow);
-		text-shadow: 0 2px 8px rgba(0, 0, 0, 0.6);
 		margin: 0 0 1rem 0;
+		background: linear-gradient(
+			90deg,
+			var(--ui-yellow) 0%,
+			var(--font-accent-cyan) 50%,
+			var(--ui-yellow) 100%
+		);
+		background-size: 200% 100%;
+		-webkit-background-clip: text;
+		-webkit-text-fill-color: transparent;
+		background-clip: text;
+		animation: gradient-flash 3.5s ease-in-out infinite;
+		filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.8));
 	}
 
 	.feature-card p {
@@ -1416,7 +1495,18 @@
 		font-weight: 900;
 		margin: 0 0 0.75rem 0;
 		line-height: 1.3;
-		color: var(--font-accent-yellow);
+		background: linear-gradient(
+			90deg,
+			var(--ui-yellow) 0%,
+			var(--font-accent-yellow) 50%,
+			var(--ui-yellow) 100%
+		);
+		background-size: 200% 100%;
+		-webkit-background-clip: text;
+		-webkit-text-fill-color: transparent;
+		background-clip: text;
+		animation: gradient-flash 3s ease-in-out infinite;
+		filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.8));
 	}
 
 	.zone-card p {
@@ -1441,43 +1531,47 @@
 	}
 
 	/* CTA Section */
-	.cta-section {
-		padding: 6rem 2rem;
+	/* Researchers Section */
+	.researchers-section {
+		padding: 10rem 2rem 8rem;
 		background: transparent;
-		color: white;
 		position: relative;
 		z-index: 1;
+		min-height: 100vh;
+		display: flex;
+		align-items: center;
 	}
 
-	.cta-content {
+	/* Section Header */
+	.section-header {
 		text-align: center;
-		max-width: 1200px;
-		margin: 0 auto;
-		opacity: 0;
-		transform: translateY(30px);
-		/* Glassmorphism Effect with UI colors */
-		background: rgba(10, 47, 53, 0.5); /* Dark Teal */
-		backdrop-filter: blur(20px) saturate(180%);
-		-webkit-backdrop-filter: blur(20px) saturate(180%);
-		padding: 4rem 3rem;
-		border-radius: 2rem;
-		box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
-		border: 1px solid rgba(135, 206, 235, 0.3); /* Light Blue */
+		margin-bottom: 6rem;
+		position: relative;
 	}
 
-	:global(.cta-content.visible) {
-		opacity: 1;
-		transform: translateY(0);
-		transition: all 0.8s ease;
+	.header-line {
+		width: 100px;
+		height: 4px;
+		background: linear-gradient(90deg, transparent, var(--ui-yellow), transparent);
+		margin: 0 auto 2rem;
+		border-radius: 2px;
+		animation: pulse-glow 2s ease-in-out infinite;
 	}
 
-	.cta-content h2 {
-		font-family: var(--font-heading);
-		font-size: clamp(2rem, 4vw, 3rem);
-		font-weight: 900;
-		margin: 0 0 1.5rem 0;
-		color: var(--font-accent-yellow);
-		text-shadow: 0 3px 12px rgba(0, 0, 0, 0.6);
+	@keyframes pulse-glow {
+		0%, 100% {
+			opacity: 0.5;
+			transform: scaleX(1);
+		}
+		50% {
+			opacity: 1;
+			transform: scaleX(1.2);
+		}
+	}
+
+	.researchers-section .section-title {
+		font-size: clamp(3rem, 6vw, 5rem);
+		letter-spacing: -2px;
 	}
 
 	/* Overview Content */
@@ -1512,142 +1606,270 @@
 		filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.2));
 	}
 
-	/* Researchers Grid */
-	.researchers-grid {
+	/* Researchers Container */
+	.researchers-container {
 		display: grid;
-		grid-template-columns: repeat(4, 1fr);
-		gap: 3rem;
-		margin: 3rem 0;
+		grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+		gap: 2.5rem;
 		max-width: 1200px;
-		margin-left: auto;
-		margin-right: auto;
-		width: 100%;
+		margin: 0 auto 5rem;
+		padding: 0 1rem;
 	}
 
-	.researcher {
+	/* Researcher Card */
+	.researcher-card {
+		position: relative;
+		height: 360px;
+		perspective: 1000px;
+		animation: fadeInUp 0.8s ease forwards;
+		animation-delay: var(--delay);
+		opacity: 0;
+	}
+
+	@keyframes fadeInUp {
+		to {
+			opacity: 1;
+			transform: translateY(0);
+		}
+	}
+
+	.card-inner {
+		position: relative;
+		width: 100%;
+		height: 100%;
+		transition: transform 0.6s;
+		transform-style: preserve-3d;
+	}
+
+	.researcher-card:hover .card-inner {
+		transform: translateY(-15px);
+	}
+
+	.card-front {
+		position: absolute;
+		width: 100%;
+		height: 100%;
+		backface-visibility: hidden;
+		background: linear-gradient(135deg, rgba(0, 0, 0, 0.4) 0%, rgba(0, 0, 0, 0.2) 100%);
+		border-radius: 20px;
+		padding: 2rem 1.5rem;
 		display: flex;
 		flex-direction: column;
 		align-items: center;
+		justify-content: center;
 		gap: 1.5rem;
-		padding: 2rem 1.5rem;
-		/* Enhanced glassmorphism card */
-		background: rgba(10, 47, 53, 0.4);
-		backdrop-filter: blur(15px) saturate(180%);
-		-webkit-backdrop-filter: blur(15px) saturate(180%);
-		border-radius: 1.5rem;
-		border: 2px solid rgba(135, 206, 235, 0.3);
-		transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-		position: relative;
+		border: 2px solid rgba(135, 206, 235, 0.2);
+		transition: all 0.4s ease;
 		overflow: hidden;
 	}
 
-	.researcher::before {
+	.card-front::before {
 		content: '';
 		position: absolute;
-		top: 0;
-		left: 0;
-		width: 100%;
-		height: 100%;
-		background: radial-gradient(circle at center, rgba(255, 217, 102, 0.1) 0%, transparent 70%);
+		top: -50%;
+		left: -50%;
+		width: 200%;
+		height: 200%;
+		background: radial-gradient(circle, rgba(255, 217, 102, 0.1) 0%, transparent 70%);
 		opacity: 0;
 		transition: opacity 0.4s ease;
-		pointer-events: none;
 	}
 
-	.researcher:hover {
-		transform: translateY(-10px);
+	.researcher-card:hover .card-front {
 		border-color: var(--ui-yellow);
-		box-shadow: 0 15px 40px rgba(255, 217, 102, 0.3), 0 0 60px rgba(255, 217, 102, 0.15);
-		background: rgba(10, 47, 53, 0.6);
+		background: linear-gradient(135deg, rgba(0, 0, 0, 0.6) 0%, rgba(0, 0, 0, 0.3) 100%);
+		box-shadow: 0 20px 60px rgba(255, 217, 102, 0.3), 0 0 80px rgba(135, 206, 235, 0.2);
 	}
 
-	.researcher:hover::before {
+	.researcher-card:hover .card-front::before {
 		opacity: 1;
 	}
 
-	.researcher-photo {
+	/* Photo Wrapper */
+	.photo-wrapper {
+		position: relative;
+		width: 160px;
+		height: 160px;
+		border-radius: 50%;
+	}
+
+	.photo-glow {
+		position: absolute;
+		top: 50%;
+		left: 50%;
+		transform: translate(-50%, -50%);
 		width: 180px;
 		height: 180px;
 		border-radius: 50%;
-		overflow: hidden;
-		border: 4px solid rgba(135, 206, 235, 0.5);
-		box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5), 0 0 40px rgba(135, 206, 235, 0.2);
-		transition: all 0.4s ease;
+		background: radial-gradient(circle, var(--ui-yellow) 0%, transparent 70%);
+		opacity: 0;
+		transition: opacity 0.4s ease;
+		z-index: 0;
+	}
+
+	.researcher-card:hover .photo-glow {
+		opacity: 0.3;
+		animation: pulse-ring 2s ease-in-out infinite;
+	}
+
+	@keyframes pulse-ring {
+		0%, 100% {
+			transform: translate(-50%, -50%) scale(1);
+			opacity: 0.3;
+		}
+		50% {
+			transform: translate(-50%, -50%) scale(1.1);
+			opacity: 0.5;
+		}
+	}
+
+	.photo-wrapper img {
 		position: relative;
-		background: linear-gradient(135deg, rgba(10, 47, 53, 0.6), rgba(135, 206, 235, 0.3));
-		padding: 4px;
-	}
-
-	.researcher:hover .researcher-photo {
-		transform: scale(1.1) rotate(5deg);
-		box-shadow: 0 15px 40px rgba(255, 217, 102, 0.6), 0 0 60px rgba(255, 217, 102, 0.4);
-		border-color: var(--ui-yellow);
-	}
-
-	.researcher-photo img {
 		width: 100%;
 		height: 100%;
-		object-fit: cover;
 		border-radius: 50%;
+		object-fit: cover;
+		border: 4px solid rgba(135, 206, 235, 0.4);
+		box-shadow: 0 8px 30px rgba(0, 0, 0, 0.6);
+		transition: all 0.4s ease;
+		z-index: 1;
 	}
 
-	.researcher h3 {
-		font-family: var(--font-heading);
-		font-size: 1.15rem;
-		font-weight: 900;
+	.researcher-card:hover .photo-wrapper img {
+		border-color: var(--ui-yellow);
+		box-shadow: 0 12px 50px rgba(255, 217, 102, 0.5), 0 0 60px rgba(255, 217, 102, 0.3);
+		transform: scale(1.05);
+	}
+
+	/* Card Info */
+	.card-info {
 		text-align: center;
-		margin: 0;
-		color: var(--font-accent-yellow);
-		text-shadow: 0 2px 8px rgba(0, 0, 0, 0.8);
+		z-index: 2;
+	}
+
+	.card-info h3 {
+		font-family: var(--font-heading);
+		font-size: 1.1rem;
+		font-weight: 800;
+		margin: 0 0 0.75rem 0;
+		line-height: 1.3;
+		transition: all 0.3s ease;
+		background: linear-gradient(
+			90deg,
+			#FFFFFF 0%,
+			var(--ui-light-blue) 50%,
+			#FFFFFF 100%
+		);
+		background-size: 200% 100%;
+		-webkit-background-clip: text;
+		-webkit-text-fill-color: transparent;
+		background-clip: text;
+		animation: gradient-flash 4s ease-in-out infinite;
+		filter: drop-shadow(0 2px 10px rgba(0, 0, 0, 0.8));
+	}
+
+	.researcher-card:hover .card-info h3 {
+		background: linear-gradient(
+			90deg,
+			var(--ui-yellow) 0%,
+			var(--font-accent-yellow) 50%,
+			var(--ui-yellow) 100%
+		);
+		background-size: 200% 100%;
+		-webkit-background-clip: text;
+		-webkit-text-fill-color: transparent;
+		background-clip: text;
+		animation: gradient-flash 2.5s ease-in-out infinite;
+		filter: drop-shadow(0 2px 10px rgba(255, 217, 102, 0.6)) drop-shadow(0 0 20px rgba(255, 217, 102, 0.4));
+	}
+
+	.role-badge {
+		display: inline-block;
+		padding: 0.5rem 1.5rem;
+		background: rgba(135, 206, 235, 0.2);
+		border: 1px solid rgba(135, 206, 235, 0.4);
+		border-radius: 50px;
+		font-family: var(--font-body);
+		font-size: 0.85rem;
+		font-weight: 600;
+		color: var(--ui-light-blue);
+		text-transform: uppercase;
+		letter-spacing: 1px;
 		transition: all 0.3s ease;
 	}
 
-	.researcher:hover h3 {
-		color: #FFFFFF;
-		text-shadow: 0 2px 8px rgba(255, 217, 102, 0.8), 0 0 20px rgba(255, 217, 102, 0.5);
+	.researcher-card:hover .role-badge {
+		background: rgba(255, 217, 102, 0.2);
+		border-color: var(--ui-yellow);
+		color: var(--ui-yellow);
+		box-shadow: 0 0 20px rgba(255, 217, 102, 0.3);
 	}
 
-	.research-info {
-		margin-top: 4rem;
-		text-align: center;
-		padding: 2.5rem 3rem;
-		/* Enhanced glassmorphism box */
-		background: rgba(28, 46, 58, 0.7);
-		backdrop-filter: blur(20px) saturate(180%);
-		-webkit-backdrop-filter: blur(20px) saturate(180%);
-		border-radius: 1.5rem;
-		border: 2px solid rgba(135, 206, 235, 0.4);
-		box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5), 0 0 60px rgba(135, 206, 235, 0.1);
-		position: relative;
-		overflow: hidden;
+	/* Info Bar */
+	.info-bar {
+		max-width: 900px;
+		margin: 0 auto;
+		display: flex;
+		justify-content: center;
+		align-items: center;
+		gap: 3rem;
+		padding: 2rem 3rem;
+		background: rgba(0, 0, 0, 0.3);
+		border: 2px solid rgba(135, 206, 235, 0.3);
+		border-radius: 100px;
+		backdrop-filter: blur(10px);
+		-webkit-backdrop-filter: blur(10px);
 	}
 
-	.research-info::before {
-		content: '';
-		position: absolute;
-		top: 0;
-		left: 0;
-		width: 100%;
-		height: 100%;
-		background: linear-gradient(135deg, rgba(135, 206, 235, 0.1) 0%, rgba(255, 217, 102, 0.05) 100%);
-		pointer-events: none;
+	.info-item {
+		display: flex;
+		align-items: center;
+		gap: 1.5rem;
 	}
 
-	.batch-info,
-	.adviser-info {
+	.info-icon {
+		font-size: 2.5rem;
+		filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.5));
+	}
+
+	.info-text {
+		display: flex;
+		flex-direction: column;
+		gap: 0.25rem;
+		text-align: left;
+	}
+
+	.info-label {
 		font-family: var(--font-body);
-		font-size: 1.2rem;
-		margin: 0.75rem 0;
-		color: var(--font-secondary);
-		text-shadow: 0 2px 6px rgba(0, 0, 0, 0.6);
-		position: relative;
+		font-size: 0.85rem;
+		color: var(--ui-light-blue);
+		text-transform: uppercase;
+		letter-spacing: 1px;
+		font-weight: 600;
 	}
 
-	.adviser-info {
+	.info-value {
+		font-family: var(--font-heading);
+		font-size: 1.1rem;
 		font-weight: 700;
-		color: var(--font-accent-cyan);
-		font-size: 1.3rem;
-		text-shadow: 0 2px 8px rgba(0, 206, 209, 0.6), 0 0 20px rgba(0, 206, 209, 0.3);
+		background: linear-gradient(
+			90deg,
+			#FFFFFF 0%,
+			var(--font-accent-cyan) 50%,
+			#FFFFFF 100%
+		);
+		background-size: 200% 100%;
+		-webkit-background-clip: text;
+		-webkit-text-fill-color: transparent;
+		background-clip: text;
+		animation: gradient-flash 3.5s ease-in-out infinite;
+		filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.8));
+	}
+
+	.info-divider {
+		width: 2px;
+		height: 60px;
+		background: linear-gradient(180deg, transparent, rgba(135, 206, 235, 0.5), transparent);
 	}
 
 	/* Scroll animations */
@@ -1673,13 +1895,9 @@
 	}
 
 	@media (max-width: 1200px) {
-		.researchers-grid {
+		.researchers-container {
 			grid-template-columns: repeat(2, 1fr);
 			gap: 2rem;
-		}
-		
-		.cta-content {
-			max-width: 900px;
 		}
 	}
 
@@ -1708,9 +1926,13 @@
 			grid-template-columns: 1fr;
 		}
 
-		.researchers-grid {
+		.researchers-container {
 			grid-template-columns: repeat(2, 1fr);
-			gap: 2rem;
+			gap: 1.5rem;
+		}
+
+		.researcher-card {
+			height: 340px;
 		}
 
 		.overview-content {
@@ -1721,8 +1943,35 @@
 			font-size: 1rem;
 		}
 
-		.cta-content {
-			padding: 3rem 2rem;
+		.researchers-section {
+			padding: 8rem 2rem 6rem;
+		}
+
+		.section-header {
+			margin-bottom: 4rem;
+		}
+
+		.info-bar {
+			flex-direction: column;
+			gap: 2rem;
+			padding: 2rem;
+			border-radius: 30px;
+		}
+
+		.info-divider {
+			width: 80%;
+			height: 2px;
+			background: linear-gradient(90deg, transparent, rgba(135, 206, 235, 0.5), transparent);
+		}
+
+		.info-item {
+			flex-direction: column;
+			text-align: center;
+			gap: 1rem;
+		}
+
+		.info-text {
+			align-items: center;
 		}
 		
 		.zone-card {
@@ -1749,8 +1998,30 @@
 	}
 
 	@media (max-width: 480px) {
-		.researchers-grid {
+		.researchers-container {
 			grid-template-columns: 1fr;
+		}
+
+		.researcher-card {
+			height: 360px;
+		}
+
+		.section-title {
+			font-size: 2.5rem;
+		}
+
+		.photo-wrapper {
+			width: 140px;
+			height: 140px;
+		}
+
+		.photo-wrapper img {
+			width: 140px;
+			height: 140px;
+		}
+
+		.info-icon {
+			font-size: 2rem;
 		}
 	}
 </style>

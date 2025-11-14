@@ -1,13 +1,11 @@
 <script lang="ts">
 	import type { ActionData } from './$types';
+	import SkyParallax from '$lib/components/ui/SkyParallax.svelte';
 
 	let { form } = $props<{ form?: ActionData }>();
 </script>
 
-<!-- Parallax Background matching homepage -->
-<div class="parallax-background">
-	<canvas class="sky-layer" width="1920" height="1080"></canvas>
-</div>
+<SkyParallax skyMode="evening" staticSky={true} enableDrift={true} />
 
 <div class="login-container">
 	<div class="login-card animate-scale">
@@ -41,91 +39,66 @@
 </div>
 
 <style>
-	/* Parallax Background */
-	.parallax-background {
-		position: fixed;
-		top: 0;
-		left: 0;
-		width: 100%;
-		height: 100vh;
-		z-index: 0;
-		overflow: hidden;
-		background: linear-gradient(to bottom, #87CEEB 0%, #5FA3C8 50%, #4A8BB5 100%);
-	}
-
-	.sky-layer {
-		position: absolute;
-		top: 0;
-		left: 0;
-		width: 100%;
-		height: 100%;
-	}
-
 	.login-container {
 		position: relative;
-		z-index: 1;
+		z-index: 5;
 		min-height: calc(100vh - 64px);
 		display: flex;
 		align-items: center;
 		justify-content: center;
-		padding: 2rem;
+		padding: 8rem 2rem 4rem;
 	}
 
 	.login-card {
-		/* Glassmorphism Effect matching homepage */
-		background: rgba(10, 47, 53, 0.6);
-		backdrop-filter: blur(20px) saturate(180%);
-		-webkit-backdrop-filter: blur(20px) saturate(180%);
+		background: rgba(255, 255, 255, 0.95);
+		backdrop-filter: blur(15px);
+		-webkit-backdrop-filter: blur(15px);
 		border-radius: 1.5rem;
 		padding: 2.5rem;
 		max-width: 500px;
 		width: 100%;
-		box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
-		border: 1px solid rgba(135, 206, 235, 0.3);
+		box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+		border: 2px solid rgba(255, 255, 255, 0.5);
 		transition: all 0.4s ease;
 	}
 
 	.login-card:hover {
 		transform: translateY(-5px);
-		box-shadow: 0 12px 40px rgba(255, 217, 102, 0.3);
+		box-shadow: 0 15px 40px rgba(0, 0, 0, 0.15);
 	}
 
 	h1 {
 		font-family: var(--font-heading);
 		font-size: 2rem;
 		font-weight: 900;
-		color: #FFE66D;
+		color: var(--font-primary);
 		margin: 0 0 0.5rem 0;
 		text-align: center;
-		text-shadow: 0 2px 8px rgba(0, 0, 0, 0.8);
 	}
 
 	.subtitle {
 		font-family: var(--font-body);
-		color: var(--font-secondary);
+		color: var(--font-primary);
+		opacity: 0.8;
 		text-align: center;
 		margin: 0 0 2rem 0;
-		font-size: 0.95rem;
-		text-shadow: 0 1px 4px rgba(0, 0, 0, 0.6);
-	}
-
-	.login-form {
+		font-size: 1rem;
+	}	.login-form {
 		display: flex;
 		flex-direction: column;
 		gap: 1.5rem;
 	}
 
 	.info-box {
-		background: rgba(28, 46, 58, 0.6);
-		border-left: 4px solid var(--ui-yellow);
+		background: rgba(135, 206, 235, 0.1);
+		border: 2px solid rgba(135, 206, 235, 0.3);
 		padding: 1.5rem;
-		border-radius: 0.5rem;
-		backdrop-filter: blur(10px);
+		border-radius: 1rem;
 	}
 
 	.info-box h3 {
 		font-family: var(--font-heading);
-		color: var(--font-accent-yellow);
+		color: var(--font-primary);
 		margin: 0 0 1rem 0;
 		font-size: 1.25rem;
 		font-weight: 900;
@@ -133,7 +106,8 @@
 
 	.info-box p {
 		font-family: var(--font-body);
-		color: var(--font-secondary);
+		color: var(--font-primary);
+		opacity: 0.9;
 		margin: 0.5rem 0;
 		line-height: 1.6;
 	}
@@ -145,14 +119,16 @@
 
 	.info-box li {
 		font-family: var(--font-body);
-		color: var(--font-secondary);
+		color: var(--font-primary);
+		opacity: 0.9;
 		margin: 0.5rem 0;
 		line-height: 1.6;
 	}
 
 	.note {
 		font-size: 0.9rem;
-		color: rgba(255, 255, 255, 0.7);
+		color: var(--font-primary);
+		opacity: 0.7;
 		font-style: italic;
 		margin-top: 1rem !important;
 	}
@@ -218,10 +194,11 @@
 	}
 
 	.divider span {
-		background: rgba(10, 47, 53, 0.6);
+		background: rgba(255, 255, 255, 0.95);
 		padding: 0 1rem;
 		position: relative;
-		color: rgba(255, 255, 255, 0.7);
+		color: var(--font-primary);
+		opacity: 0.7;
 		font-family: var(--font-body);
 		font-size: 0.9rem;
 	}
@@ -229,7 +206,8 @@
 	.signup-link {
 		text-align: center;
 		font-family: var(--font-body);
-		color: var(--font-secondary);
+		color: var(--font-primary);
+		opacity: 0.9;
 		margin: 0;
 	}
 

@@ -4,8 +4,6 @@
 	import { page } from '$app/state';
 	import favicon from '$lib/assets/favicon.svg';
 	import Navbar from '$lib/components/navbar/Navbar.svelte';
-	import CustomCursor from '$lib/components/ui/CustomCursor.svelte';
-	import ParallaxBackground from '$lib/components/ui/ParallaxBackground.svelte';
 	import ChatbotPopup from '$lib/components/chatbot/ChatbotPopup.svelte';
 	import type { LayoutData } from './$types';
 
@@ -51,14 +49,6 @@
 	/>
 </svelte:head>
 
-{#if !isHomePage}
-	<div class="global-background">
-		<div class="image-overlay"></div>
-	</div>
-{/if}
-<ParallaxBackground />
-<CustomCursor />
-
 <Navbar user={data.user} isTransparent={isHomePage} />
 
 <main class:home-page={isHomePage}>
@@ -70,32 +60,12 @@
 {/if}
 
 <style>
-	.global-background {
-		position: fixed;
-		inset: 0;
-		z-index: -1;
-		overflow: hidden;
-		background: linear-gradient(135deg, #0a1628 0%, #2d3f66 100%);
-	}
-
-	.image-overlay {
-		position: absolute;
-		inset: 0;
-		background: rgba(10, 22, 40, 0.2);
-		z-index: 1;
-	}
-
 	:global(body) {
 		margin: 0;
 		padding: 0;
 		background-color: transparent;
 		color: #222831; /* Charcoal Gray */
 		font-family: 'Roboto', sans-serif;
-		cursor: none;
-	}
-
-	:global(a),
-	:global(button) {
 		cursor: none;
 	}
 
@@ -108,9 +78,5 @@
 	main:not(.home-page) {
 		padding-top: 64px;
 		margin-top: -64px;
-	}
-
-	:global(*) {
-		cursor: none !important;
 	}
 </style>

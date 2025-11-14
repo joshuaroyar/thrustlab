@@ -95,8 +95,7 @@
 
 	const protectedLinks = [
 		{ href: '/test-bay', label: 'Test Bay' },
-		{ href: '/dashboard', label: 'Dashboard' },
-		{ href: '/profile', label: 'Profile' }
+		{ href: '/dashboard', label: 'Dashboard' }
 	];
 
 	function handleLogout() {
