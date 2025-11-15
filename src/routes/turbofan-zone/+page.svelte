@@ -1580,15 +1580,6 @@
 		text-shadow: 0 1px 4px rgba(0, 0, 0, 0.6);
 	}
 
-	.info-box h6 {
-		font-family: var(--font-heading);
-		font-size: 1.1rem;
-		font-weight: 600;
-		color: var(--font-accent-cyan);
-		margin: 0.8rem 0 0.5rem 0;
-		text-shadow: 0 1px 4px rgba(0, 0, 0, 0.6);
-	}
-
 	.info-box p {
 		font-family: var(--font-body);
 		font-size: 1.05rem;
