@@ -33,17 +33,33 @@
 	let nearCloudsCanvas: HTMLCanvasElement;
 
 	// Animation frame for drift
-	let driftOffset = $state(0);
 	let animationFrameId: number;
+
+	// Cloud arrays for animation with proper wrapping
+	interface Cloud {
+		x: number;
+		y: number;
+		w: number;
+		h: number;
+		color: string;
+		blur: number;
+		speed: number;
+	}
+
+	let farClouds = $state<Cloud[]>([]);
+	let midClouds = $state<Cloud[]>([]);
+	let nearClouds = $state<Cloud[]>([]);
 
 	onMount(() => {
 		mounted = true;
 
-		// Generate cloud layers on canvases
+		// Generate static sky layer
 		generateSkyLayer();
-		generateFarClouds();
-		generateMidClouds();
-		generateNearClouds();
+		
+		// Initialize cloud arrays with dynamic repositioning
+		initializeFarClouds();
+		initializeMidClouds();
+		initializeNearClouds();
 
 		const handleMouseMove = (e: MouseEvent) => {
 			if (!enableMouseParallax) return;
@@ -70,10 +86,10 @@
 			generateSkyLayer();
 		}
 
-		// Continuous drift animation
+		// Continuous drift animation with proper cloud wrapping
 		if (enableDrift) {
 			const animate = () => {
-				driftOffset += 0.1; // Slow drift speed
+				animateCloudLayers();
 				animationFrameId = requestAnimationFrame(animate);
 			};
 			animate();
@@ -343,127 +359,83 @@
 		return `#${((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1)}`;
 	}
 
-	function generateFarClouds() {
+	function initializeFarClouds() {
 		if (!farCloudsCanvas) return;
-		const ctx = farCloudsCanvas.getContext('2d');
-		if (!ctx) return;
-
 		const width = farCloudsCanvas.width;
 		const height = farCloudsCanvas.height;
 
-		ctx.clearRect(0, 0, width, height);
-
-		// Store cloud data for duplication at edges
-		const cloudData: Array<{x: number, y: number, w: number, h: number, color: string, blur: number}> = [];
-
+		farClouds = [];
+		
 		// Generate clouds across the full canvas width
 		const cloudCount = 19;
 		const spacing = width / cloudCount;
 		
 		for (let i = 0; i < cloudCount; i++) {
-			const x = (spacing * i) + (spacing / 2) + (Math.random() - 0.5) * 60;
+			// Start some clouds off-screen to the left for seamless entry
+			const x = (spacing * i) + (spacing / 2) + (Math.random() - 0.5) * 60 - (width * 0.1);
 			const y = Math.random() * height * 0.6 + height * 0.1;
-			cloudData.push({ x, y, w: 85, h: 42, color: 'rgba(200, 215, 240, 0.75)', blur: 2 });
+			farClouds.push({ 
+				x, 
+				y, 
+				w: 85, 
+				h: 42, 
+				color: 'rgba(200, 215, 240, 0.75)', 
+				blur: 2,
+				speed: 0.3 + Math.random() * 0.2 // 0.3-0.5x base speed
+			});
 		}
 		
 		// Add additional scattered clouds
 		for (let i = 0; i < 8; i++) {
-			const x = Math.random() * width;
+			const x = Math.random() * width - (width * 0.1);
 			const y = Math.random() * height * 0.5 + height * 0.15;
-			cloudData.push({ x, y, w: 75, h: 38, color: 'rgba(190, 210, 235, 0.7)', blur: 2 });
+			farClouds.push({ 
+				x, 
+				y, 
+				w: 75, 
+				h: 38, 
+				color: 'rgba(190, 210, 235, 0.7)', 
+				blur: 2,
+				speed: 0.3 + Math.random() * 0.2
+			});
 		}
-
-		// Draw all clouds and duplicate at edges for seamless wrapping
-		cloudData.forEach(cloud => {
-			// Draw original cloud
-			drawAnimeCloud(ctx, cloud.x, cloud.y, cloud.w, cloud.h, cloud.color, cloud.blur);
-			
-			// Duplicate clouds near left edge to right edge for wrapping
-			if (cloud.x < width * 0.15) {
-				drawAnimeCloud(ctx, cloud.x + width, cloud.y, cloud.w, cloud.h, cloud.color, cloud.blur);
-			}
-			// Duplicate clouds near right edge to left edge for wrapping
-			if (cloud.x > width * 0.85) {
-				drawAnimeCloud(ctx, cloud.x - width, cloud.y, cloud.w, cloud.h, cloud.color, cloud.blur);
-			}
-		});
 	}
 
-	function generateMidClouds() {
+	function initializeMidClouds() {
 		if (!midCloudsCanvas) return;
-		const ctx = midCloudsCanvas.getContext('2d');
-		if (!ctx) return;
-
 		const width = midCloudsCanvas.width;
 		const height = midCloudsCanvas.height;
 
-		ctx.clearRect(0, 0, width, height);
-
-		// Generate clouds evenly distributed across full width
-		const clouds = [
-			{ x: width * 0.08, y: height * 0.25, w: 180, h: 80 },
-			{ x: width * 0.20, y: height * 0.15, w: 200, h: 90 },
-			{ x: width * 0.33, y: height * 0.35, w: 185, h: 82 },
-			{ x: width * 0.45, y: height * 0.22, w: 170, h: 75 },
-			{ x: width * 0.57, y: height * 0.42, w: 190, h: 85 },
-			{ x: width * 0.68, y: height * 0.18, w: 195, h: 88 },
-			{ x: width * 0.78, y: height * 0.55, w: 185, h: 80 },
-			{ x: width * 0.87, y: height * 0.35, w: 175, h: 78 },
-			{ x: width * 0.96, y: height * 0.48, w: 180, h: 80 },
-			{ x: width * 0.12, y: height * 0.58, w: 190, h: 84 },
+		// Generate clouds with negative starting positions for seamless entry
+		midClouds = [
+			{ x: width * 0.08 - (width * 0.1), y: height * 0.25, w: 180, h: 80, color: 'rgba(210, 225, 245, 0.85)', blur: 3, speed: 0.7 + Math.random() * 0.5 },
+			{ x: width * 0.20 - (width * 0.1), y: height * 0.15, w: 200, h: 90, color: 'rgba(210, 225, 245, 0.85)', blur: 3, speed: 0.7 + Math.random() * 0.5 },
+			{ x: width * 0.33 - (width * 0.1), y: height * 0.35, w: 185, h: 82, color: 'rgba(210, 225, 245, 0.85)', blur: 3, speed: 0.7 + Math.random() * 0.5 },
+			{ x: width * 0.45 - (width * 0.1), y: height * 0.22, w: 170, h: 75, color: 'rgba(210, 225, 245, 0.85)', blur: 3, speed: 0.7 + Math.random() * 0.5 },
+			{ x: width * 0.57 - (width * 0.1), y: height * 0.42, w: 190, h: 85, color: 'rgba(210, 225, 245, 0.85)', blur: 3, speed: 0.7 + Math.random() * 0.5 },
+			{ x: width * 0.68 - (width * 0.1), y: height * 0.18, w: 195, h: 88, color: 'rgba(210, 225, 245, 0.85)', blur: 3, speed: 0.7 + Math.random() * 0.5 },
+			{ x: width * 0.78 - (width * 0.1), y: height * 0.55, w: 185, h: 80, color: 'rgba(210, 225, 245, 0.85)', blur: 3, speed: 0.7 + Math.random() * 0.5 },
+			{ x: width * 0.87 - (width * 0.1), y: height * 0.35, w: 175, h: 78, color: 'rgba(210, 225, 245, 0.85)', blur: 3, speed: 0.7 + Math.random() * 0.5 },
+			{ x: width * 0.96 - (width * 0.1), y: height * 0.48, w: 180, h: 80, color: 'rgba(210, 225, 245, 0.85)', blur: 3, speed: 0.7 + Math.random() * 0.5 },
+			{ x: width * 0.12 - (width * 0.1), y: height * 0.58, w: 190, h: 84, color: 'rgba(210, 225, 245, 0.85)', blur: 3, speed: 0.7 + Math.random() * 0.5 },
 		];
-
-		// Draw all clouds and duplicate at edges for seamless wrapping
-		clouds.forEach(cloud => {
-			// Draw original cloud
-			drawAnimeCloud(ctx, cloud.x, cloud.y, cloud.w, cloud.h, 'rgba(210, 225, 245, 0.85)', 3);
-			
-			// Duplicate clouds near left edge to right edge for wrapping
-			if (cloud.x < width * 0.15) {
-				drawAnimeCloud(ctx, cloud.x + width, cloud.y, cloud.w, cloud.h, 'rgba(210, 225, 245, 0.85)', 3);
-			}
-			// Duplicate clouds near right edge to left edge for wrapping
-			if (cloud.x > width * 0.85) {
-				drawAnimeCloud(ctx, cloud.x - width, cloud.y, cloud.w, cloud.h, 'rgba(210, 225, 245, 0.85)', 3);
-			}
-		});
 	}
 
-	function generateNearClouds() {
+	function initializeNearClouds() {
 		if (!nearCloudsCanvas) return;
-		const ctx = nearCloudsCanvas.getContext('2d');
-		if (!ctx) return;
-
 		const width = nearCloudsCanvas.width;
 		const height = nearCloudsCanvas.height;
 
-		ctx.clearRect(0, 0, width, height);
-
-		// Generate clouds evenly across full canvas width
-		const clouds = [
-			{ x: width * 0.08, y: height * 0.3, w: 280, h: 120 },
-			{ x: width * 0.26, y: height * 0.5, w: 300, h: 130 },
-			{ x: width * 0.42, y: height * 0.25, w: 275, h: 118 },
-			{ x: width * 0.57, y: height * 0.65, w: 260, h: 110 },
-			{ x: width * 0.71, y: height * 0.42, w: 285, h: 122 },
-			{ x: width * 0.86, y: height * 0.55, w: 270, h: 115 },
-			{ x: width * 0.16, y: height * 0.72, w: 290, h: 125 },
+		// Generate clouds with negative starting positions for seamless entry
+		nearClouds = [
+			{ x: width * 0.08 - (width * 0.1), y: height * 0.3, w: 280, h: 120, color: 'rgba(220, 235, 250, 0.92)', blur: 4, speed: 1.2 + Math.random() * 0.8 },
+			{ x: width * 0.26 - (width * 0.1), y: height * 0.5, w: 300, h: 130, color: 'rgba(220, 235, 250, 0.92)', blur: 4, speed: 1.2 + Math.random() * 0.8 },
+			{ x: width * 0.42 - (width * 0.1), y: height * 0.25, w: 275, h: 118, color: 'rgba(220, 235, 250, 0.92)', blur: 4, speed: 1.2 + Math.random() * 0.8 },
+			{ x: width * 0.57 - (width * 0.1), y: height * 0.65, w: 260, h: 110, color: 'rgba(220, 235, 250, 0.92)', blur: 4, speed: 1.2 + Math.random() * 0.8 },
+			{ x: width * 0.71 - (width * 0.1), y: height * 0.42, w: 285, h: 122, color: 'rgba(220, 235, 250, 0.92)', blur: 4, speed: 1.2 + Math.random() * 0.8 },
+			{ x: width * 0.86 - (width * 0.1), y: height * 0.55, w: 270, h: 115, color: 'rgba(220, 235, 250, 0.92)', blur: 4, speed: 1.2 + Math.random() * 0.8 },
+			{ x: width * 0.16 - (width * 0.1), y: height * 0.72, w: 290, h: 125, color: 'rgba(220, 235, 250, 0.92)', blur: 4, speed: 1.2 + Math.random() * 0.8 },
 		];
-
-		// Draw all clouds and duplicate at edges for seamless wrapping
-		clouds.forEach(cloud => {
-			// Draw original cloud
-			drawAnimeCloud(ctx, cloud.x, cloud.y, cloud.w, cloud.h, 'rgba(220, 235, 250, 0.92)', 4);
-			
-			// Duplicate clouds near left edge to right edge for wrapping
-			if (cloud.x < width * 0.15) {
-				drawAnimeCloud(ctx, cloud.x + width, cloud.y, cloud.w, cloud.h, 'rgba(220, 235, 250, 0.92)', 4);
-			}
-			// Duplicate clouds near right edge to left edge for wrapping
-			if (cloud.x > width * 0.85) {
-				drawAnimeCloud(ctx, cloud.x - width, cloud.y, cloud.w, cloud.h, 'rgba(220, 235, 250, 0.92)', 4);
-			}
-		});
 	}
 
 	function drawAnimeCloud(
@@ -590,47 +562,104 @@
 		ctx.restore();
 	}
 
-	function getParallaxStyle(layer: 'far' | 'mid' | 'near') {
-		if (!mounted) return '';
+	// Animation function with proper cloud wrapping
+	const BASE_DRIFT_SPEED = 0.61; // Base speed (optimized from conversation history)
 
-		const speeds = {
-			far: 0.5,   // Slowest movement
-			mid: 1.2,   // Medium movement
-			near: 2.0   // Fastest movement
-		};
+	function animateCloudLayers() {
+		// Update far clouds
+		if (farCloudsCanvas) {
+			const ctx = farCloudsCanvas.getContext('2d');
+			if (ctx) {
+				const width = farCloudsCanvas.width;
+				const height = farCloudsCanvas.height;
+				ctx.clearRect(0, 0, width, height);
 
-		const speed = speeds[layer];
-		const canvasWidth = 3200; // Canvas width
+				// Calculate mouse parallax offset
+				let mouseOffsetX = 0;
+				let mouseOffsetY = 0;
+				if (enableMouseParallax) {
+					const centerX = window.innerWidth / 2;
+					const centerY = window.innerHeight / 2;
+					const deltaX = mouseX - centerX;
+					const deltaY = mouseY - centerY;
+					mouseOffsetX = -(deltaX / centerX) * 15;
+					mouseOffsetY = -(deltaY / centerY) * 15 * 0.6;
+				}
 
-		// Continuous left-to-right drift with wrapping
-		// Use modulo of canvas width for seamless infinite scrolling
-		const drift = enableDrift ? (driftOffset * speed) % canvasWidth : 0;
+				farClouds.forEach(cloud => {
+					cloud.x += BASE_DRIFT_SPEED * cloud.speed;
+					
+					// Wrap clouds when they move off-screen
+					if (cloud.x - (cloud.w * 0.35) > width) {
+						cloud.x = -(cloud.w * 0.35);
+					}
 
-		let cursorOffsetX = 0;
-		let cursorOffsetY = 0;
-
-		if (enableMouseParallax) {
-			// Improved cursor-based parallax with better responsiveness
-			const centerX = window.innerWidth / 2;
-			const centerY = window.innerHeight / 2;
-			
-			// Calculate distance from center (in pixels)
-			const deltaX = mouseX - centerX;
-			const deltaY = mouseY - centerY;
-			
-			// Apply parallax multiplier (negative so clouds move opposite to cursor)
-			const parallaxMultiplier = {
-				far: 15,   // Subtle movement
-				mid: 35,   // Medium movement  
-				near: 60   // Strong movement
-			};
-			
-			const multiplier = parallaxMultiplier[layer];
-			cursorOffsetX = -(deltaX / centerX) * multiplier;
-			cursorOffsetY = -(deltaY / centerY) * multiplier * 0.6; // Less vertical movement
+					drawAnimeCloud(ctx, cloud.x + mouseOffsetX, cloud.y + mouseOffsetY, cloud.w, cloud.h, cloud.color, cloud.blur);
+				});
+			}
 		}
 
-		return `transform: translate3d(${drift + cursorOffsetX}px, ${cursorOffsetY}px, 0);`;
+		// Update mid clouds
+		if (midCloudsCanvas) {
+			const ctx = midCloudsCanvas.getContext('2d');
+			if (ctx) {
+				const width = midCloudsCanvas.width;
+				const height = midCloudsCanvas.height;
+				ctx.clearRect(0, 0, width, height);
+
+				let mouseOffsetX = 0;
+				let mouseOffsetY = 0;
+				if (enableMouseParallax) {
+					const centerX = window.innerWidth / 2;
+					const centerY = window.innerHeight / 2;
+					const deltaX = mouseX - centerX;
+					const deltaY = mouseY - centerY;
+					mouseOffsetX = -(deltaX / centerX) * 35;
+					mouseOffsetY = -(deltaY / centerY) * 35 * 0.6;
+				}
+
+				midClouds.forEach(cloud => {
+					cloud.x += BASE_DRIFT_SPEED * cloud.speed;
+					
+					if (cloud.x - (cloud.w * 0.35) > width) {
+						cloud.x = -(cloud.w * 0.35);
+					}
+
+					drawAnimeCloud(ctx, cloud.x + mouseOffsetX, cloud.y + mouseOffsetY, cloud.w, cloud.h, cloud.color, cloud.blur);
+				});
+			}
+		}
+
+		// Update near clouds
+		if (nearCloudsCanvas) {
+			const ctx = nearCloudsCanvas.getContext('2d');
+			if (ctx) {
+				const width = nearCloudsCanvas.width;
+				const height = nearCloudsCanvas.height;
+				ctx.clearRect(0, 0, width, height);
+
+				let mouseOffsetX = 0;
+				let mouseOffsetY = 0;
+				if (enableMouseParallax) {
+					const centerX = window.innerWidth / 2;
+					const centerY = window.innerHeight / 2;
+					const deltaX = mouseX - centerX;
+					const deltaY = mouseY - centerY;
+					mouseOffsetX = -(deltaX / centerX) * 60;
+					mouseOffsetY = -(deltaY / centerY) * 60 * 0.6;
+				}
+
+				nearClouds.forEach(cloud => {
+					cloud.x += BASE_DRIFT_SPEED * cloud.speed;
+					
+					if (cloud.x - (cloud.w * 0.35) > width) {
+						cloud.x = -(cloud.w * 0.35);
+					}
+
+					drawAnimeCloud(ctx, cloud.x + mouseOffsetX, cloud.y + mouseOffsetY, cloud.w, cloud.h, cloud.color, cloud.blur);
+				});
+			}
+		}
 	}
 </script>
 
@@ -639,31 +668,28 @@
 		bind:this={skyCanvas}
 		class="background-layer sky-layer"
 		width="3200"
-		height="1200"
+		height="1800"
 	></canvas>
 
 	<canvas 
 		bind:this={farCloudsCanvas}
 		class="background-layer far-clouds-layer"
-		style={getParallaxStyle('far')}
 		width="3200"
-		height="1200"
+		height="1800"
 	></canvas>
 
 	<canvas 
 		bind:this={midCloudsCanvas}
 		class="background-layer mid-clouds-layer"
-		style={getParallaxStyle('mid')}
 		width="3200"
-		height="1200"
+		height="1800"
 	></canvas>
 
 	<canvas 
 		bind:this={nearCloudsCanvas}
 		class="background-layer near-clouds-layer"
-		style={getParallaxStyle('near')}
 		width="3200"
-		height="1200"
+		height="1800"
 	></canvas>
 </div>
 
@@ -695,16 +721,13 @@
 
 	.far-clouds-layer {
 		z-index: 2;
-		will-change: transform;
 	}
 
 	.mid-clouds-layer {
 		z-index: 3;
-		will-change: transform;
 	}
 
 	.near-clouds-layer {
 		z-index: 4;
-		will-change: transform;
 	}
 </style>

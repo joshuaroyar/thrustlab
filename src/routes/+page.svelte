@@ -15,21 +15,29 @@
 	let midCloudsCanvas: HTMLCanvasElement;
 	let nearCloudsCanvas: HTMLCanvasElement;
 
+	const BASE_DRIFT_SPEED = 0.21; // Increased by 20% + 30% + 30% (total 103% faster)
+
+	// Cloud data arrays with $state for reactivity
+	let farClouds = $state<Array<{x: number, y: number, w: number, h: number, color: string, blur: number}>>([]);
+	let midClouds = $state<Array<{x: number, y: number, w: number, h: number, color: string, blur: number}>>([]);
+	let nearClouds = $state<Array<{x: number, y: number, w: number, h: number, color: string, blur: number}>>([]);
+
 	// Animation frame for drift
-	let driftOffset = $state(0);
 	let animationFrameId: number;
 
-	// Scroll-based background transition
-	let scrollProgress = $state(0); // 0 = day, 0.5 = evening, 1 = night
+	// Scroll-based background transition (REVERSED)
+	let scrollProgress = $state(0); // 0 = midnight/night, 0.5 = evening, 1 = day
 
 	onMount(() => {
 		mounted = true;
 
-		// Generate cloud layers on canvases
+		// Initialize cloud arrays
+		initializeFarClouds();
+		initializeMidClouds();
+		initializeNearClouds();
+
+		// Generate sky layer
 		generateSkyLayer();
-		generateFarClouds();
-		generateMidClouds();
-		generateNearClouds();
 
 		const handleMouseMove = (e: MouseEvent) => {
 			mouseX = e.clientX;
@@ -59,7 +67,7 @@
 
 		// Continuous drift animation
 		const animate = () => {
-			driftOffset += 0.1; // Slow drift speed
+			animateCloudLayers();
 			animationFrameId = requestAnimationFrame(animate);
 		};
 		animate();
@@ -93,6 +101,7 @@
 	});
 
 	// Generate dynamic sky gradient with stars based on scroll progress
+	// Reversed: 0 = midnight/night, 1 = day
 	function generateSkyLayer() {
 		if (!skyCanvas) return;
 		const ctx = skyCanvas.getContext('2d');
@@ -104,36 +113,36 @@
 		// Clear canvas
 		ctx.clearRect(0, 0, width, height);
 
-		// Define color stops for day, evening, night, and midnight
+		// Define color stops for midnight, night, evening, and day (REVERSED)
 		let topColor, midTopColor, midBottomColor, bottomColor;
 
 		if (scrollProgress < 0.25) {
-			// Day (0 to 0.25) - Reduced brightness in center and center-bottom-left
+			// Midnight (0 to 0.25) - Black gradient
 			const t = scrollProgress / 0.25; // Normalize to 0-1
-			topColor = interpolateColor('#87CEEB', '#FF6B6B', t);      // Sky blue → Orange
-			midTopColor = interpolateColor('#8FB4D4', '#FF8C42', t);   // Softer blue → Light orange (reduced brightness)
-			midBottomColor = interpolateColor('#BDDDF0', '#FFB347', t); // Muted light blue → Peach (reduced brightness)
-			bottomColor = interpolateColor('#D5E8F0', '#FFD700', t);    // Softer blue → Gold (reduced brightness)
+			topColor = interpolateColor('#000000', '#0a1628', t);       // Pure black → Deep navy
+			midTopColor = interpolateColor('#0a0a0a', '#1a2847', t);    // Near black → Dark blue
+			midBottomColor = interpolateColor('#1a1a1a', '#2d3f66', t); // Dark gray → Medium blue
+			bottomColor = interpolateColor('#2a2a2a', '#4a5f8f', t);    // Charcoal → Lighter blue
 		} else if (scrollProgress < 0.5) {
-			// Evening (0.25 to 0.5)
+			// Night (0.25 to 0.5)
 			const t = (scrollProgress - 0.25) / 0.25; // Normalize to 0-1
-			topColor = interpolateColor('#FF6B6B', '#0a1628', t);       // Orange → Deep navy
-			midTopColor = interpolateColor('#FF8C42', '#1a2847', t);    // Light orange → Dark blue
-			midBottomColor = interpolateColor('#FFB347', '#2d3f66', t); // Peach → Medium blue
-			bottomColor = interpolateColor('#FFD700', '#4a5f8f', t);    // Gold → Lighter blue
+			topColor = interpolateColor('#0a1628', '#FF6B6B', t);       // Deep navy → Orange
+			midTopColor = interpolateColor('#1a2847', '#FF8C42', t);    // Dark blue → Light orange
+			midBottomColor = interpolateColor('#2d3f66', '#FFB347', t); // Medium blue → Peach
+			bottomColor = interpolateColor('#4a5f8f', '#FFD700', t);    // Lighter blue → Gold
 		} else if (scrollProgress < 0.75) {
-			// Night (0.5 to 0.75)
-			topColor = '#0a1628';      // Deep navy
-			midTopColor = '#1a2847';   // Dark blue
-			midBottomColor = '#2d3f66'; // Medium blue
-			bottomColor = '#4a5f8f';    // Lighter blue
+			// Evening (0.5 to 0.75)
+			const t = (scrollProgress - 0.5) / 0.25; // Normalize to 0-1
+			topColor = interpolateColor('#FF6B6B', '#87CEEB', t);       // Orange → Sky blue
+			midTopColor = interpolateColor('#FF8C42', '#8FB4D4', t);    // Light orange → Softer blue
+			midBottomColor = interpolateColor('#FFB347', '#BDDDF0', t); // Peach → Muted light blue
+			bottomColor = interpolateColor('#FFD700', '#D5E8F0', t);    // Gold → Softer blue
 		} else {
-			// Midnight (0.75 to 1) - Black gradient
-			const t = (scrollProgress - 0.75) / 0.25; // Normalize to 0-1
-			topColor = interpolateColor('#0a1628', '#000000', t);       // Deep navy → Pure black
-			midTopColor = interpolateColor('#1a2847', '#0a0a0a', t);    // Dark blue → Near black
-			midBottomColor = interpolateColor('#2d3f66', '#1a1a1a', t); // Medium blue → Dark gray
-			bottomColor = interpolateColor('#4a5f8f', '#2a2a2a', t);    // Lighter blue → Charcoal
+			// Day (0.75 to 1) - Full daylight
+			topColor = '#87CEEB';      // Sky blue
+			midTopColor = '#8FB4D4';   // Softer blue
+			midBottomColor = '#BDDDF0'; // Muted light blue
+			bottomColor = '#D5E8F0';    // Softer blue
 		}
 
 		// Create gradient with interpolated colors
@@ -146,9 +155,154 @@
 		ctx.fillStyle = gradient;
 		ctx.fillRect(0, 0, width, height);
 
-		// Add morning sun (only visible during day - before 0.25 scroll progress)
+		// Add stars (only visible at night - before 0.6 scroll progress - REVERSED)
+		if (scrollProgress < 0.6) {
+			const starOpacity = scrollProgress < 0.25 
+				? 0.8 // Full stars in midnight
+				: 1 - ((scrollProgress - 0.25) / 0.35); // Fade out as we approach day
+			
+			// More stars in midnight mode
+			const starCount = scrollProgress < 0.25 ? 200 : 150;
+			ctx.fillStyle = `rgba(255, 255, 255, ${starOpacity * 0.8})`;
+			for (let i = 0; i < starCount; i++) {
+				const x = Math.random() * width;
+				const y = Math.random() * height * 0.6; // Stars in upper portion
+				const radius = Math.random() * 1.5 + 0.5;
+			
+				ctx.beginPath();
+				ctx.arc(x, y, radius, 0, Math.PI * 2);
+				ctx.fill();
+			}
+		}
+
+		// Moon (visible during night phase 0.25 - 0.5 - REVERSED)
+		if (scrollProgress >= 0.25 && scrollProgress < 0.5) {
+			const moonOpacity = scrollProgress < 0.35 
+				? Math.min((scrollProgress - 0.25) / 0.1, 1) // Fade in
+				: 1 - ((scrollProgress - 0.35) / 0.15); // Start fading out
+			
+			const moonX = width * 0.85;
+			const moonY = height * 0.15;
+			const moonRadius = 30; // Reduced by 40% (was 50)
+
+			// Moon glow
+			const moonGlow = ctx.createRadialGradient(moonX, moonY, moonRadius * 0.5, moonX, moonY, moonRadius * 3);
+			moonGlow.addColorStop(0, `rgba(255, 255, 255, ${moonOpacity * 0.1})`);
+			moonGlow.addColorStop(1, 'rgba(255, 255, 255, 0)');
+			ctx.fillStyle = moonGlow;
+			ctx.fillRect(moonX - moonRadius * 3, moonY - moonRadius * 3, moonRadius * 6, moonRadius * 6);
+
+			// Moon body
+			const moonGradient = ctx.createRadialGradient(moonX - 15, moonY - 15, 10, moonX, moonY, moonRadius);
+			moonGradient.addColorStop(0, '#fffef0');
+			moonGradient.addColorStop(1, '#e8e6d5');
+			ctx.globalAlpha = moonOpacity;
+			ctx.fillStyle = moonGradient;
+			ctx.beginPath();
+			ctx.arc(moonX, moonY, moonRadius, 0, Math.PI * 2);
+			ctx.fill();
+
+			// Moon craters (subtle)
+			ctx.fillStyle = 'rgba(200, 200, 180, 0.3)';
+			ctx.beginPath();
+			ctx.arc(moonX - 10, moonY + 10, 12, 0, Math.PI * 2);
+			ctx.fill();
+			ctx.beginPath();
+			ctx.arc(moonX + 15, moonY - 5, 8, 0, Math.PI * 2);
+			ctx.fill();
+			ctx.globalAlpha = 1; // Reset alpha
+		}
+
+		// Bigger midnight moon (visible during midnight phase 0 - 0.25 - REVERSED)
+		// Moon positioned in top left at the beginning
 		if (scrollProgress < 0.25) {
-			const sunOpacity = 1 - (scrollProgress / 0.25); // Fade out sun as we scroll
+			const midnightMoonOpacity = 1 - (scrollProgress / 0.25); // Fade out as we scroll
+			
+			// Position moon in top left
+			const moonX = width * 0.15;
+			const moonY = height * 0.2;
+			
+			// Moon shrinks from 120px to 48px as scroll progresses from 0 to 0.25 (40% smaller)
+			const growthProgress = scrollProgress / 0.25; // 0 to 1
+			const moonRadius = 120 - (72 * growthProgress); // Shrinks from 120 to 48
+
+			// Enhanced moon glow with purple tint - shrinks with moon
+			const glowSize = moonRadius * 4;
+			const moonGlow = ctx.createRadialGradient(moonX, moonY, moonRadius * 0.5, moonX, moonY, glowSize);
+			moonGlow.addColorStop(0, `rgba(200, 180, 255, ${midnightMoonOpacity * 0.2})`);
+			moonGlow.addColorStop(0.5, `rgba(180, 160, 255, ${midnightMoonOpacity * 0.12})`);
+			moonGlow.addColorStop(1, 'rgba(160, 140, 255, 0)');
+			ctx.fillStyle = moonGlow;
+			ctx.fillRect(moonX - glowSize, moonY - glowSize, glowSize * 2, glowSize * 2);
+
+			// Moon body with slight purple tint
+			const moonGradient = ctx.createRadialGradient(
+				moonX - moonRadius * 0.25, 
+				moonY - moonRadius * 0.25, 
+				moonRadius * 0.2, 
+				moonX, 
+				moonY, 
+				moonRadius
+			);
+			moonGradient.addColorStop(0, '#fffef5');
+			moonGradient.addColorStop(0.6, '#f0ebf0');
+			moonGradient.addColorStop(1, '#e0d8e8');
+			ctx.globalAlpha = midnightMoonOpacity;
+			ctx.fillStyle = moonGradient;
+			ctx.beginPath();
+			ctx.arc(moonX, moonY, moonRadius, 0, Math.PI * 2);
+			ctx.fill();
+
+			// Moon craters (scale with moon size)
+			const craterScale = moonRadius / 80; // Scale factor based on size
+			ctx.fillStyle = 'rgba(190, 180, 200, 0.3)';
+			ctx.beginPath();
+			ctx.arc(moonX - 15 * craterScale, moonY + 15 * craterScale, 18 * craterScale, 0, Math.PI * 2);
+			ctx.fill();
+			ctx.beginPath();
+			ctx.arc(moonX + 25 * craterScale, moonY - 8 * craterScale, 12 * craterScale, 0, Math.PI * 2);
+			ctx.fill();
+			ctx.beginPath();
+			ctx.arc(moonX - 30 * craterScale, moonY - 20 * craterScale, 10 * craterScale, 0, Math.PI * 2);
+			ctx.fill();
+			ctx.beginPath();
+			ctx.arc(moonX + 10 * craterScale, moonY + 35 * craterScale, 8 * craterScale, 0, Math.PI * 2);
+			ctx.fill();
+			ctx.globalAlpha = 1; // Reset alpha
+		}
+
+		// Evening/Rising sun (visible during evening - 0.5 to 0.75 - REVERSED)
+		if (scrollProgress >= 0.5 && scrollProgress < 0.75) {
+			const t = (scrollProgress - 0.5) / 0.25;
+			const sunsetOpacity = t; // Fade in as we approach day
+			const sunsetX = width * 0.12;
+			const sunsetY = height * 0.65; // Lower position for rising sun
+			const sunsetRadius = 70;
+
+			// Sunset glow
+			const sunsetGlow = ctx.createRadialGradient(sunsetX, sunsetY, sunsetRadius * 0.3, sunsetX, sunsetY, sunsetRadius * 5);
+			sunsetGlow.addColorStop(0, `rgba(255, 120, 80, ${sunsetOpacity * 0.4})`);
+			sunsetGlow.addColorStop(0.5, `rgba(255, 100, 60, ${sunsetOpacity * 0.2})`);
+			sunsetGlow.addColorStop(1, 'rgba(255, 80, 40, 0)');
+			ctx.fillStyle = sunsetGlow;
+			ctx.fillRect(sunsetX - sunsetRadius * 5, sunsetY - sunsetRadius * 5, sunsetRadius * 10, sunsetRadius * 10);
+
+			// Rising sun body
+			const sunsetGradient = ctx.createRadialGradient(sunsetX - 15, sunsetY - 15, 10, sunsetX, sunsetY, sunsetRadius);
+			sunsetGradient.addColorStop(0, '#FFEBB3');
+			sunsetGradient.addColorStop(0.5, '#FFB366');
+			sunsetGradient.addColorStop(1, '#FF8533');
+			ctx.globalAlpha = sunsetOpacity;
+			ctx.fillStyle = sunsetGradient;
+			ctx.beginPath();
+			ctx.arc(sunsetX, sunsetY, sunsetRadius, 0, Math.PI * 2);
+			ctx.fill();
+			ctx.globalAlpha = 1; // Reset alpha
+		}
+
+		// Morning sun (visible during day - after 0.75 scroll progress - REVERSED)
+		if (scrollProgress >= 0.75) {
+			const sunOpacity = (scrollProgress - 0.75) / 0.25; // Fade in sun as we scroll
 			const sunX = width * 0.15; // Left area
 			const sunY = height * 0.18; // Positioned below navbar
 			const sunRadius = 60;
@@ -173,149 +327,6 @@
 			ctx.fill();
 			ctx.globalAlpha = 1; // Reset alpha
 		}
-
-		// Add evening/setting sun (only visible during evening - 0.25 to 0.5 scroll progress)
-		if (scrollProgress >= 0.25 && scrollProgress < 0.5) {
-			const t = (scrollProgress - 0.25) / 0.25;
-			const sunsetOpacity = 1 - t; // Fade out as we transition to night
-			const sunsetX = width * 0.12;
-			const sunsetY = height * 0.65; // Lower position for setting sun
-			const sunsetRadius = 70;
-
-			// Sunset glow
-			const sunsetGlow = ctx.createRadialGradient(sunsetX, sunsetY, sunsetRadius * 0.3, sunsetX, sunsetY, sunsetRadius * 5);
-			sunsetGlow.addColorStop(0, `rgba(255, 120, 80, ${sunsetOpacity * 0.4})`);
-			sunsetGlow.addColorStop(0.5, `rgba(255, 100, 60, ${sunsetOpacity * 0.2})`);
-			sunsetGlow.addColorStop(1, 'rgba(255, 80, 40, 0)');
-			ctx.fillStyle = sunsetGlow;
-			ctx.fillRect(sunsetX - sunsetRadius * 5, sunsetY - sunsetRadius * 5, sunsetRadius * 10, sunsetRadius * 10);
-
-			// Setting sun body
-			const sunsetGradient = ctx.createRadialGradient(sunsetX - 15, sunsetY - 15, 10, sunsetX, sunsetY, sunsetRadius);
-			sunsetGradient.addColorStop(0, '#FFEBB3');
-			sunsetGradient.addColorStop(0.5, '#FFB366');
-			sunsetGradient.addColorStop(1, '#FF8533');
-			ctx.globalAlpha = sunsetOpacity;
-			ctx.fillStyle = sunsetGradient;
-			ctx.beginPath();
-			ctx.arc(sunsetX, sunsetY, sunsetRadius, 0, Math.PI * 2);
-			ctx.fill();
-			ctx.globalAlpha = 1; // Reset alpha
-		}
-
-		// Add stars (only visible at night - after 0.4 scroll progress)
-		if (scrollProgress > 0.4) {
-			const starOpacity = Math.min((scrollProgress - 0.4) / 0.3, 1); // Fade in stars
-			
-			// More stars in midnight mode
-			const starCount = scrollProgress > 0.75 ? 200 : 150;
-			ctx.fillStyle = `rgba(255, 255, 255, ${starOpacity * 0.8})`;
-			for (let i = 0; i < starCount; i++) {
-				const x = Math.random() * width;
-				const y = Math.random() * height * 0.6; // Stars in upper portion
-				const radius = Math.random() * 1.5 + 0.5;
-			
-				ctx.beginPath();
-				ctx.arc(x, y, radius, 0, Math.PI * 2);
-				ctx.fill();
-			}
-
-			// Regular moon (visible during night phase 0.5 - 0.75)
-			if (scrollProgress >= 0.5 && scrollProgress < 0.75) {
-				const moonOpacity = scrollProgress < 0.65 
-					? Math.min((scrollProgress - 0.5) / 0.15, 1) // Fade in
-					: 1 - ((scrollProgress - 0.65) / 0.1); // Start fading out at 0.65
-				
-				const moonX = width * 0.85;
-				const moonY = height * 0.15;
-				const moonRadius = 50;
-
-				// Moon glow
-				const moonGlow = ctx.createRadialGradient(moonX, moonY, moonRadius * 0.5, moonX, moonY, moonRadius * 3);
-				moonGlow.addColorStop(0, `rgba(255, 255, 255, ${moonOpacity * 0.1})`);
-				moonGlow.addColorStop(1, 'rgba(255, 255, 255, 0)');
-				ctx.fillStyle = moonGlow;
-				ctx.fillRect(moonX - moonRadius * 3, moonY - moonRadius * 3, moonRadius * 6, moonRadius * 6);
-
-				// Moon body
-				const moonGradient = ctx.createRadialGradient(moonX - 15, moonY - 15, 10, moonX, moonY, moonRadius);
-				moonGradient.addColorStop(0, '#fffef0');
-				moonGradient.addColorStop(1, '#e8e6d5');
-				ctx.globalAlpha = moonOpacity;
-				ctx.fillStyle = moonGradient;
-				ctx.beginPath();
-				ctx.arc(moonX, moonY, moonRadius, 0, Math.PI * 2);
-				ctx.fill();
-
-				// Moon craters (subtle)
-				ctx.fillStyle = 'rgba(200, 200, 180, 0.3)';
-				ctx.beginPath();
-				ctx.arc(moonX - 10, moonY + 10, 12, 0, Math.PI * 2);
-				ctx.fill();
-				ctx.beginPath();
-				ctx.arc(moonX + 15, moonY - 5, 8, 0, Math.PI * 2);
-				ctx.fill();
-				ctx.globalAlpha = 1; // Reset alpha
-			}
-
-			// Bigger midnight moon (visible during midnight phase 0.75 - 1.0)
-			// Moon grows and centers as user scrolls to end
-			if (scrollProgress >= 0.75) {
-				const midnightMoonOpacity = Math.min((scrollProgress - 0.75) / 0.1, 1); // Fade in
-				
-				// Center the moon
-				const moonX = width * 0.5;
-				const moonY = height * 0.4;
-				
-				// Moon grows from 80px to 200px as scroll progresses from 0.75 to 1.0
-				const growthProgress = (scrollProgress - 0.75) / 0.25; // 0 to 1
-				const moonRadius = 80 + (120 * growthProgress); // Grows from 80 to 200
-
-				// Enhanced moon glow with purple tint - grows with moon
-				const glowSize = moonRadius * 4;
-				const moonGlow = ctx.createRadialGradient(moonX, moonY, moonRadius * 0.5, moonX, moonY, glowSize);
-				moonGlow.addColorStop(0, `rgba(200, 180, 255, ${midnightMoonOpacity * 0.2})`);
-				moonGlow.addColorStop(0.5, `rgba(180, 160, 255, ${midnightMoonOpacity * 0.12})`);
-				moonGlow.addColorStop(1, 'rgba(160, 140, 255, 0)');
-				ctx.fillStyle = moonGlow;
-				ctx.fillRect(moonX - glowSize, moonY - glowSize, glowSize * 2, glowSize * 2);
-
-				// Moon body with slight purple tint
-				const moonGradient = ctx.createRadialGradient(
-					moonX - moonRadius * 0.25, 
-					moonY - moonRadius * 0.25, 
-					moonRadius * 0.2, 
-					moonX, 
-					moonY, 
-					moonRadius
-				);
-				moonGradient.addColorStop(0, '#fffef5');
-				moonGradient.addColorStop(0.6, '#f0ebf0');
-				moonGradient.addColorStop(1, '#e0d8e8');
-				ctx.globalAlpha = midnightMoonOpacity;
-				ctx.fillStyle = moonGradient;
-				ctx.beginPath();
-				ctx.arc(moonX, moonY, moonRadius, 0, Math.PI * 2);
-				ctx.fill();
-
-				// Moon craters (scale with moon size)
-				const craterScale = moonRadius / 80; // Scale factor based on growth
-				ctx.fillStyle = 'rgba(190, 180, 200, 0.3)';
-				ctx.beginPath();
-				ctx.arc(moonX - 15 * craterScale, moonY + 15 * craterScale, 18 * craterScale, 0, Math.PI * 2);
-				ctx.fill();
-				ctx.beginPath();
-				ctx.arc(moonX + 25 * craterScale, moonY - 8 * craterScale, 12 * craterScale, 0, Math.PI * 2);
-				ctx.fill();
-				ctx.beginPath();
-				ctx.arc(moonX - 30 * craterScale, moonY - 20 * craterScale, 10 * craterScale, 0, Math.PI * 2);
-				ctx.fill();
-				ctx.beginPath();
-				ctx.arc(moonX + 10 * craterScale, moonY + 35 * craterScale, 8 * craterScale, 0, Math.PI * 2);
-				ctx.fill();
-				ctx.globalAlpha = 1; // Reset alpha
-			}
-		}
 	}
 
 	// Helper function to interpolate between two hex colors
@@ -338,18 +349,12 @@
 		return `#${((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1)}`;
 	}
 
-	// Generate far clouds (small, wispy, low opacity) - seamless infinite wrapping
-	function generateFarClouds() {
+	// Initialize far clouds array
+	function initializeFarClouds() {
 		if (!farCloudsCanvas) return;
-		const ctx = farCloudsCanvas.getContext('2d');
-		if (!ctx) return;
-
 		const width = farCloudsCanvas.width;
 		const height = farCloudsCanvas.height;
 
-		ctx.clearRect(0, 0, width, height);
-
-		// Store cloud data for duplication at edges
 		const cloudData: Array<{x: number, y: number, w: number, h: number, color: string, blur: number}> = [];
 
 		// Generate clouds across the full canvas width
@@ -362,106 +367,117 @@
 			cloudData.push({ x, y, w: 85, h: 42, color: 'rgba(200, 215, 240, 0.75)', blur: 2 });
 		}
 		
-		// Add additional scattered clouds
-		for (let i = 0; i < 8; i++) {
+		// Add additional scattered clouds with some starting at negative X
+		cloudData.push({ x: -100, y: height * 0.25, w: 75, h: 38, color: 'rgba(190, 210, 235, 0.7)', blur: 2 });
+		cloudData.push({ x: -200, y: height * 0.4, w: 75, h: 38, color: 'rgba(190, 210, 235, 0.7)', blur: 2 });
+		
+		for (let i = 0; i < 6; i++) {
 			const x = Math.random() * width;
 			const y = Math.random() * height * 0.5 + height * 0.15;
 			cloudData.push({ x, y, w: 75, h: 38, color: 'rgba(190, 210, 235, 0.7)', blur: 2 });
 		}
 
-		// Draw all clouds and duplicate at edges for seamless wrapping
-		cloudData.forEach(cloud => {
-			// Draw original cloud
-			drawAnimeCloud(ctx, cloud.x, cloud.y, cloud.w, cloud.h, cloud.color, cloud.blur);
-			
-			// Duplicate clouds near left edge to right edge for wrapping
-			if (cloud.x < width * 0.15) {
-				drawAnimeCloud(ctx, cloud.x + width, cloud.y, cloud.w, cloud.h, cloud.color, cloud.blur);
-			}
-			// Duplicate clouds near right edge to left edge for wrapping
-			if (cloud.x > width * 0.85) {
-				drawAnimeCloud(ctx, cloud.x - width, cloud.y, cloud.w, cloud.h, cloud.color, cloud.blur);
-			}
-		});
+		farClouds = cloudData;
 	}
 
-	// Generate mid clouds (medium, fluffy) - seamless infinite wrapping
-	function generateMidClouds() {
+	// Initialize mid clouds array
+	function initializeMidClouds() {
 		if (!midCloudsCanvas) return;
-		const ctx = midCloudsCanvas.getContext('2d');
-		if (!ctx) return;
-
 		const width = midCloudsCanvas.width;
 		const height = midCloudsCanvas.height;
 
-		ctx.clearRect(0, 0, width, height);
-
-		// Generate clouds evenly distributed across full width
-		const clouds = [
-			{ x: width * 0.08, y: height * 0.25, w: 180, h: 80 },
-			{ x: width * 0.20, y: height * 0.15, w: 200, h: 90 },
-			{ x: width * 0.33, y: height * 0.35, w: 185, h: 82 },
-			{ x: width * 0.45, y: height * 0.22, w: 170, h: 75 },
-			{ x: width * 0.57, y: height * 0.42, w: 190, h: 85 },
-			{ x: width * 0.68, y: height * 0.18, w: 195, h: 88 },
-			{ x: width * 0.78, y: height * 0.55, w: 185, h: 80 },
-			{ x: width * 0.87, y: height * 0.35, w: 175, h: 78 },
-			{ x: width * 0.96, y: height * 0.48, w: 180, h: 80 },
-			{ x: width * 0.12, y: height * 0.58, w: 190, h: 84 },
+		midClouds = [
+			{ x: -150, y: height * 0.25, w: 180, h: 80, color: 'rgba(210, 225, 245, 0.85)', blur: 3 },
+			{ x: width * 0.08, y: height * 0.25, w: 180, h: 80, color: 'rgba(210, 225, 245, 0.85)', blur: 3 },
+			{ x: width * 0.20, y: height * 0.15, w: 200, h: 90, color: 'rgba(210, 225, 245, 0.85)', blur: 3 },
+			{ x: width * 0.33, y: height * 0.35, w: 185, h: 82, color: 'rgba(210, 225, 245, 0.85)', blur: 3 },
+			{ x: width * 0.45, y: height * 0.22, w: 170, h: 75, color: 'rgba(210, 225, 245, 0.85)', blur: 3 },
+			{ x: width * 0.57, y: height * 0.42, w: 190, h: 85, color: 'rgba(210, 225, 245, 0.85)', blur: 3 },
+			{ x: width * 0.68, y: height * 0.18, w: 195, h: 88, color: 'rgba(210, 225, 245, 0.85)', blur: 3 },
+			{ x: width * 0.78, y: height * 0.55, w: 185, h: 80, color: 'rgba(210, 225, 245, 0.85)', blur: 3 },
+			{ x: width * 0.87, y: height * 0.35, w: 175, h: 78, color: 'rgba(210, 225, 245, 0.85)', blur: 3 },
+			{ x: width * 0.96, y: height * 0.48, w: 180, h: 80, color: 'rgba(210, 225, 245, 0.85)', blur: 3 },
+			{ x: width * 0.12, y: height * 0.58, w: 190, h: 84, color: 'rgba(210, 225, 245, 0.85)', blur: 3 },
 		];
-
-		// Draw all clouds and duplicate at edges for seamless wrapping
-		clouds.forEach(cloud => {
-			// Draw original cloud
-			drawAnimeCloud(ctx, cloud.x, cloud.y, cloud.w, cloud.h, 'rgba(210, 225, 245, 0.85)', 3);
-			
-			// Duplicate clouds near left edge to right edge for wrapping
-			if (cloud.x < width * 0.15) {
-				drawAnimeCloud(ctx, cloud.x + width, cloud.y, cloud.w, cloud.h, 'rgba(210, 225, 245, 0.85)', 3);
-			}
-			// Duplicate clouds near right edge to left edge for wrapping
-			if (cloud.x > width * 0.85) {
-				drawAnimeCloud(ctx, cloud.x - width, cloud.y, cloud.w, cloud.h, 'rgba(210, 225, 245, 0.85)', 3);
-			}
-		});
 	}
 
-	// Generate near clouds (large, prominent) - seamless infinite wrapping
-	function generateNearClouds() {
+	// Initialize near clouds array
+	function initializeNearClouds() {
 		if (!nearCloudsCanvas) return;
-		const ctx = nearCloudsCanvas.getContext('2d');
-		if (!ctx) return;
-
 		const width = nearCloudsCanvas.width;
 		const height = nearCloudsCanvas.height;
 
-		ctx.clearRect(0, 0, width, height);
-
-		// Generate clouds evenly across full canvas width
-		const clouds = [
-			{ x: width * 0.08, y: height * 0.3, w: 280, h: 120 },
-			{ x: width * 0.26, y: height * 0.5, w: 300, h: 130 },
-			{ x: width * 0.42, y: height * 0.25, w: 275, h: 118 },
-			{ x: width * 0.57, y: height * 0.65, w: 260, h: 110 },
-			{ x: width * 0.71, y: height * 0.42, w: 285, h: 122 },
-			{ x: width * 0.86, y: height * 0.55, w: 270, h: 115 },
-			{ x: width * 0.16, y: height * 0.72, w: 290, h: 125 },
+		nearClouds = [
+			{ x: -180, y: height * 0.3, w: 280, h: 120, color: 'rgba(220, 235, 250, 0.92)', blur: 4 },
+			{ x: width * 0.08, y: height * 0.3, w: 280, h: 120, color: 'rgba(220, 235, 250, 0.92)', blur: 4 },
+			{ x: width * 0.26, y: height * 0.5, w: 300, h: 130, color: 'rgba(220, 235, 250, 0.92)', blur: 4 },
+			{ x: width * 0.42, y: height * 0.25, w: 275, h: 118, color: 'rgba(220, 235, 250, 0.92)', blur: 4 },
+			{ x: width * 0.57, y: height * 0.65, w: 260, h: 110, color: 'rgba(220, 235, 250, 0.92)', blur: 4 },
+			{ x: width * 0.71, y: height * 0.42, w: 285, h: 122, color: 'rgba(220, 235, 250, 0.92)', blur: 4 },
+			{ x: width * 0.86, y: height * 0.55, w: 270, h: 115, color: 'rgba(220, 235, 250, 0.92)', blur: 4 },
+			{ x: width * 0.16, y: height * 0.72, w: 290, h: 125, color: 'rgba(220, 235, 250, 0.92)', blur: 4 },
 		];
+	}
 
-		// Draw all clouds and duplicate at edges for seamless wrapping
-		clouds.forEach(cloud => {
-			// Draw original cloud
-			drawAnimeCloud(ctx, cloud.x, cloud.y, cloud.w, cloud.h, 'rgba(220, 235, 250, 0.92)', 4);
-			
-			// Duplicate clouds near left edge to right edge for wrapping
-			if (cloud.x < width * 0.15) {
-				drawAnimeCloud(ctx, cloud.x + width, cloud.y, cloud.w, cloud.h, 'rgba(220, 235, 250, 0.92)', 4);
+	// Animate cloud layers with seamless wrapping
+	function animateCloudLayers() {
+		if (!farCloudsCanvas || !midCloudsCanvas || !nearCloudsCanvas) return;
+
+		const farCtx = farCloudsCanvas.getContext('2d');
+		const midCtx = midCloudsCanvas.getContext('2d');
+		const nearCtx = nearCloudsCanvas.getContext('2d');
+
+		if (!farCtx || !midCtx || !nearCtx) return;
+
+		const centerX = window.innerWidth / 2;
+		const centerY = window.innerHeight / 2;
+		const deltaX = mouseX - centerX;
+		const deltaY = mouseY - centerY;
+
+		// Far clouds
+		const farLayerSpeed = 0.5;
+		const farMouseMultiplier = 15;
+		const farCursorOffsetX = -(deltaX / centerX) * farMouseMultiplier;
+		const farCursorOffsetY = -(deltaY / centerY) * farMouseMultiplier * 0.5;
+
+		farCtx.clearRect(0, 0, farCloudsCanvas.width, farCloudsCanvas.height);
+		for (const cloud of farClouds) {
+			cloud.x += BASE_DRIFT_SPEED * farLayerSpeed;
+			if (cloud.x - (cloud.w * 0.35) > farCloudsCanvas.width) {
+				cloud.x = -(cloud.w * 0.35);
 			}
-			// Duplicate clouds near right edge to left edge for wrapping
-			if (cloud.x > width * 0.85) {
-				drawAnimeCloud(ctx, cloud.x - width, cloud.y, cloud.w, cloud.h, 'rgba(220, 235, 250, 0.92)', 4);
+			drawAnimeCloud(farCtx, cloud.x + farCursorOffsetX, cloud.y + farCursorOffsetY, cloud.w, cloud.h, cloud.color, cloud.blur);
+		}
+
+		// Mid clouds
+		const midLayerSpeed = 1.2;
+		const midMouseMultiplier = 35;
+		const midCursorOffsetX = -(deltaX / centerX) * midMouseMultiplier;
+		const midCursorOffsetY = -(deltaY / centerY) * midMouseMultiplier * 0.5;
+
+		midCtx.clearRect(0, 0, midCloudsCanvas.width, midCloudsCanvas.height);
+		for (const cloud of midClouds) {
+			cloud.x += BASE_DRIFT_SPEED * midLayerSpeed;
+			if (cloud.x - (cloud.w * 0.35) > midCloudsCanvas.width) {
+				cloud.x = -(cloud.w * 0.35);
 			}
-		});
+			drawAnimeCloud(midCtx, cloud.x + midCursorOffsetX, cloud.y + midCursorOffsetY, cloud.w, cloud.h, cloud.color, cloud.blur);
+		}
+
+		// Near clouds
+		const nearLayerSpeed = 2.0;
+		const nearMouseMultiplier = 60;
+		const nearCursorOffsetX = -(deltaX / centerX) * nearMouseMultiplier;
+		const nearCursorOffsetY = -(deltaY / centerY) * nearMouseMultiplier * 0.5;
+
+		nearCtx.clearRect(0, 0, nearCloudsCanvas.width, nearCloudsCanvas.height);
+		for (const cloud of nearClouds) {
+			cloud.x += BASE_DRIFT_SPEED * nearLayerSpeed;
+			if (cloud.x - (cloud.w * 0.35) > nearCloudsCanvas.width) {
+				cloud.x = -(cloud.w * 0.35);
+			}
+			drawAnimeCloud(nearCtx, cloud.x + nearCursorOffsetX, cloud.y + nearCursorOffsetY, cloud.w, cloud.h, cloud.color, cloud.blur);
+		}
 	}
 
 	// Draw anime-style fluffy cloud with crisp definition and texture
@@ -589,45 +605,6 @@
 		ctx.restore();
 	}
 
-	// Calculate parallax transform with drift and cursor interaction - infinite wrapping
-	function getParallaxStyle(layer: 'far' | 'mid' | 'near') {
-		if (!mounted) return '';
-
-		const speeds = {
-			far: 0.5,   // Slowest movement
-			mid: 1.2,   // Medium movement
-			near: 2.0   // Fastest movement
-		};
-
-		const speed = speeds[layer];
-		const canvasWidth = 3200; // Canvas width
-
-		// Continuous left-to-right drift with wrapping
-		// Use modulo of canvas width for seamless infinite scrolling
-		const drift = (driftOffset * speed) % canvasWidth;
-
-		// Improved cursor-based parallax with better responsiveness
-		const centerX = window.innerWidth / 2;
-		const centerY = window.innerHeight / 2;
-		
-		// Calculate distance from center (in pixels)
-		const deltaX = mouseX - centerX;
-		const deltaY = mouseY - centerY;
-		
-		// Apply parallax multiplier (negative so clouds move opposite to cursor)
-		const parallaxMultiplier = {
-			far: 15,   // Subtle movement
-			mid: 35,   // Medium movement  
-			near: 60   // Strong movement
-		};
-		
-		const multiplier = parallaxMultiplier[layer];
-		const cursorOffsetX = -(deltaX / centerX) * multiplier;
-		const cursorOffsetY = -(deltaY / centerY) * multiplier * 0.6; // Less vertical movement
-
-		return `transform: translate3d(${drift + cursorOffsetX}px, ${cursorOffsetY}px, 0);`;
-	}
-
 	const features = [
 		{
 			icon: '🎮',
@@ -710,7 +687,6 @@
 		class="parallax-layer far-clouds-layer"
 		width="3200"
 		height="1800"
-		style={getParallaxStyle('far')}
 	></canvas>
 
 	<!-- Mid Clouds Layer (medium parallax) -->
@@ -719,7 +695,6 @@
 		class="parallax-layer mid-clouds-layer"
 		width="3200"
 		height="1800"
-		style={getParallaxStyle('mid')}
 	></canvas>
 
 	<!-- Near Clouds Layer (fastest parallax) -->
@@ -728,7 +703,6 @@
 		class="parallax-layer near-clouds-layer"
 		width="3200"
 		height="1800"
-		style={getParallaxStyle('near')}
 	></canvas>
 </div>
 
