@@ -1,174 +1,224 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 
+	let mounted = $state(false);
+	let mouseX = $state(0);
+	let mouseY = $state(0);
+
 	let skyCanvas: HTMLCanvasElement;
 	let farCloudsCanvas: HTMLCanvasElement;
 	let midCloudsCanvas: HTMLCanvasElement;
 	let nearCloudsCanvas: HTMLCanvasElement;
 
-	let mounted = $state(false);
-	let mouseX = $state(0);
-	let mouseY = $state(0);
-	let driftOffset = $state(0);
-	let animationFrameId: number;
-
-	// Modal states
 	let showPreliminaryModal = $state(false);
 	let showComingSoonModal = $state(false);
+
+	// Base drift speed
+	const BASE_DRIFT_SPEED = 0.61; // Increased by 20% + 30% + 30% (total 103% faster)
+
+	// Cloud data arrays as reactive state
+	let farClouds = $state([
+		{ x: -200, y: 200, w: 350, h: 120, color: 'rgba(255, 255, 255, 0.5)' },
+		{ x: 400, y: 300, w: 400, h: 140, color: 'rgba(255, 255, 255, 0.45)' },
+		{ x: 1200, y: 250, w: 420, h: 150, color: 'rgba(255, 255, 255, 0.48)' },
+		{ x: 2000, y: 180, w: 380, h: 130, color: 'rgba(255, 255, 255, 0.47)' }
+	]);
+
+	let midClouds = $state([
+		{ x: -100, y: 400, w: 300, h: 100, color: 'rgba(255, 255, 255, 0.65)' },
+		{ x: 500, y: 500, w: 320, h: 110, color: 'rgba(255, 255, 255, 0.62)' },
+		{ x: 1200, y: 450, w: 340, h: 115, color: 'rgba(255, 255, 255, 0.64)' },
+		{ x: 1900, y: 480, w: 310, h: 105, color: 'rgba(255, 255, 255, 0.63)' },
+		{ x: 2600, y: 420, w: 330, h: 112, color: 'rgba(255, 255, 255, 0.62)' }
+	]);
+
+	let nearClouds = $state([
+		{ x: -150, y: 700, w: 250, h: 80, color: 'rgba(255, 255, 255, 0.8)' },
+		{ x: 400, y: 750, w: 270, h: 85, color: 'rgba(255, 255, 255, 0.78)' },
+		{ x: 950, y: 800, w: 260, h: 82, color: 'rgba(255, 255, 255, 0.79)' },
+		{ x: 1500, y: 720, w: 280, h: 87, color: 'rgba(255, 255, 255, 0.77)' },
+		{ x: 2100, y: 780, w: 265, h: 84, color: 'rgba(255, 255, 255, 0.78)' },
+		{ x: 2700, y: 740, w: 275, h: 86, color: 'rgba(255, 255, 255, 0.8)' }
+	]);
 
 	onMount(() => {
 		mounted = true;
 
-		// Generate sky and cloud layers
-		generateSkyLayer();
-		generateFarClouds();
-		generateMidClouds();
-		generateNearClouds();
-
+		// Mouse tracking
 		const handleMouseMove = (e: MouseEvent) => {
 			mouseX = e.clientX;
 			mouseY = e.clientY;
 		};
 
-		const handleKeyDown = (e: KeyboardEvent) => {
+		window.addEventListener('mousemove', handleMouseMove);
+
+		// Initialize sky and sun (static elements)
+		initializeSkies();
+
+		// Start continuous animation loop
+		let animationId: number;
+		const animate = () => {
+			animateCloudLayers();
+			animationId = requestAnimationFrame(animate);
+		};
+		animate();
+
+		// Keyboard handler
+		const handleKeydown = (e: KeyboardEvent) => {
 			if (e.key === 'Escape') {
 				showPreliminaryModal = false;
 				showComingSoonModal = false;
 			}
 		};
 
-		window.addEventListener('mousemove', handleMouseMove);
-		window.addEventListener('keydown', handleKeyDown);
-
-		// Continuous drift animation
-		const animate = () => {
-			driftOffset += 0.1;
-			animationFrameId = requestAnimationFrame(animate);
-		};
-		animate();
+		window.addEventListener('keydown', handleKeydown);
 
 		return () => {
 			window.removeEventListener('mousemove', handleMouseMove);
-			window.removeEventListener('keydown', handleKeyDown);
-			cancelAnimationFrame(animationFrameId);
+			window.removeEventListener('keydown', handleKeydown);
+			if (animationId) {
+				cancelAnimationFrame(animationId);
+			}
 		};
 	});
 
-	// Generate morning sky gradient with sun
-	function generateSkyLayer() {
+	function initializeSkies() {
 		if (!skyCanvas) return;
-		const ctx = skyCanvas.getContext('2d');
-		if (!ctx) return;
 
-		const width = skyCanvas.width;
-		const height = skyCanvas.height;
+		// Sky gradient
+		const skyCtx = skyCanvas.getContext('2d');
+		if (skyCtx) {
+			const skyGradient = skyCtx.createLinearGradient(0, 0, 0, skyCanvas.height);
+			skyGradient.addColorStop(0, '#87CEEB'); // Sky blue at top
+			skyGradient.addColorStop(0.5, '#B0E2FF'); // Lighter blue middle
+			skyGradient.addColorStop(1, '#E0F6FF'); // Very light blue at bottom
+			skyCtx.fillStyle = skyGradient;
+			skyCtx.fillRect(0, 0, skyCanvas.width, skyCanvas.height);
 
-		ctx.clearRect(0, 0, width, height);
+			// Sun
+			const sunX = skyCanvas.width * 0.2;
+			const sunY = skyCanvas.height * 0.15;
+			const sunRadius = 80;
 
-		// Morning sky colors
-		const gradient = ctx.createLinearGradient(0, 0, 0, height);
-		gradient.addColorStop(0, '#87CEEB');      // Sky blue at top
-		gradient.addColorStop(0.4, '#B0E0E6');    // Powder blue
-		gradient.addColorStop(0.7, '#FFE4B5');    // Moccasin
-		gradient.addColorStop(1, '#FFDAB9');      // Peach puff at bottom
+			// Sun glow
+			const sunGlow = skyCtx.createRadialGradient(sunX, sunY, sunRadius * 0.3, sunX, sunY, sunRadius * 3);
+			sunGlow.addColorStop(0, 'rgba(255, 255, 200, 0.4)');
+			sunGlow.addColorStop(0.5, 'rgba(255, 255, 150, 0.15)');
+			sunGlow.addColorStop(1, 'rgba(255, 255, 150, 0)');
+			skyCtx.fillStyle = sunGlow;
+			skyCtx.fillRect(0, 0, skyCanvas.width, skyCanvas.height);
 
-		ctx.fillStyle = gradient;
-		ctx.fillRect(0, 0, width, height);
-
-		// Add morning sun (positioned upper right)
-		const sunX = width * 0.8; // Right side
-		const sunY = height * 0.25;  // Upper position
-		const sunRadius = 70;
-
-		// Sun glow
-		const sunGlow = ctx.createRadialGradient(sunX, sunY, sunRadius * 0.3, sunX, sunY, sunRadius * 4);
-		sunGlow.addColorStop(0, 'rgba(255, 255, 100, 0.5)');
-		sunGlow.addColorStop(0.5, 'rgba(255, 220, 100, 0.3)');
-		sunGlow.addColorStop(1, 'rgba(255, 200, 100, 0)');
-		ctx.fillStyle = sunGlow;
-		ctx.fillRect(sunX - sunRadius * 4, sunY - sunRadius * 4, sunRadius * 8, sunRadius * 8);
-
-		// Sun body
-		const sunGradient = ctx.createRadialGradient(sunX - 10, sunY - 10, 10, sunX, sunY, sunRadius);
-		sunGradient.addColorStop(0, '#FFFACD');
-		sunGradient.addColorStop(0.5, '#FFD700');
-		sunGradient.addColorStop(1, '#FFA500');
-		ctx.fillStyle = sunGradient;
-		ctx.beginPath();
-		ctx.arc(sunX, sunY, sunRadius, 0, Math.PI * 2);
-		ctx.fill();
+			// Sun core
+			const sunGradient = skyCtx.createRadialGradient(sunX, sunY, 0, sunX, sunY, sunRadius);
+			sunGradient.addColorStop(0, '#FFF9E6');
+			sunGradient.addColorStop(0.5, '#FFE87C');
+			sunGradient.addColorStop(1, '#FFD54F');
+			skyCtx.fillStyle = sunGradient;
+			skyCtx.beginPath();
+			skyCtx.arc(sunX, sunY, sunRadius, 0, Math.PI * 2);
+			skyCtx.fill();
+		}
 	}
 
-	function generateFarClouds() {
-		if (!farCloudsCanvas) return;
-		const ctx = farCloudsCanvas.getContext('2d');
-		if (!ctx) return;
+	function animateCloudLayers() {
+		if (!farCloudsCanvas || !midCloudsCanvas || !nearCloudsCanvas) return;
 
-		const width = farCloudsCanvas.width;
-		const height = farCloudsCanvas.height;
+		const farCtx = farCloudsCanvas.getContext('2d');
+		const midCtx = midCloudsCanvas.getContext('2d');
+		const nearCtx = nearCloudsCanvas.getContext('2d');
 
-		ctx.clearRect(0, 0, width, height);
+		if (!farCtx || !midCtx || !nearCtx) return;
 
-		const cloudCount = 15;
-		const spacing = width / cloudCount;
+		// Calculate mouse parallax offset
+		const centerX = window.innerWidth / 2;
+		const centerY = window.innerHeight / 2;
+		const deltaX = mouseX - centerX;
+		const deltaY = mouseY - centerY;
+
+		// === Process FAR CLOUDS ===
+		const farLayerSpeed = 0.3;
+		const farMouseMultiplier = 15;
+		const farCursorOffsetX = -(deltaX / centerX) * farMouseMultiplier;
+		const farCursorOffsetY = -(deltaY / centerY) * farMouseMultiplier * 0.5;
+
+		farCtx.clearRect(0, 0, farCloudsCanvas.width, farCloudsCanvas.height);
 		
-		for (let i = 0; i < cloudCount; i++) {
-			drawAnimeCloud(
-				ctx,
-				i * spacing + Math.random() * spacing * 0.5,
-				Math.random() * height * 0.4,
-				100 + Math.random() * 60,
-				35 + Math.random() * 25,
-				'rgba(255, 255, 255, 0.5)',
-				6
+		for (const cloud of farClouds) {
+			// Update position (drift)
+			cloud.x += BASE_DRIFT_SPEED * farLayerSpeed;
+			
+			// Wrap logic - reset when cloud is off-screen to the right
+			const approxCloudRightEdge = cloud.x + (cloud.w * 0.35);
+			if (cloud.x - (cloud.w * 0.35) > farCloudsCanvas.width) {
+				cloud.x = -(cloud.w * 0.35);
+			}
+			
+			// Draw cloud with mouse parallax
+			drawEnhancedCloud(
+				farCtx,
+				cloud.x + farCursorOffsetX,
+				cloud.y + farCursorOffsetY,
+				cloud.w,
+				cloud.h,
+				cloud.color,
+				20
+			);
+		}
+
+		// === Process MID CLOUDS ===
+		const midLayerSpeed = 0.7;
+		const midMouseMultiplier = 30;
+		const midCursorOffsetX = -(deltaX / centerX) * midMouseMultiplier;
+		const midCursorOffsetY = -(deltaY / centerY) * midMouseMultiplier * 0.5;
+
+		midCtx.clearRect(0, 0, midCloudsCanvas.width, midCloudsCanvas.height);
+		
+		for (const cloud of midClouds) {
+			cloud.x += BASE_DRIFT_SPEED * midLayerSpeed;
+			
+			if (cloud.x - (cloud.w * 0.35) > midCloudsCanvas.width) {
+				cloud.x = -(cloud.w * 0.35);
+			}
+			
+			drawEnhancedCloud(
+				midCtx,
+				cloud.x + midCursorOffsetX,
+				cloud.y + midCursorOffsetY,
+				cloud.w,
+				cloud.h,
+				cloud.color,
+				20
+			);
+		}
+
+		// === Process NEAR CLOUDS ===
+		const nearLayerSpeed = 1.2;
+		const nearMouseMultiplier = 50;
+		const nearCursorOffsetX = -(deltaX / centerX) * nearMouseMultiplier;
+		const nearCursorOffsetY = -(deltaY / centerY) * nearMouseMultiplier * 0.5;
+
+		nearCtx.clearRect(0, 0, nearCloudsCanvas.width, nearCloudsCanvas.height);
+		
+		for (const cloud of nearClouds) {
+			cloud.x += BASE_DRIFT_SPEED * nearLayerSpeed;
+			
+			if (cloud.x - (cloud.w * 0.35) > nearCloudsCanvas.width) {
+				cloud.x = -(cloud.w * 0.35);
+			}
+			
+			drawEnhancedCloud(
+				nearCtx,
+				cloud.x + nearCursorOffsetX,
+				cloud.y + nearCursorOffsetY,
+				cloud.w,
+				cloud.h,
+				cloud.color,
+				20
 			);
 		}
 	}
 
-	function generateMidClouds() {
-		if (!midCloudsCanvas) return;
-		const ctx = midCloudsCanvas.getContext('2d');
-		if (!ctx) return;
-
-		const width = midCloudsCanvas.width;
-		const height = midCloudsCanvas.height;
-
-		ctx.clearRect(0, 0, width, height);
-
-		const clouds = [
-			{ x: width * 0.1, y: height * 0.3, w: 180, h: 65, color: 'rgba(255, 255, 255, 0.7)' },
-			{ x: width * 0.4, y: height * 0.2, w: 220, h: 75, color: 'rgba(255, 255, 255, 0.75)' },
-			{ x: width * 0.65, y: height * 0.35, w: 200, h: 70, color: 'rgba(255, 255, 255, 0.7)' },
-			{ x: width * 0.85, y: height * 0.25, w: 190, h: 68, color: 'rgba(255, 255, 255, 0.72)' }
-		];
-
-		clouds.forEach(cloud => {
-			drawAnimeCloud(ctx, cloud.x, cloud.y, cloud.w, cloud.h, cloud.color, 4);
-		});
-	}
-
-	function generateNearClouds() {
-		if (!nearCloudsCanvas) return;
-		const ctx = nearCloudsCanvas.getContext('2d');
-		if (!ctx) return;
-
-		const width = nearCloudsCanvas.width;
-		const height = nearCloudsCanvas.height;
-
-		ctx.clearRect(0, 0, width, height);
-
-		const clouds = [
-			{ x: width * 0.2, y: height * 0.45, w: 280, h: 95, color: 'rgba(255, 255, 255, 0.85)' },
-			{ x: width * 0.55, y: height * 0.4, w: 320, h: 110, color: 'rgba(255, 255, 255, 0.88)' },
-			{ x: width * 0.85, y: height * 0.5, w: 300, h: 100, color: 'rgba(255, 255, 255, 0.83)' }
-		];
-
-		clouds.forEach(cloud => {
-			drawAnimeCloud(ctx, cloud.x, cloud.y, cloud.w, cloud.h, cloud.color, 2);
-		});
-	}
-
-	function drawAnimeCloud(
+	function drawEnhancedCloud(
 		ctx: CanvasRenderingContext2D,
 		x: number,
 		y: number,
@@ -179,7 +229,7 @@
 	) {
 		const rgbaMatch = color.match(/rgba?\((\d+),\s*(\d+),\s*(\d+),?\s*([\d.]+)?\)/);
 		if (!rgbaMatch) return;
-		
+
 		const [, r, g, b, a = '1'] = rgbaMatch;
 		const baseAlpha = parseFloat(a);
 		const boostedAlpha = Math.min(baseAlpha * 1.2, 0.95);
@@ -194,7 +244,7 @@
 
 		ctx.save();
 		ctx.filter = 'none';
-		
+
 		puffs.forEach(puff => {
 			const puffGradient = ctx.createRadialGradient(
 				puff.x - puff.radiusX * 0.2,
@@ -207,7 +257,7 @@
 			puffGradient.addColorStop(0, `rgba(${r}, ${g}, ${b}, ${boostedAlpha})`);
 			puffGradient.addColorStop(0.7, `rgba(${r}, ${g}, ${b}, ${boostedAlpha * 0.8})`);
 			puffGradient.addColorStop(1, `rgba(${r}, ${g}, ${b}, ${boostedAlpha * 0.3})`);
-			
+
 			ctx.fillStyle = puffGradient;
 			ctx.beginPath();
 			ctx.ellipse(puff.x, puff.y, puff.radiusX, puff.radiusY, 0, 0, Math.PI * 2);
@@ -215,39 +265,6 @@
 		});
 
 		ctx.restore();
-	}
-
-	function getParallaxStyle(layer: 'far' | 'mid' | 'near') {
-		if (!mounted) return '';
-
-		const speeds = {
-			far: 0.3,
-			mid: 0.7,
-			near: 1.2
-		};
-
-		const speed = speeds[layer];
-		const canvasWidth = 3200;
-
-		const drift = (driftOffset * speed) % canvasWidth;
-
-		const centerX = window.innerWidth / 2;
-		const centerY = window.innerHeight / 2;
-		
-		const deltaX = mouseX - centerX;
-		const deltaY = mouseY - centerY;
-		
-		const parallaxMultiplier = {
-			far: 15,
-			mid: 30,
-			near: 50
-		};
-		
-		const multiplier = parallaxMultiplier[layer];
-		const cursorOffsetX = -(deltaX / centerX) * multiplier;
-		const cursorOffsetY = -(deltaY / centerY) * multiplier * 0.5;
-
-		return `transform: translate3d(${drift + cursorOffsetX}px, ${cursorOffsetY}px, 0);`;
 	}
 
 	function openPreliminaryModal() {
@@ -281,7 +298,6 @@
 		class="parallax-layer far-clouds-layer"
 		width="3200"
 		height="1800"
-		style={getParallaxStyle('far')}
 	></canvas>
 
 	<canvas 
@@ -289,7 +305,6 @@
 		class="parallax-layer mid-clouds-layer"
 		width="3200"
 		height="1800"
-		style={getParallaxStyle('mid')}
 	></canvas>
 
 	<canvas 
@@ -297,7 +312,6 @@
 		class="parallax-layer near-clouds-layer"
 		width="3200"
 		height="1800"
-		style={getParallaxStyle('near')}
 	></canvas>
 </div>
 
@@ -305,7 +319,7 @@
 <div class="overhaul-page">
 	<!-- Title Section -->
 	<h1 class="main-title">Overhaul Station</h1>
-	
+
 	<!-- Description -->
 	<p class="main-description">
 		Step into the Overhaul Bay, where hands-on learning takes flight. In this interactive zone, students dive into the intricate process of assembling and disassembling turbofan engine components—gaining a deeper understanding of each part's role and the essential principles of gas turbine engine overhaul. It's where theory meets practice, transforming knowledge into real-world technical skill.
@@ -375,10 +389,10 @@
 				<!-- YouTube Video -->
 				<div class="video-container">
 					<iframe 
-						src="https://www.youtube.com/embed/hQri0heCepA" 
+						src="https://www.youtube.com/embed/hQri0heCepA"
 						title="Gas Turbine Engine Overhaul" 
 						frameborder="0" 
-						allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+						allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
 						allowfullscreen
 					></iframe>
 				</div>
@@ -493,7 +507,7 @@
 				<div class="coming-soon-icon">🚧</div>
 				<h2 class="coming-soon-title">Coming Soon</h2>
 				<p class="coming-soon-text">
-					The Assembly and Disassembly Activity module is currently under development. 
+					The Assembly and Disassembly Activity module is currently under development.
 					Stay tuned for an immersive hands-on experience with turbofan engine components!
 				</p>
 			</div>
