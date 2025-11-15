@@ -25,11 +25,50 @@
 	// Animation frame for drift
 	let animationFrameId: number;
 
+	// Performance optimization: throttle mousemove with RAF
+	let rafId: number | null = null;
+	let lastMouseX = 0;
+	let lastMouseY = 0;
+
+	// Performance optimization: track last cursor offsets to skip unnecessary redraws
+	let lastFarCursorOffsetX = 0;
+	let lastFarCursorOffsetY = 0;
+	let lastMidCursorOffsetX = 0;
+	let lastMidCursorOffsetY = 0;
+	let lastNearCursorOffsetX = 0;
+	let lastNearCursorOffsetY = 0;
+
+	// Performance optimization: throttle scroll handler
+	let lastScrollProgress = -1;
+	let scrollRafId: number | null = null;
+	let skyRegenerationTimeout: number | null = null;
+
+	// Performance optimization: FPS limiting for animation
+	let lastFrameTime = 0;
+	const targetFPS = 30; // Reduced from 60fps to 30fps for better performance
+	const frameInterval = 1000 / targetFPS;
+
 	// Scroll-based background transition (REVERSED)
 	let scrollProgress = $state(0); // 0 = midnight/night, 0.5 = evening, 1 = day
 
+	// Performance optimization: color cache for drawAnimeCloud
+	const colorCache = new Map<string, {r: number, g: number, b: number, a: number}>();
+
 	onMount(() => {
 		mounted = true;
+
+		// Performance: Optimize canvas size based on viewport
+		const canvasWidth = Math.min(window.innerWidth * 1.5, 2400); // Reduced from 3200
+		const canvasHeight = Math.min(window.innerHeight * 1.2, 1000); // Reduced from 1200
+		
+		skyCanvas.width = canvasWidth;
+		skyCanvas.height = canvasHeight;
+		farCloudsCanvas.width = canvasWidth;
+		farCloudsCanvas.height = canvasHeight;
+		midCloudsCanvas.width = canvasWidth;
+		midCloudsCanvas.height = canvasHeight;
+		nearCloudsCanvas.width = canvasWidth;
+		nearCloudsCanvas.height = canvasHeight;
 
 		// Initialize cloud arrays
 		initializeFarClouds();
@@ -40,37 +79,84 @@
 		generateSkyLayer();
 
 		const handleMouseMove = (e: MouseEvent) => {
-			mouseX = e.clientX;
-			mouseY = e.clientY;
+			lastMouseX = e.clientX;
+			lastMouseY = e.clientY;
 			
-			// Normalize to -1 to 1 range (center is 0)
-			normalizedMouseX = (e.clientX / window.innerWidth) * 2 - 1;
-			normalizedMouseY = (e.clientY / window.innerHeight) * 2 - 1;
+			// Only schedule update if one isn't already pending
+			if (rafId === null) {
+				rafId = requestAnimationFrame(() => {
+					mouseX = lastMouseX;
+					mouseY = lastMouseY;
+					
+					// Normalize to -1 to 1 range (center is 0)
+					normalizedMouseX = (lastMouseX / window.innerWidth) * 2 - 1;
+					normalizedMouseY = (lastMouseY / window.innerHeight) * 2 - 1;
+					
+					rafId = null;
+				});
+			}
 		};
 
-		window.addEventListener('mousemove', handleMouseMove);
+		window.addEventListener('mousemove', handleMouseMove, { passive: true });
 
-		// Scroll handler for background transition
+		// Scroll handler for background transition (highly optimized with RAF + debouncing)
 		const handleScroll = () => {
-			const scrollHeight = document.documentElement.scrollHeight - window.innerHeight;
-			const currentScroll = window.scrollY;
-			// Calculate scroll progress (0 to 1)
-			const progress = Math.min(currentScroll / scrollHeight, 1);
-			scrollProgress = progress;
+			if (scrollRafId !== null) return;
 			
-			// Regenerate sky based on scroll progress
-			generateSkyLayer();
+			scrollRafId = requestAnimationFrame(() => {
+				const scrollHeight = document.documentElement.scrollHeight - window.innerHeight;
+				const currentScroll = window.scrollY;
+				const progress = Math.min(currentScroll / scrollHeight, 1);
+				
+				// Only update if progress changed by more than 1% (increased from 0.5% for smoother scrolling)
+				if (Math.abs(progress - lastScrollProgress) > 0.01) {
+					scrollProgress = progress;
+					lastScrollProgress = progress;
+					
+					// Debounce expensive sky regeneration - only regenerate after scroll stops
+					if (skyRegenerationTimeout !== null) {
+						clearTimeout(skyRegenerationTimeout);
+					}
+					skyRegenerationTimeout = setTimeout(() => {
+						generateSkyLayer();
+						skyRegenerationTimeout = null;
+					}, 100) as unknown as number; // Wait 100ms after scroll stops
+				}
+				
+				scrollRafId = null;
+			});
 		};
 
-		window.addEventListener('scroll', handleScroll);
+		window.addEventListener('scroll', handleScroll, { passive: true });
 		handleScroll(); // Initial call
 
-		// Continuous drift animation
-		const animate = () => {
-			animateCloudLayers();
+		// Performance: Pause animation when page is hidden (tab switching)
+		let isPageVisible = true;
+		const handleVisibilityChange = () => {
+			isPageVisible = !document.hidden;
+			if (isPageVisible) {
+				// Resume animation when page becomes visible again
+				lastFrameTime = performance.now(); // Reset timing to avoid jumps
+			}
+		};
+		document.addEventListener('visibilitychange', handleVisibilityChange);
+
+		// Continuous drift animation with FPS limiting
+		const animate = (currentTime: number) => {
+			// Only animate if page is visible
+			if (isPageVisible) {
+				const elapsed = currentTime - lastFrameTime;
+				
+				// Only animate if enough time has passed (30fps instead of 60fps)
+				if (elapsed >= frameInterval) {
+					lastFrameTime = currentTime - (elapsed % frameInterval);
+					animateCloudLayers();
+				}
+			}
+			
 			animationFrameId = requestAnimationFrame(animate);
 		};
-		animate();
+		animate(0);
 
 		// Scroll-triggered animations
 		const observerOptions = {
@@ -95,8 +181,14 @@
 		return () => {
 			window.removeEventListener('mousemove', handleMouseMove);
 			window.removeEventListener('scroll', handleScroll);
+			document.removeEventListener('visibilitychange', handleVisibilityChange);
 			cancelAnimationFrame(animationFrameId);
 			observer.disconnect();
+			
+			// Clean up any pending RAF/timeouts
+			if (rafId !== null) cancelAnimationFrame(rafId);
+			if (scrollRafId !== null) cancelAnimationFrame(scrollRafId);
+			if (skyRegenerationTimeout !== null) clearTimeout(skyRegenerationTimeout);
 		};
 	});
 
@@ -156,23 +248,27 @@
 		ctx.fillRect(0, 0, width, height);
 
 		// Add stars (only visible at night - before 0.6 scroll progress - REVERSED)
+		// Performance: Reduced star count
 		if (scrollProgress < 0.6) {
 			const starOpacity = scrollProgress < 0.25 
 				? 0.8 // Full stars in midnight
 				: 1 - ((scrollProgress - 0.25) / 0.35); // Fade out as we approach day
 			
-			// More stars in midnight mode
-			const starCount = scrollProgress < 0.25 ? 200 : 150;
+			// Reduced star count for better performance
+			const starCount = scrollProgress < 0.25 ? 100 : 75; // Reduced from 200/150
 			ctx.fillStyle = `rgba(255, 255, 255, ${starOpacity * 0.8})`;
+			
+			// Batch render stars for better performance
+			ctx.beginPath();
 			for (let i = 0; i < starCount; i++) {
 				const x = Math.random() * width;
 				const y = Math.random() * height * 0.6; // Stars in upper portion
 				const radius = Math.random() * 1.5 + 0.5;
-			
-				ctx.beginPath();
+				
+				ctx.moveTo(x + radius, y);
 				ctx.arc(x, y, radius, 0, Math.PI * 2);
-				ctx.fill();
 			}
+			ctx.fill();
 		}
 
 		// Moon (visible during night phase 0.25 - 0.5 - REVERSED)
@@ -357,8 +453,8 @@
 
 		const cloudData: Array<{x: number, y: number, w: number, h: number, color: string, blur: number}> = [];
 
-		// Generate clouds across the full canvas width
-		const cloudCount = 19;
+		// Generate clouds across the full canvas width (reduced count for performance)
+		const cloudCount = 12; // Reduced from 19
 		const spacing = width / cloudCount;
 		
 		for (let i = 0; i < cloudCount; i++) {
@@ -367,11 +463,12 @@
 			cloudData.push({ x, y, w: 85, h: 42, color: 'rgba(200, 215, 240, 0.75)', blur: 2 });
 		}
 		
-		// Add additional scattered clouds with some starting at negative X
+		// Add additional scattered clouds with some starting at negative X (reduced for performance)
 		cloudData.push({ x: -100, y: height * 0.25, w: 75, h: 38, color: 'rgba(190, 210, 235, 0.7)', blur: 2 });
 		cloudData.push({ x: -200, y: height * 0.4, w: 75, h: 38, color: 'rgba(190, 210, 235, 0.7)', blur: 2 });
 		
-		for (let i = 0; i < 6; i++) {
+		// Reduced from 6 to 3 scattered clouds
+		for (let i = 0; i < 3; i++) {
 			const x = Math.random() * width;
 			const y = Math.random() * height * 0.5 + height * 0.15;
 			cloudData.push({ x, y, w: 75, h: 38, color: 'rgba(190, 210, 235, 0.7)', blur: 2 });
@@ -380,46 +477,41 @@
 		farClouds = cloudData;
 	}
 
-	// Initialize mid clouds array
+	// Initialize mid clouds array (reduced count for performance)
 	function initializeMidClouds() {
 		if (!midCloudsCanvas) return;
 		const width = midCloudsCanvas.width;
 		const height = midCloudsCanvas.height;
 
+		// Reduced from 11 to 7 clouds
 		midClouds = [
 			{ x: -150, y: height * 0.25, w: 180, h: 80, color: 'rgba(210, 225, 245, 0.85)', blur: 3 },
-			{ x: width * 0.08, y: height * 0.25, w: 180, h: 80, color: 'rgba(210, 225, 245, 0.85)', blur: 3 },
-			{ x: width * 0.20, y: height * 0.15, w: 200, h: 90, color: 'rgba(210, 225, 245, 0.85)', blur: 3 },
-			{ x: width * 0.33, y: height * 0.35, w: 185, h: 82, color: 'rgba(210, 225, 245, 0.85)', blur: 3 },
-			{ x: width * 0.45, y: height * 0.22, w: 170, h: 75, color: 'rgba(210, 225, 245, 0.85)', blur: 3 },
+			{ x: width * 0.15, y: height * 0.20, w: 200, h: 90, color: 'rgba(210, 225, 245, 0.85)', blur: 3 },
+			{ x: width * 0.37, y: height * 0.32, w: 185, h: 82, color: 'rgba(210, 225, 245, 0.85)', blur: 3 },
 			{ x: width * 0.57, y: height * 0.42, w: 190, h: 85, color: 'rgba(210, 225, 245, 0.85)', blur: 3 },
-			{ x: width * 0.68, y: height * 0.18, w: 195, h: 88, color: 'rgba(210, 225, 245, 0.85)', blur: 3 },
-			{ x: width * 0.78, y: height * 0.55, w: 185, h: 80, color: 'rgba(210, 225, 245, 0.85)', blur: 3 },
-			{ x: width * 0.87, y: height * 0.35, w: 175, h: 78, color: 'rgba(210, 225, 245, 0.85)', blur: 3 },
-			{ x: width * 0.96, y: height * 0.48, w: 180, h: 80, color: 'rgba(210, 225, 245, 0.85)', blur: 3 },
+			{ x: width * 0.75, y: height * 0.25, w: 185, h: 80, color: 'rgba(210, 225, 245, 0.85)', blur: 3 },
+			{ x: width * 0.90, y: height * 0.45, w: 180, h: 80, color: 'rgba(210, 225, 245, 0.85)', blur: 3 },
 			{ x: width * 0.12, y: height * 0.58, w: 190, h: 84, color: 'rgba(210, 225, 245, 0.85)', blur: 3 },
 		];
 	}
 
-	// Initialize near clouds array
+	// Initialize near clouds array (reduced count for performance)
 	function initializeNearClouds() {
 		if (!nearCloudsCanvas) return;
 		const width = nearCloudsCanvas.width;
 		const height = nearCloudsCanvas.height;
 
+		// Reduced from 8 to 5 clouds
 		nearClouds = [
 			{ x: -180, y: height * 0.3, w: 280, h: 120, color: 'rgba(220, 235, 250, 0.92)', blur: 4 },
-			{ x: width * 0.08, y: height * 0.3, w: 280, h: 120, color: 'rgba(220, 235, 250, 0.92)', blur: 4 },
-			{ x: width * 0.26, y: height * 0.5, w: 300, h: 130, color: 'rgba(220, 235, 250, 0.92)', blur: 4 },
+			{ x: width * 0.18, y: height * 0.4, w: 290, h: 125, color: 'rgba(220, 235, 250, 0.92)', blur: 4 },
 			{ x: width * 0.42, y: height * 0.25, w: 275, h: 118, color: 'rgba(220, 235, 250, 0.92)', blur: 4 },
-			{ x: width * 0.57, y: height * 0.65, w: 260, h: 110, color: 'rgba(220, 235, 250, 0.92)', blur: 4 },
-			{ x: width * 0.71, y: height * 0.42, w: 285, h: 122, color: 'rgba(220, 235, 250, 0.92)', blur: 4 },
-			{ x: width * 0.86, y: height * 0.55, w: 270, h: 115, color: 'rgba(220, 235, 250, 0.92)', blur: 4 },
-			{ x: width * 0.16, y: height * 0.72, w: 290, h: 125, color: 'rgba(220, 235, 250, 0.92)', blur: 4 },
+			{ x: width * 0.68, y: height * 0.50, w: 285, h: 122, color: 'rgba(220, 235, 250, 0.92)', blur: 4 },
+			{ x: width * 0.88, y: height * 0.60, w: 270, h: 115, color: 'rgba(220, 235, 250, 0.92)', blur: 4 },
 		];
 	}
 
-	// Animate cloud layers with seamless wrapping
+	// Animate cloud layers with seamless wrapping (optimized with dirty region tracking)
 	function animateCloudLayers() {
 		if (!farCloudsCanvas || !midCloudsCanvas || !nearCloudsCanvas) return;
 
@@ -440,13 +532,21 @@
 		const farCursorOffsetX = -(deltaX / centerX) * farMouseMultiplier;
 		const farCursorOffsetY = -(deltaY / centerY) * farMouseMultiplier * 0.5;
 
-		farCtx.clearRect(0, 0, farCloudsCanvas.width, farCloudsCanvas.height);
-		for (const cloud of farClouds) {
-			cloud.x += BASE_DRIFT_SPEED * farLayerSpeed;
-			if (cloud.x - (cloud.w * 0.35) > farCloudsCanvas.width) {
-				cloud.x = -(cloud.w * 0.35);
+		// Only redraw if there's meaningful movement (>1px change)
+		const farChanged = Math.abs(farCursorOffsetX - lastFarCursorOffsetX) > 1 || 
+						   Math.abs(farCursorOffsetY - lastFarCursorOffsetY) > 1;
+		
+		if (farChanged || BASE_DRIFT_SPEED > 0) {
+			farCtx.clearRect(0, 0, farCloudsCanvas.width, farCloudsCanvas.height);
+			for (const cloud of farClouds) {
+				cloud.x += BASE_DRIFT_SPEED * farLayerSpeed;
+				if (cloud.x - (cloud.w * 0.35) > farCloudsCanvas.width) {
+					cloud.x = -(cloud.w * 0.35);
+				}
+				drawAnimeCloud(farCtx, cloud.x + farCursorOffsetX, cloud.y + farCursorOffsetY, cloud.w, cloud.h, cloud.color, cloud.blur);
 			}
-			drawAnimeCloud(farCtx, cloud.x + farCursorOffsetX, cloud.y + farCursorOffsetY, cloud.w, cloud.h, cloud.color, cloud.blur);
+			lastFarCursorOffsetX = farCursorOffsetX;
+			lastFarCursorOffsetY = farCursorOffsetY;
 		}
 
 		// Mid clouds
@@ -455,13 +555,20 @@
 		const midCursorOffsetX = -(deltaX / centerX) * midMouseMultiplier;
 		const midCursorOffsetY = -(deltaY / centerY) * midMouseMultiplier * 0.5;
 
-		midCtx.clearRect(0, 0, midCloudsCanvas.width, midCloudsCanvas.height);
-		for (const cloud of midClouds) {
-			cloud.x += BASE_DRIFT_SPEED * midLayerSpeed;
-			if (cloud.x - (cloud.w * 0.35) > midCloudsCanvas.width) {
-				cloud.x = -(cloud.w * 0.35);
+		const midChanged = Math.abs(midCursorOffsetX - lastMidCursorOffsetX) > 1 || 
+						   Math.abs(midCursorOffsetY - lastMidCursorOffsetY) > 1;
+		
+		if (midChanged || BASE_DRIFT_SPEED > 0) {
+			midCtx.clearRect(0, 0, midCloudsCanvas.width, midCloudsCanvas.height);
+			for (const cloud of midClouds) {
+				cloud.x += BASE_DRIFT_SPEED * midLayerSpeed;
+				if (cloud.x - (cloud.w * 0.35) > midCloudsCanvas.width) {
+					cloud.x = -(cloud.w * 0.35);
+				}
+				drawAnimeCloud(midCtx, cloud.x + midCursorOffsetX, cloud.y + midCursorOffsetY, cloud.w, cloud.h, cloud.color, cloud.blur);
 			}
-			drawAnimeCloud(midCtx, cloud.x + midCursorOffsetX, cloud.y + midCursorOffsetY, cloud.w, cloud.h, cloud.color, cloud.blur);
+			lastMidCursorOffsetX = midCursorOffsetX;
+			lastMidCursorOffsetY = midCursorOffsetY;
 		}
 
 		// Near clouds
@@ -470,17 +577,24 @@
 		const nearCursorOffsetX = -(deltaX / centerX) * nearMouseMultiplier;
 		const nearCursorOffsetY = -(deltaY / centerY) * nearMouseMultiplier * 0.5;
 
-		nearCtx.clearRect(0, 0, nearCloudsCanvas.width, nearCloudsCanvas.height);
-		for (const cloud of nearClouds) {
-			cloud.x += BASE_DRIFT_SPEED * nearLayerSpeed;
-			if (cloud.x - (cloud.w * 0.35) > nearCloudsCanvas.width) {
-				cloud.x = -(cloud.w * 0.35);
+		const nearChanged = Math.abs(nearCursorOffsetX - lastNearCursorOffsetX) > 1 || 
+							Math.abs(nearCursorOffsetY - lastNearCursorOffsetY) > 1;
+		
+		if (nearChanged || BASE_DRIFT_SPEED > 0) {
+			nearCtx.clearRect(0, 0, nearCloudsCanvas.width, nearCloudsCanvas.height);
+			for (const cloud of nearClouds) {
+				cloud.x += BASE_DRIFT_SPEED * nearLayerSpeed;
+				if (cloud.x - (cloud.w * 0.35) > nearCloudsCanvas.width) {
+					cloud.x = -(cloud.w * 0.35);
+				}
+				drawAnimeCloud(nearCtx, cloud.x + nearCursorOffsetX, cloud.y + nearCursorOffsetY, cloud.w, cloud.h, cloud.color, cloud.blur);
 			}
-			drawAnimeCloud(nearCtx, cloud.x + nearCursorOffsetX, cloud.y + nearCursorOffsetY, cloud.w, cloud.h, cloud.color, cloud.blur);
+			lastNearCursorOffsetX = nearCursorOffsetX;
+			lastNearCursorOffsetY = nearCursorOffsetY;
 		}
 	}
 
-	// Draw anime-style fluffy cloud with crisp definition and texture
+	// Draw anime-style fluffy cloud with crisp definition and texture (optimized)
 	function drawAnimeCloud(
 		ctx: CanvasRenderingContext2D,
 		x: number,
@@ -490,33 +604,50 @@
 		color: string,
 		blur: number
 	) {
-		// Extract RGBA values from color string
-		const rgbaMatch = color.match(/rgba?\((\d+),\s*(\d+),\s*(\d+),?\s*([\d.]+)?\)/);
-		if (!rgbaMatch) return;
+		// Use cached color parsing for performance
+		let parsed = colorCache.get(color);
+		if (!parsed) {
+			const rgbaMatch = color.match(/rgba?\((\d+),\s*(\d+),\s*(\d+),?\s*([\d.]+)?\)/);
+			if (!rgbaMatch) return;
+			
+			parsed = {
+				r: parseInt(rgbaMatch[1]),
+				g: parseInt(rgbaMatch[2]),
+				b: parseInt(rgbaMatch[3]),
+				a: parseFloat(rgbaMatch[4] || '1')
+			};
+			colorCache.set(color, parsed);
+		}
 		
-		const [, r, g, b, a = '1'] = rgbaMatch;
-		const baseAlpha = parseFloat(a);
+		const {r, g, b, a} = parsed;
+		const baseAlpha = a;
 
 		// Boost opacity for better visibility
 		const boostedAlpha = Math.min(baseAlpha * 1.3, 0.95);
 
-		// Create detailed cloud structure with multiple puffs
+		// Pre-calculate color strings (outside loop for better performance)
+		const colorStrings = [
+			`rgba(${r}, ${g}, ${b}, ${boostedAlpha})`,
+			`rgba(${r}, ${g}, ${b}, ${boostedAlpha * 0.9})`,
+			`rgba(${r}, ${g}, ${b}, ${boostedAlpha * 0.6})`,
+			`rgba(${r}, ${g}, ${b}, 0)`
+		];
+
+		// Create cloud structure with optimized puff count (reduced from 8 to 5 for performance)
 		const puffs = [
 			{ offsetX: 0, offsetY: 0, scale: 1.0, alpha: boostedAlpha },
 			{ offsetX: width * 0.35, offsetY: -height * 0.25, scale: 0.9, alpha: boostedAlpha * 0.98 },
 			{ offsetX: -width * 0.3, offsetY: -height * 0.2, scale: 0.85, alpha: boostedAlpha * 0.96 },
 			{ offsetX: width * 0.6, offsetY: 0, scale: 0.88, alpha: boostedAlpha * 0.97 },
-			{ offsetX: -width * 0.5, offsetY: 0.05, scale: 0.8, alpha: boostedAlpha * 0.94 },
 			{ offsetX: width * 0.45, offsetY: height * 0.15, scale: 0.75, alpha: boostedAlpha * 0.92 },
-			{ offsetX: -width * 0.35, offsetY: height * 0.12, scale: 0.7, alpha: boostedAlpha * 0.9 },
-			{ offsetX: width * 0.15, offsetY: -height * 0.15, scale: 0.65, alpha: boostedAlpha * 0.88 },
 		];
 
 		// Draw solid base cloud with sharp edges (no blur)
 		ctx.save();
 		ctx.filter = 'none';
 		
-		puffs.forEach(puff => {
+		for (let i = 0; i < puffs.length; i++) {
+			const puff = puffs[i];
 			const puffX = x + puff.offsetX;
 			const puffY = y + puff.offsetY;
 			const radiusX = (width * 0.45) * puff.scale;
@@ -528,28 +659,29 @@
 				puffX, puffY, Math.max(radiusX, radiusY)
 			);
 			
-			// Sharper gradient stops for crisp edges
-			gradient.addColorStop(0, `rgba(${r}, ${g}, ${b}, ${puff.alpha})`);
-			gradient.addColorStop(0.5, `rgba(${r}, ${g}, ${b}, ${puff.alpha * 0.9})`);
-			gradient.addColorStop(0.8, `rgba(${r}, ${g}, ${b}, ${puff.alpha * 0.6})`);
-			gradient.addColorStop(1, `rgba(${r}, ${g}, ${b}, 0)`);
+			// Use pre-computed color strings
+			gradient.addColorStop(0, colorStrings[0]);
+			gradient.addColorStop(0.5, colorStrings[1]);
+			gradient.addColorStop(0.8, colorStrings[2]);
+			gradient.addColorStop(1, colorStrings[3]);
 			
 			ctx.fillStyle = gradient;
 			ctx.beginPath();
 			ctx.ellipse(puffX, puffY, radiusX, radiusY, 0, 0, Math.PI * 2);
 			ctx.fill();
-		});
+		}
 
 		ctx.restore();
 
-		// Add very subtle blur only to edges (minimal blur for crispness)
+		// Add very subtle blur only to edges (minimal blur for crispness, optimized)
 		if (blur > 0) {
 			ctx.save();
 			ctx.filter = `blur(${blur * 0.2}px)`; // Very minimal blur
 			ctx.globalAlpha = 0.3; // Reduced opacity for subtle effect
 
-			// Only blur the outer puffs
-			puffs.slice(0, 4).forEach(puff => {
+			// Only blur the outer puffs (reduced to first 3 for performance)
+			for (let i = 0; i < Math.min(3, puffs.length); i++) {
+				const puff = puffs[i];
 				const puffX = x + puff.offsetX;
 				const puffY = y + puff.offsetY;
 				const radiusX = (width * 0.35) * puff.scale;
@@ -559,7 +691,7 @@
 				ctx.beginPath();
 				ctx.ellipse(puffX, puffY, radiusX, radiusY, 0, 0, Math.PI * 2);
 				ctx.fill();
-			});
+			}
 
 			ctx.restore();
 		}
@@ -913,15 +1045,16 @@
 		overflow-x: hidden;
 	}
 
-	:global(html) {
-		scroll-behavior: smooth;
-	}
+	/* Removed scroll-behavior: smooth from html for better scroll performance */
+	/* Smooth scrolling adds significant overhead when combined with canvas animations */
 
 	.homepage {
 		width: 100%;
 		overflow-x: hidden;
 		background: transparent;
 		position: relative;
+		/* Performance: Use CSS containment to isolate layout/paint work */
+		contain: layout style paint;
 	}
 
 	/* Hero Section */
@@ -975,6 +1108,10 @@
 		pointer-events: none;
 		/* Enable seamless wrapping by allowing canvas to extend beyond viewport */
 		transform-origin: center center;
+		/* Performance: Force GPU acceleration */
+		transform: translateZ(0);
+		backface-visibility: hidden;
+		-webkit-backface-visibility: hidden;
 	}
 
 	/* Sky Layer - Static, no movement */
@@ -986,22 +1123,28 @@
 	/* Far Clouds - Slowest parallax with seamless wrapping */
 	.far-clouds-layer {
 		z-index: 2;
-		transition: transform 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+		/* Reduced transition duration for snappier scroll response */
+		transition: transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
 		opacity: 0.95;
+		will-change: transform;
 	}
 
 	/* Mid Clouds - Medium parallax with seamless wrapping */
 	.mid-clouds-layer {
 		z-index: 3;
-		transition: transform 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+		/* Reduced transition duration for snappier scroll response */
+		transition: transform 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
 		opacity: 0.95;
+		will-change: transform;
 	}
 
 	/* Near Clouds - Fastest parallax with seamless wrapping */
 	.near-clouds-layer {
 		z-index: 4;
-		transition: transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+		/* Reduced transition duration for snappier scroll response */
+		transition: transform 0.15s cubic-bezier(0.25, 0.46, 0.45, 0.94);
 		opacity: 0.95;
+		will-change: transform;
 	}
 
 
@@ -1200,6 +1343,9 @@
 		background: transparent;
 		position: relative;
 		z-index: 1;
+		/* Performance: Use CSS containment to isolate rendering work */
+		contain: layout style paint;
+		content-visibility: auto; /* Only render when visible in viewport */
 	}
 
 	.container {
@@ -1227,6 +1373,9 @@
 		background-clip: text;
 		animation: gradient-flash 4s ease-in-out infinite;
 		filter: drop-shadow(0 3px 12px rgba(0, 0, 0, 0.8)) drop-shadow(0 0 20px rgba(255, 217, 102, 0.3));
+		/* Performance: Isolate this expensive animation */
+		will-change: background-position;
+		contain: paint;
 	}
 
 	.features-grid {
@@ -1250,6 +1399,9 @@
 		opacity: 0;
 		transform: translateY(50px);
 		will-change: transform;
+		/* Performance: GPU acceleration and containment */
+		transform: translate3d(0, 50px, 0);
+		contain: layout style paint;
 	}
 
 	.feature-card::after {
@@ -1268,7 +1420,8 @@
 	}
 
 	.feature-card:hover {
-		transform: translateY(-10px);
+		/* Performance: Use translate3d for GPU acceleration */
+		transform: translate3d(0, -10px, 0);
 		box-shadow: 0 15px 50px rgba(0, 206, 209, 0.3); /* Cyan glow */
 		background: rgba(28, 62, 74, 0.5); /* Darker on hover */
 		border: 1px solid var(--font-accent-cyan);
@@ -1371,6 +1524,9 @@
 		background: transparent;
 		position: relative;
 		z-index: 1;
+		/* Performance: Use CSS containment to isolate rendering work */
+		contain: layout style paint;
+		content-visibility: auto; /* Only render when visible in viewport */
 	}
 
 	.zones-grid {
@@ -1514,6 +1670,9 @@
 		min-height: 100vh;
 		display: flex;
 		align-items: center;
+		/* Performance: Use CSS containment to isolate rendering work */
+		contain: layout style paint;
+		content-visibility: auto; /* Only render when visible in viewport */
 	}
 
 	/* Section Header */
