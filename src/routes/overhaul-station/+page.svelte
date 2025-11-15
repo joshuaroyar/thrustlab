@@ -95,24 +95,25 @@
 			skyCtx.fillStyle = skyGradient;
 			skyCtx.fillRect(0, 0, skyCanvas.width, skyCanvas.height);
 
-			// Sun
-			const sunX = skyCanvas.width * 0.2;
-			const sunY = skyCanvas.height * 0.15;
-			const sunRadius = 80;
+			// Simple sun on left side, positioned below navbar
+			const sunX = skyCanvas.width * 0.15; // Left side (15% from left)
+			const sunY = skyCanvas.height * 0.25; // Below navbar (25% from top)
+			const sunRadius = 70; // Good looking size
 
-			// Sun glow
-			const sunGlow = skyCtx.createRadialGradient(sunX, sunY, sunRadius * 0.3, sunX, sunY, sunRadius * 3);
-			sunGlow.addColorStop(0, 'rgba(255, 255, 200, 0.4)');
-			sunGlow.addColorStop(0.5, 'rgba(255, 255, 150, 0.15)');
-			sunGlow.addColorStop(1, 'rgba(255, 255, 150, 0)');
+			// Soft glow around sun
+			const sunGlow = skyCtx.createRadialGradient(sunX, sunY, sunRadius * 0.3, sunX, sunY, sunRadius * 2.5);
+			sunGlow.addColorStop(0, 'rgba(255, 240, 180, 0.5)');
+			sunGlow.addColorStop(0.5, 'rgba(255, 230, 150, 0.2)');
+			sunGlow.addColorStop(1, 'rgba(255, 220, 130, 0)');
 			skyCtx.fillStyle = sunGlow;
-			skyCtx.fillRect(0, 0, skyCanvas.width, skyCanvas.height);
+			skyCtx.fillRect(sunX - sunRadius * 2.5, sunY - sunRadius * 2.5, sunRadius * 5, sunRadius * 5);
 
-			// Sun core
+			// Main sun body with gradient
 			const sunGradient = skyCtx.createRadialGradient(sunX, sunY, 0, sunX, sunY, sunRadius);
-			sunGradient.addColorStop(0, '#FFF9E6');
-			sunGradient.addColorStop(0.5, '#FFE87C');
-			sunGradient.addColorStop(1, '#FFD54F');
+			sunGradient.addColorStop(0, '#FFFEF0'); // Bright cream center
+			sunGradient.addColorStop(0.4, '#FFF4C4'); // Light golden
+			sunGradient.addColorStop(0.8, '#FFE680'); // Golden yellow
+			sunGradient.addColorStop(1, '#FFD54F'); // Darker golden edge
 			skyCtx.fillStyle = sunGradient;
 			skyCtx.beginPath();
 			skyCtx.arc(sunX, sunY, sunRadius, 0, Math.PI * 2);
