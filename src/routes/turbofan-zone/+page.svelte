@@ -10,8 +10,32 @@
 	let mounted = $state(false);
 	let mouseX = $state(0);
 	let mouseY = $state(0);
-	let driftOffset = $state(0);
-	let animationFrameId: number;
+
+	const BASE_DRIFT_SPEED = 0.61;
+
+	let farClouds = $state([
+		{ x: -200, y: 200, w: 350, h: 120, color: 'rgba(255, 255, 255, 0.5)' },
+		{ x: 400, y: 300, w: 400, h: 140, color: 'rgba(255, 255, 255, 0.45)' },
+		{ x: 1200, y: 250, w: 420, h: 150, color: 'rgba(255, 255, 255, 0.48)' },
+		{ x: 2000, y: 180, w: 380, h: 130, color: 'rgba(255, 255, 255, 0.47)' }
+	]);
+
+	let midClouds = $state([
+		{ x: -100, y: 400, w: 300, h: 100, color: 'rgba(255, 255, 255, 0.65)' },
+		{ x: 500, y: 500, w: 320, h: 110, color: 'rgba(255, 255, 255, 0.62)' },
+		{ x: 1200, y: 450, w: 340, h: 115, color: 'rgba(255, 255, 255, 0.64)' },
+		{ x: 1900, y: 480, w: 310, h: 105, color: 'rgba(255, 255, 255, 0.63)' },
+		{ x: 2600, y: 420, w: 330, h: 112, color: 'rgba(255, 255, 255, 0.62)' }
+	]);
+
+	let nearClouds = $state([
+		{ x: -150, y: 700, w: 250, h: 80, color: 'rgba(255, 255, 255, 0.8)' },
+		{ x: 400, y: 750, w: 270, h: 85, color: 'rgba(255, 255, 255, 0.78)' },
+		{ x: 950, y: 800, w: 260, h: 82, color: 'rgba(255, 255, 255, 0.79)' },
+		{ x: 1500, y: 720, w: 280, h: 87, color: 'rgba(255, 255, 255, 0.77)' },
+		{ x: 2100, y: 780, w: 265, h: 84, color: 'rgba(255, 255, 255, 0.78)' },
+		{ x: 2700, y: 740, w: 275, h: 86, color: 'rgba(255, 255, 255, 0.8)' }
+	]);
 
 	// Tab state
 	let activeTab = $state<'overview' | 'sections'>('overview');
@@ -19,12 +43,7 @@
 	onMount(() => {
 		mounted = true;
 
-		// Generate cloud layers
-		generateSkyLayer();
-		generateFarClouds();
-		generateMidClouds();
-		generateNearClouds();
-
+		// Mouse tracking
 		const handleMouseMove = (e: MouseEvent) => {
 			mouseX = e.clientX;
 			mouseY = e.clientY;
@@ -32,139 +51,128 @@
 
 		window.addEventListener('mousemove', handleMouseMove);
 
-		// Continuous drift animation
+		// Initialize sky
+		initializeSkies();
+
+		// Start continuous animation loop
+		let animationId: number;
 		const animate = () => {
-			driftOffset += 0.1;
-			animationFrameId = requestAnimationFrame(animate);
+			animateCloudLayers();
+			animationId = requestAnimationFrame(animate);
 		};
 		animate();
 
 		return () => {
 			window.removeEventListener('mousemove', handleMouseMove);
-			cancelAnimationFrame(animationFrameId);
+			if (animationId) {
+				cancelAnimationFrame(animationId);
+			}
 		};
 	});
 
-	// Generate evening sky gradient with setting sun
-	function generateSkyLayer() {
+	function initializeSkies() {
 		if (!skyCanvas) return;
-		const ctx = skyCanvas.getContext('2d');
-		if (!ctx) return;
 
-		const width = skyCanvas.width;
-		const height = skyCanvas.height;
+		const skyCtx = skyCanvas.getContext('2d');
+		if (skyCtx) {
+			// Evening sky colors (sunset/dusk)
+			const skyGradient = skyCtx.createLinearGradient(0, 0, 0, skyCanvas.height);
+			skyGradient.addColorStop(0, '#FF6B6B');      // Orange-red at top
+			skyGradient.addColorStop(0.3, '#FF8C42');    // Light orange
+			skyGradient.addColorStop(0.6, '#FFB347');    // Peach
+			skyGradient.addColorStop(1, '#FFD700');      // Gold at bottom
+			skyCtx.fillStyle = skyGradient;
+			skyCtx.fillRect(0, 0, skyCanvas.width, skyCanvas.height);
 
-		ctx.clearRect(0, 0, width, height);
+			// Add setting sun (positioned lower and to the right for evening)
+			const sunX = skyCanvas.width * 0.85; // Right side
+			const sunY = skyCanvas.height * 0.7;  // Lower position
+			const sunRadius = 80;
 
-		// Evening sky colors (sunset/dusk)
-		const gradient = ctx.createLinearGradient(0, 0, 0, height);
-		gradient.addColorStop(0, '#FF6B6B');      // Orange-red at top
-		gradient.addColorStop(0.3, '#FF8C42');    // Light orange
-		gradient.addColorStop(0.6, '#FFB347');    // Peach
-		gradient.addColorStop(1, '#FFD700');      // Gold at bottom
+			// Evening sun glow (more intense)
+			const sunGlow = skyCtx.createRadialGradient(sunX, sunY, sunRadius * 0.3, sunX, sunY, sunRadius * 5);
+			sunGlow.addColorStop(0, 'rgba(255, 150, 50, 0.6)');
+			sunGlow.addColorStop(0.5, 'rgba(255, 100, 30, 0.3)');
+			sunGlow.addColorStop(1, 'rgba(255, 80, 20, 0)');
+			skyCtx.fillStyle = sunGlow;
+			skyCtx.fillRect(sunX - sunRadius * 5, sunY - sunRadius * 5, sunRadius * 10, sunRadius * 10);
 
-		ctx.fillStyle = gradient;
-		ctx.fillRect(0, 0, width, height);
-
-		// Add setting sun (positioned lower and to the right for evening)
-		const sunX = width * 0.85; // Right side
-		const sunY = height * 0.7;  // Lower position
-		const sunRadius = 80;
-
-		// Evening sun glow (more intense)
-		const sunGlow = ctx.createRadialGradient(sunX, sunY, sunRadius * 0.3, sunX, sunY, sunRadius * 5);
-		sunGlow.addColorStop(0, 'rgba(255, 150, 50, 0.6)');
-		sunGlow.addColorStop(0.5, 'rgba(255, 100, 30, 0.3)');
-		sunGlow.addColorStop(1, 'rgba(255, 80, 20, 0)');
-		ctx.fillStyle = sunGlow;
-		ctx.fillRect(sunX - sunRadius * 5, sunY - sunRadius * 5, sunRadius * 10, sunRadius * 10);
-
-		// Sun body (more orange/red for evening)
-		const sunGradient = ctx.createRadialGradient(sunX - 15, sunY - 15, 10, sunX, sunY, sunRadius);
-		sunGradient.addColorStop(0, '#FFF4D6');
-		sunGradient.addColorStop(0.4, '#FFB347');
-		sunGradient.addColorStop(1, '#FF8C42');
-		ctx.fillStyle = sunGradient;
-		ctx.beginPath();
-		ctx.arc(sunX, sunY, sunRadius, 0, Math.PI * 2);
-		ctx.fill();
+			// Sun body (more orange/red for evening)
+			const sunGradient = skyCtx.createRadialGradient(sunX - 15, sunY - 15, 10, sunX, sunY, sunRadius);
+			sunGradient.addColorStop(0, '#FFF4D6');
+			sunGradient.addColorStop(0.4, '#FFB347');
+			sunGradient.addColorStop(1, '#FF8C42');
+			skyCtx.fillStyle = sunGradient;
+			skyCtx.beginPath();
+			skyCtx.arc(sunX, sunY, sunRadius, 0, Math.PI * 2);
+			skyCtx.fill();
+		}
 	}
 
-	function generateFarClouds() {
-		if (!farCloudsCanvas) return;
-		const ctx = farCloudsCanvas.getContext('2d');
-		if (!ctx) return;
+	function animateCloudLayers() {
+		if (!farCloudsCanvas || !midCloudsCanvas || !nearCloudsCanvas) return;
 
-		const width = farCloudsCanvas.width;
-		const height = farCloudsCanvas.height;
+		const farCtx = farCloudsCanvas.getContext('2d');
+		const midCtx = midCloudsCanvas.getContext('2d');
+		const nearCtx = nearCloudsCanvas.getContext('2d');
 
-		ctx.clearRect(0, 0, width, height);
+		if (!farCtx || !midCtx || !nearCtx) return;
 
-		const cloudData: Array<{x: number, y: number, w: number, h: number, color: string, blur: number}> = [];
+		const centerX = window.innerWidth / 2;
+		const centerY = window.innerHeight / 2;
+		const deltaX = mouseX - centerX;
+		const deltaY = mouseY - centerY;
 
-		const cloudCount = 19;
-		const spacing = width / cloudCount;
+		// Far clouds
+		const farLayerSpeed = 0.3;
+		const farMouseMultiplier = 15;
+		const farCursorOffsetX = -(deltaX / centerX) * farMouseMultiplier;
+		const farCursorOffsetY = -(deltaY / centerY) * farMouseMultiplier * 0.5;
+
+		farCtx.clearRect(0, 0, farCloudsCanvas.width, farCloudsCanvas.height);
 		
-		for (let i = 0; i < cloudCount; i++) {
-			cloudData.push({
-				x: i * spacing + Math.random() * spacing * 0.5,
-				y: Math.random() * height * 0.4,
-				w: 120 + Math.random() * 80,
-				h: 40 + Math.random() * 30,
-				color: 'rgba(255, 255, 255, 0.6)',
-				blur: 8
-			});
+		for (const cloud of farClouds) {
+			cloud.x += BASE_DRIFT_SPEED * farLayerSpeed;
+			if (cloud.x - (cloud.w * 0.35) > farCloudsCanvas.width) {
+				cloud.x = -(cloud.w * 0.35);
+			}
+			drawEnhancedCloud(farCtx, cloud.x + farCursorOffsetX, cloud.y + farCursorOffsetY, cloud.w, cloud.h, cloud.color, 20);
 		}
 
-		cloudData.forEach(cloud => {
-			drawAnimeCloud(ctx, cloud.x, cloud.y, cloud.w, cloud.h, cloud.color, cloud.blur);
-		});
+		// Mid clouds
+		const midLayerSpeed = 0.7;
+		const midMouseMultiplier = 30;
+		const midCursorOffsetX = -(deltaX / centerX) * midMouseMultiplier;
+		const midCursorOffsetY = -(deltaY / centerY) * midMouseMultiplier * 0.5;
+
+		midCtx.clearRect(0, 0, midCloudsCanvas.width, midCloudsCanvas.height);
+		
+		for (const cloud of midClouds) {
+			cloud.x += BASE_DRIFT_SPEED * midLayerSpeed;
+			if (cloud.x - (cloud.w * 0.35) > midCloudsCanvas.width) {
+				cloud.x = -(cloud.w * 0.35);
+			}
+			drawEnhancedCloud(midCtx, cloud.x + midCursorOffsetX, cloud.y + midCursorOffsetY, cloud.w, cloud.h, cloud.color, 20);
+		}
+
+		// Near clouds
+		const nearLayerSpeed = 1.2;
+		const nearMouseMultiplier = 50;
+		const nearCursorOffsetX = -(deltaX / centerX) * nearMouseMultiplier;
+		const nearCursorOffsetY = -(deltaY / centerY) * nearMouseMultiplier * 0.5;
+
+		nearCtx.clearRect(0, 0, nearCloudsCanvas.width, nearCloudsCanvas.height);
+		
+		for (const cloud of nearClouds) {
+			cloud.x += BASE_DRIFT_SPEED * nearLayerSpeed;
+			if (cloud.x - (cloud.w * 0.35) > nearCloudsCanvas.width) {
+				cloud.x = -(cloud.w * 0.35);
+			}
+			drawEnhancedCloud(nearCtx, cloud.x + nearCursorOffsetX, cloud.y + nearCursorOffsetY, cloud.w, cloud.h, cloud.color, 20);
+		}
 	}
 
-	function generateMidClouds() {
-		if (!midCloudsCanvas) return;
-		const ctx = midCloudsCanvas.getContext('2d');
-		if (!ctx) return;
-
-		const width = midCloudsCanvas.width;
-		const height = midCloudsCanvas.height;
-
-		ctx.clearRect(0, 0, width, height);
-
-		const clouds = [
-			{ x: width * 0.1, y: height * 0.25, w: 200, h: 70, color: 'rgba(255, 255, 255, 0.75)', blur: 5 },
-			{ x: width * 0.35, y: height * 0.15, w: 250, h: 85, color: 'rgba(255, 255, 255, 0.8)', blur: 5 },
-			{ x: width * 0.6, y: height * 0.3, w: 220, h: 75, color: 'rgba(255, 255, 255, 0.75)', blur: 5 },
-			{ x: width * 0.85, y: height * 0.2, w: 240, h: 80, color: 'rgba(255, 255, 255, 0.78)', blur: 5 }
-		];
-
-		clouds.forEach(cloud => {
-			drawAnimeCloud(ctx, cloud.x, cloud.y, cloud.w, cloud.h, cloud.color, cloud.blur);
-		});
-	}
-
-	function generateNearClouds() {
-		if (!nearCloudsCanvas) return;
-		const ctx = nearCloudsCanvas.getContext('2d');
-		if (!ctx) return;
-
-		const width = nearCloudsCanvas.width;
-		const height = nearCloudsCanvas.height;
-
-		ctx.clearRect(0, 0, width, height);
-
-		const clouds = [
-			{ x: width * 0.15, y: height * 0.4, w: 300, h: 100, color: 'rgba(255, 255, 255, 0.9)', blur: 3 },
-			{ x: width * 0.5, y: height * 0.35, w: 350, h: 120, color: 'rgba(255, 255, 255, 0.92)', blur: 3 },
-			{ x: width * 0.8, y: height * 0.45, w: 320, h: 110, color: 'rgba(255, 255, 255, 0.88)', blur: 3 }
-		];
-
-		clouds.forEach(cloud => {
-			drawAnimeCloud(ctx, cloud.x, cloud.y, cloud.w, cloud.h, cloud.color, cloud.blur);
-		});
-	}
-
-	function drawAnimeCloud(
+	function drawEnhancedCloud(
 		ctx: CanvasRenderingContext2D,
 		x: number,
 		y: number,
@@ -175,10 +183,10 @@
 	) {
 		const rgbaMatch = color.match(/rgba?\((\d+),\s*(\d+),\s*(\d+),?\s*([\d.]+)?\)/);
 		if (!rgbaMatch) return;
-		
+
 		const [, r, g, b, a = '1'] = rgbaMatch;
 		const baseAlpha = parseFloat(a);
-		const boostedAlpha = Math.min(baseAlpha * 1.3, 0.95);
+		const boostedAlpha = Math.min(baseAlpha * 1.2, 0.95);
 
 		const puffs = [
 			{ x: x, y: y, radiusX: width * 0.35, radiusY: height * 0.5 },
@@ -232,39 +240,6 @@
 		
 		ctx.restore();
 	}
-
-	function getParallaxStyle(layer: 'far' | 'mid' | 'near') {
-		if (!mounted) return '';
-
-		const speeds = {
-			far: 0.5,
-			mid: 1,
-			near: 1.5
-		};
-
-		const speed = speeds[layer];
-		const canvasWidth = 3200;
-
-		const drift = (driftOffset * speed) % canvasWidth;
-
-		const centerX = window.innerWidth / 2;
-		const centerY = window.innerHeight / 2;
-		
-		const deltaX = mouseX - centerX;
-		const deltaY = mouseY - centerY;
-		
-		const parallaxMultiplier = {
-			far: 20,
-			mid: 40,
-			near: 60
-		};
-		
-		const multiplier = parallaxMultiplier[layer];
-		const cursorOffsetX = -(deltaX / centerX) * multiplier;
-		const cursorOffsetY = -(deltaY / centerY) * multiplier * 0.6;
-
-		return `transform: translate3d(${drift + cursorOffsetX}px, ${cursorOffsetY}px, 0);`;
-	}
 </script>
 
 <!-- Evening Parallax Background -->
@@ -281,7 +256,6 @@
 		class="parallax-layer far-clouds-layer"
 		width="3200"
 		height="1800"
-		style={getParallaxStyle('far')}
 	></canvas>
 
 	<canvas 
@@ -289,7 +263,6 @@
 		class="parallax-layer mid-clouds-layer"
 		width="3200"
 		height="1800"
-		style={getParallaxStyle('mid')}
 	></canvas>
 
 	<canvas 
@@ -297,7 +270,6 @@
 		class="parallax-layer near-clouds-layer"
 		width="3200"
 		height="1800"
-		style={getParallaxStyle('near')}
 	></canvas>
 </div>
 
