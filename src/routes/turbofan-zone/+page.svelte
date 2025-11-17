@@ -40,6 +40,105 @@
 	// Tab state
 	let activeTab = $state<'overview' | 'sections'>('overview');
 
+	// Pagination state for "More About Turbofan Engine" section
+	let currentPage = $state(1);
+	const totalPages = 2;
+
+	// Pagination state for "Engine Sections" tab
+	let currentPageSections = $state(1);
+	const totalPagesSections = 3;
+
+	// Content data for each page
+	const pageContent = [
+		{
+			images: [
+				{ src: '/images/turbofan-more-info/img_1.1.png', alt: 'Turbofan Engine Forward Fan' },
+				{ src: '/images/turbofan-more-info/img_1.2.png', alt: 'Turbofan Engine Aft Fan' }
+			],
+			layout: 'side-by-side',
+			text: "The airlines' choice. Turbofans are like Turbojets but also have a large fan accelerating the air's entry into the engine and adding to the thrust as an internal propeller. Engines that have the fan mounted in front of the compressor are called forward-fan engines, while turbofan engines that have the fan mounted to the turbine section are called aft-fan engines."
+		},
+		{
+			images: [
+				{ src: '/images/turbofan-more-info/img_2.png', alt: 'Turbofan Bypass Engine' }
+			],
+			layout: 'centered',
+			text: "The inlet air that passes through a turbofan engine is usually divided into two separate streams of air. One stream passes through the engine core while a second stream coaxially bypasses the engine core. It is this bypass stream of air that is responsible for the term bypass engine. When discussing bypass engines there are three terms you must be familiar with; they are thrust ratio, bypass ratio, and fan pressure ratio. A turbofan engine's thrust ratio is a comparison of the thrust produced by the fan to the thrust produced by the engine core exhaust. On the other hand, a turbofan's bypass ratio refers to the ratio of incoming air that bypasses the core to the amount of air that passes through the engine core."
+		},
+		{
+			images: [
+				{ src: '/images/turbofan-more-info/img_3.1.png', alt: 'Turbofan Classifications' },
+				{ src: '/images/turbofan-more-info/img_3.2.png', alt: 'Bypass Ratio Types' }
+			],
+			layout: 'side-by-side',
+			text: "Turbofans in civil aircraft are generally divided into three classifications based on bypass ratio:\nLow bypass (1:1)\nMedium bypass (2:1 or 3:1)\nHigh bypass (4:1 or greater)\nBypass Ratio (bypass air to engine air), Thrust Ratio (fan to engine core exhaust), Fan Pressure Ratio (pressure leaving the fan to pressure entering the fan)."
+		},
+		{
+			images: [
+				{ src: '/images/turbofan-more-info/img_4.png', alt: 'Turbofan Engine Details' }
+			],
+			layout: 'centered',
+			text: ""
+		}
+	];
+
+	function scrollToMoreInfo() {
+		const moreInfoElement = document.getElementById('more-info-section');
+		if (moreInfoElement) {
+			moreInfoElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
+		}
+	}
+
+	function scrollToEngineSections() {
+		const sectionsElement = document.getElementById('engine-sections-tab');
+		if (sectionsElement) {
+			sectionsElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
+		}
+	}
+
+	function nextPage() {
+		if (currentPage < totalPages) {
+			currentPage++;
+			scrollToMoreInfo();
+		}
+	}
+
+	function prevPage() {
+		if (currentPage > 1) {
+			currentPage--;
+			scrollToMoreInfo();
+		}
+	}
+
+	function goToPage(page: number) {
+		if (page >= 1 && page <= totalPages) {
+			currentPage = page;
+			scrollToMoreInfo();
+		}
+	}
+
+	// Pagination functions for Engine Sections
+	function nextPageSections() {
+		if (currentPageSections < totalPagesSections) {
+			currentPageSections++;
+			scrollToEngineSections();
+		}
+	}
+
+	function prevPageSections() {
+		if (currentPageSections > 1) {
+			currentPageSections--;
+			scrollToEngineSections();
+		}
+	}
+
+	function goToPageSections(page: number) {
+		if (page >= 1 && page <= totalPagesSections) {
+			currentPageSections = page;
+			scrollToEngineSections();
+		}
+	}
+
 	onMount(() => {
 		mounted = true;
 
@@ -337,63 +436,131 @@
 				</div>
 			</div>
 
-		<!-- More About Turbofan Container -->
-		<div class="content-box full-width more-info-container">
+		<!-- More About Turbofan Container with Pagination -->
+		<div id="more-info-section" class="content-box full-width more-info-container">
 			<h2 class="box-title">More About Turbofan Engine</h2>
-			<div class="more-info-content">
-				<!-- Content Section 1 with side-by-side images -->
-				<div class="content-section">
-					<div class="image-pair">
-						<img src="/images/turbofan-more-info/img_1.1.png" alt="Turbofan Engine Forward Fan" class="side-image" />
-						<img src="/images/turbofan-more-info/img_1.2.png" alt="Turbofan Engine Aft Fan" class="side-image" />
+			
+			<!-- Paginated Content -->
+			<div class="pagination-content">
+				{#if currentPage === 1}
+					<div class="page-view">
+						<!-- Section 1: Introduction to Turbofans -->
+						<div class="content-section">
+							<h3 class="section-subtitle">Introduction to Turbofan Engines</h3>
+							<div class="text-content">
+								<p>The airlines' choice. Turbofans are like Turbojets but also have a large fan accelerating the air's entry into the engine and adding to the thrust as an internal propeller.</p>
+								<p>Engines that have the fan mounted in front of the compressor are called forward-fan engines, while turbofan engines that have the fan mounted to the turbine section are called aft-fan engines.</p>
+							</div>
+							<div class="image-row">
+								<img src="/images/turbofan-more-info/img_1.1.png" alt="Turbofan Engine Forward Fan" class="image-wrapper-inline" />
+								<img src="/images/turbofan-more-info/img_1.2.png" alt="Turbofan Engine Aft Fan" class="image-wrapper-inline" />
+							</div>
+						</div>
+
+						<!-- Section 2: Bypass Engine Concept -->
+						<div class="content-section">
+							<h3 class="section-subtitle">The Bypass Engine Concept</h3>
+							<div class="text-content">
+								<p>The inlet air that passes through a turbofan engine is usually divided into two separate streams of air. One stream passes through the engine core while a second stream coaxially bypasses the engine core. It is this bypass stream of air that is responsible for the term bypass engine.</p>
+								<p>When discussing bypass engines there are three terms you must be familiar with; they are thrust ratio, bypass ratio, and fan pressure ratio. A turbofan engine's thrust ratio is a comparison of the thrust produced by the fan to the thrust produced by the engine core exhaust. On the other hand, a turbofan's bypass ratio refers to the ratio of incoming air that bypasses the core to the amount of air that passes through the engine core.</p>
+							</div>
+							<div class="image-wrapper">
+								<img src="/images/turbofan-more-info/img_2.png" alt="Turbofan Bypass Engine" />
+							</div>
+						</div>
+
+						<!-- Section 3: Classifications -->
+						<div class="content-section">
+							<h3 class="section-subtitle">Turbofan Classifications and Ratios</h3>
+							<div class="text-content">
+								<p><strong>Turbofans in civil aircraft are generally divided into three classifications based on bypass ratio:</strong></p>
+								<ul class="bullet-list single-column">
+									<li>Low bypass (1:1)</li>
+									<li>Medium bypass (2:1 or 3:1)</li>
+									<li>High bypass (4:1 or greater)</li>
+								</ul>
+								<p><strong>Key Ratios:</strong></p>
+								<ul class="bullet-list">
+									<li><strong>Bypass Ratio:</strong> bypass air to engine air</li>
+									<li><strong>Thrust Ratio:</strong> fan to engine core exhaust</li>
+									<li><strong>Fan Pressure Ratio:</strong> pressure leaving the fan to pressure entering the fan</li>
+								</ul>
+							</div>
+							<div class="image-row">
+								<img src="/images/turbofan-more-info/img_3.1.png" alt="Turbofan Classifications" class="image-wrapper-inline" />
+								<img src="/images/turbofan-more-info/img_3.2.png" alt="Bypass Ratio Types" class="image-wrapper-inline" />
+							</div>
+						</div>
 					</div>
-					<p class="content-text">
-						The airlines' choice. Turbofans are like Turbojets but also have a large fan accelerating the air's entry into the engine and adding to the thrust as an internal propeller.
-						Engines that have the fan mounted in front of the compressor are called forward-fan engines, while turbofan engines that have the fan mounted to the turbine section are called aft-fan engines.
-					</p>
+				{/if}
+
+				{#if currentPage === 2}
+					<div class="page-view">
+						<!-- Section 4: Detailed Engine View -->
+						<div class="content-section">
+							<h3 class="section-subtitle">Turbofan Engine Details and Components</h3>
+							<div class="text-content">
+								<p>The turbofan engine represents a significant advancement in jet propulsion technology. By incorporating a large bypass fan at the front of the engine, turbofans achieve superior fuel efficiency and reduced noise compared to pure turbojets.</p>
+								<p>Modern high-bypass turbofan engines are the standard powerplant for commercial aviation, offering the perfect balance of thrust, efficiency, and environmental performance. The bypass air not only contributes to thrust but also helps cool the engine and reduce exhaust noise.</p>
+							</div>
+							<div class="image-wrapper">
+								<img src="/images/turbofan-more-info/img_4.png" alt="Turbofan Engine Details" />
+							</div>
+						</div>
+					</div>
+				{/if}
+			</div>
+
+			<!-- Pagination Controls -->
+			<div class="pagination-controls">
+				<button 
+					class="pagination-button prev"
+					onclick={prevPage}
+					disabled={currentPage === 1}
+					aria-label="Previous Page"
+				>
+					<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+						<path d="M15 18l-6-6 6-6"/>
+					</svg>
+					<span>Previous</span>
+				</button>
+
+				<div class="page-numbers">
+					{#each Array(totalPages) as _, i}
+						<button
+							class="page-number {currentPage === i + 1 ? 'active' : ''}"
+							onclick={() => goToPage(i + 1)}
+							aria-label="Go to page {i + 1}"
+							aria-current={currentPage === i + 1 ? 'page' : undefined}
+						>
+							{i + 1}
+						</button>
+					{/each}
 				</div>
 
-				<!-- Content Section 2 with centered image -->
-				<div class="content-section">
-					<div class="image-center">
-						<img src="/images/turbofan-more-info/img_2.png" alt="Turbofan Bypass Engine" class="center-image" />
-					</div>
-					<p class="content-text">
-						The inlet air that passes through a turbofan engine is usually divided into two separate streams of air. One stream passes through the engine core while a second stream coaxially bypasses the engine core. It is this bypass stream of air that is responsible for the term bypass engine. When discussing bypass engines there are three terms you must be familiar with; they are thrust ratio, bypass ratio, and fan pressure ratio. A turbofan engine's thrust ratio is a comparison of the thrust produced by the fan to the thrust produced by the engine core exhaust. On the other hand, a turbofan's bypass ratio refers to the ratio of incoming air that bypasses the core to the amount of air that passes through the engine core.
-					</p>
-				</div>
-
-				<!-- Content Section 3 with side-by-side images -->
-				<div class="content-section">
-					<div class="image-pair">
-						<img src="/images/turbofan-more-info/img_3.1.png" alt="Turbofan Classifications" class="side-image" />
-						<img src="/images/turbofan-more-info/img_3.2.png" alt="Bypass Ratio Types" class="side-image" />
-					</div>
-					<p class="content-text">
-						Turbofans in civil aircraft are generally divided into three classifications based on bypass ratio:<br/>
-						Low bypass (1:1)<br/>
-						Medium bypass (2:1 or 3:1)<br/>
-						High bypass (4:1 or greater)<br/>
-						Bypass Ratio (bypass air to engine air), Thrust Ratio (fan to engine core exhaust), Fan Pressure Ratio (pressure leaving the fan to pressure entering the fan).
-					</p>
-				</div>
-
-				<!-- Content Section 4 with centered image -->
-				<div class="content-section">
-					<div class="image-center">
-						<img src="/images/turbofan-more-info/img_4.png" alt="Turbofan Engine Details" class="center-image" />
-					</div>
-				</div>
+				<button 
+					class="pagination-button next"
+					onclick={nextPage}
+					disabled={currentPage === totalPages}
+					aria-label="Next Page"
+				>
+					<span>Next</span>
+					<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+						<path d="M9 18l6-6-6-6"/>
+					</svg>
+				</button>
 			</div>
 		</div>
 		</div>
 	{:else}
-		<div class="sections-content">
+		<div id="engine-sections-tab" class="sections-content">
 			<h2 class="module-title">
 				LEARNING MODULE 03:<br/>
 				SECTIONS OF A GAS TURBINE ENGINE
 			</h2>
-			<div class="module3-content">
+			<div class="pagination-content">
+				<!-- Page 1: ENGINE COMPONENTS, COLD SECTION (Air Inlet & Centrifugal Compressor) -->
+				{#if currentPageSections === 1}
 				<!-- Introduction -->
 				<section class="content-section">
 					<h3 class="section-heading">ENGINE COMPONENTS</h3>
@@ -401,8 +568,8 @@
 						There are 5 major sections of the gas turbine engine that are grouped into 2 sections: the hot section and the cold section.
 						A turbine engine's hot section includes the combustion, turbine, and exhaust sections. The cold section, on the other hand, includes the air inlet duct and the compressor section.
 					</p>
-					<div class="image-center">
-						<img src="/images/turbofan-module3/3d_img_1.png" alt="Gas Turbine Engine Sections" class="center-image" />
+					<div class="image-wrapper">
+						<img src="/images/turbofan-module3/3d_img_1.png" alt="Gas Turbine Engine Sections" />
 					</div>
 				</section>
 
@@ -410,8 +577,8 @@
 				<section class="content-section">
 					<h3 class="section-heading">COLD SECTION</h3>
 					<h4 class="subsection-heading">AIR INLET</h4>
-					<div class="image-center">
-						<img src="/images/turbofan-module3/3d_img_2.png" alt="Air Inlet Section" class="center-image" />
+					<div class="image-wrapper">
+						<img src="/images/turbofan-module3/3d_img_2.png" alt="Air Inlet Section" />
 					</div>
 					<p class="content-text">
 						The air intake of a gas turbine engine is either built into the airframe itself, if the engine is mounted in the airframe, or is the forward part of the nacelle installation if the engine is wing or rear-fuselage-mounted.
@@ -433,8 +600,8 @@
 							<li>Provide a uniform supply of air to the compressor so the compressor can operate efficiently.</li>
 						</ul>
 					</div>
-					<div class="image-center">
-						<img src="/images/turbofan-module3/img_1.png" alt="Air Inlet Functions" class="center-image" />
+					<div class="image-wrapper">
+						<img src="/images/turbofan-module3/img_1.png" alt="Air Inlet Functions" />
 					</div>
 				</section>
 
@@ -446,8 +613,8 @@
 						<p><strong>Wings Mounted:</strong> Some aircraft with engines mounted inside the wings feature air inlet ducts in the wing's leading edge. Aircraft such as the Aerospatiale Caravelle, de Havilland Comet, and de Havilland Vampire all utilize wing-mounted inlets.</p>
 						<p><strong>Fuselage Mounted:</strong> Engines mounted inside a fuselage typically use air inlet ducts located near the front of the fuselage. For example, many early military aircraft were designed with an air inlet duct in the nose of the fuselage.</p>
 					</div>
-					<div class="image-center">
-						<img src="/images/turbofan-module3/img_2.png" alt="Types of Air Inlet Ducts" class="center-image" />
+					<div class="image-wrapper">
+						<img src="/images/turbofan-module3/img_2.png" alt="Types of Air Inlet Ducts" />
 					</div>
 				</section>
 
@@ -457,8 +624,8 @@
 					<p class="content-text">
 						A typical subsonic air inlet consists of a fixed geometry duct whose diameter progressively increases from front to back. This divergent shape works like a venturi in that as the intake air spreads out, the velocity of the air decreases and the pressure increases. This added pressure contributes significantly to engine efficiency once the aircraft reaches its design cruising speed.
 					</p>
-					<div class="image-center">
-						<img src="/images/turbofan-module3/img_3.png" alt="Subsonic Inlet" class="center-image" />
+					<div class="image-wrapper">
+						<img src="/images/turbofan-module3/img_3.png" alt="Subsonic Inlet" />
 					</div>
 				</section>
 
@@ -468,8 +635,8 @@
 					<p class="content-text">
 						On supersonic aircraft a typical air inlet duct has either a fixed or variable geometry whose diameter progressively decreases, then increases from front to back. This convergent-divergent shape is used to slow the incoming airflow to subsonic speed before it reaches the compressor. The supersonic diffuser gradually decreases in area from front to rear which has the effect of reducing the air velocity down to below Mach 1. Further reduction of velocity is achieved by a subsonic diffuser which increases in area towards the compressor face. The control of shock waves that form on the air inlet is also important to correctly decelerate the air through the shock waves. The use of variable geometry intakes allow the correct control of intake shocks and may also comprise spill doors to allow excess air to be spilled from the inlet without having its velocity changed.
 					</p>
-					<div class="image-center">
-						<img src="/images/turbofan-module3/img_4.png" alt="Supersonic Inlet" class="center-image" />
+					<div class="image-wrapper">
+						<img src="/images/turbofan-module3/img_4.png" alt="Supersonic Inlet" />
 					</div>
 				</section>
 
@@ -484,8 +651,8 @@
 				<!-- Compressor Section -->
 				<section class="content-section">
 					<h3 class="section-heading">COMPRESSOR SECTION</h3>
-					<div class="image-center">
-						<img src="/images/turbofan-module3/3d_img_3.png" alt="Compressor Section" class="center-image" />
+					<div class="image-wrapper">
+						<img src="/images/turbofan-module3/3d_img_3.png" alt="Compressor Section" />
 					</div>
 					<p class="content-text">
 						The second major section and also a part of the cold section of a gas turbine engine is the compressor. It is the component that forces air into the engine. Its main objective is to supply compressed air for combustion in the combustion chamber.
@@ -536,14 +703,14 @@
 						Centrifugal compressors have a high pressure rise per stage that can be around 8:1. Generally centrifugal compressors are limited to two stages due to efficiency concerns.
 						The Impeller (rotor) consists of a forged disk with integral blades fastened by a splined coupling to a common power shaft. Its function is to take air in and accelerate it outward by centrifugal force.
 					</p>
-					<div class="image-center">
-						<img src="/images/turbofan-module3/img_5.png" alt="Centrifugal Compressor" class="center-image" />
+					<div class="image-wrapper">
+						<img src="/images/turbofan-module3/img_5.png" alt="Centrifugal Compressor" />
 					</div>
 					<p class="content-text">
 						Compressors having only one impeller are referred to as single-stage compressors while compressors having two impellers are referred to as double-stage compressors.
 					</p>
-					<div class="image-center">
-						<img src="/images/turbofan-module3/img_6.png" alt="Single and Double Stage Compressors" class="center-image" />
+					<div class="image-wrapper">
+						<img src="/images/turbofan-module3/img_6.png" alt="Single and Double Stage Compressors" />
 					</div>
 				</section>
 
@@ -585,28 +752,32 @@
 						</div>
 					</div>
 				</section>
+				{/if}
 
+				<!-- Page 2: Axial Flow Compressor, Multi-Spool, Compressor Stall -->
+				{#if currentPageSections === 2}
 				<!-- Axial Flow Compressor -->
 				<section class="content-section">
+					<h4 class="subsection-heading">COMPRESSOR SECTION (CONTINUED)</h4>
 					<h5 class="detail-heading">Axial Flow Compressor</h5>
 					<p class="content-text">
 						In an axial flow compressor, the airflow is along the horizontal axis of the compressor. An axial flow compressor has two main elements, a rotor and a stator. The task of an axial compressor is to raise air pressure rather than air velocity.
 					</p>
-					<div class="image-pair">
-						<img src="/images/turbofan-module3/img_7.1.png" alt="Axial Flow Compressor" class="side-image" />
-						<img src="/images/turbofan-module3/img_7.2.png" alt="Axial Compressor Detail" class="side-image" />
+					<div class="image-row">
+						<img src="/images/turbofan-module3/img_7.1.png" alt="Axial Flow Compressor" class="image-wrapper-inline" />
+						<img src="/images/turbofan-module3/img_7.2.png" alt="Axial Compressor Detail" class="image-wrapper-inline" />
 					</div>
 					<p class="content-text">
 						The rotor consists of rows of blades fixed on a rotating spindle. The angle and airfoil contour of the blades forces air rearward in the same manner as a propeller. The rotor blades are usually made of stainless steel with the latter stages being made of titanium. The design of blade attachment to the rotor disk rims varies, but they are commonly fitted into disks by either bulb-type or fir-tree methods, dovetail.
 					</p>
-					<div class="image-center">
-						<img src="/images/turbofan-module3/img_8.png" alt="Rotor Blade Attachment" class="center-image" />
+					<div class="image-wrapper">
+						<img src="/images/turbofan-module3/img_8.png" alt="Rotor Blade Attachment" />
 					</div>
 					<p class="content-text">
 						Some long fan blades have a mid-span shroud that helps support the blades, making them more resistant to the bending forces created by the airstream. The shrouds, however, do block some of the airflow and create additional aerodynamic drag that reduces fan efficiency. The rotor blades used in an axial flow compressor have an airfoil cross-section with a varying angle of incidence, or twist.
 					</p>
-					<div class="image-center">
-						<img src="/images/turbofan-module3/img_9.png" alt="Blade Twist" class="center-image" />
+					<div class="image-wrapper">
+						<img src="/images/turbofan-module3/img_9.png" alt="Blade Twist" />
 					</div>
 					<p class="content-text">
 						This twist compensates for the blade velocity variation caused by its radius.
@@ -621,15 +792,15 @@
 					<p class="content-text">
 						The set of stator vanes immediately in front of the first stage rotor blades are called inlet guide vanes. These vanes direct the airflow into the first stage rotor blades at the best angle while imparting a swirling motion in the direction of engine rotation. This action improves the aerodynamics of the compressor by reducing the drag on the first stage rotor blades.
 					</p>
-					<div class="image-center">
-						<img src="/images/turbofan-module3/img_10.png" alt="Stator Vanes" class="center-image" />
+					<div class="image-wrapper">
+						<img src="/images/turbofan-module3/img_10.png" alt="Stator Vanes" />
 					</div>
 					<ul class="content-list">
 						<li>Stator vanes are normally constructed out of steel or nickel because those metals have high fatigue strength.</li>
 						<li>Stator vanes are often shrouded at their tips to minimize vibration tendencies.</li>
 					</ul>
-					<div class="image-center">
-						<img src="/images/turbofan-module3/img_11.png" alt="Shrouded Stator Vanes" class="center-image" />
+					<div class="image-wrapper">
+						<img src="/images/turbofan-module3/img_11.png" alt="Shrouded Stator Vanes" />
 					</div>
 					<ul class="content-list">
 						<li>Some axial compressors with high compressor pressure ratios utilize variable inlet guide vanes plus several stages of variable stator vanes.</li>
@@ -649,8 +820,8 @@
 						<li>A single stage in an axial flow compressor is capable of producing a compressor pressure ratio of only 1.25:1.</li>
 						<li>Therefore, high compressor pressure ratios are obtained by adding more compressor stages. In order to add more compressor stages, multi-spool compressors are created.</li>
 					</ul>
-					<div class="image-center">
-						<img src="/images/turbofan-module3/img_12.png" alt="Pressure Stages" class="center-image" />
+					<div class="image-wrapper">
+						<img src="/images/turbofan-module3/img_12.png" alt="Pressure Stages" />
 					</div>
 				</section>
 
@@ -678,8 +849,8 @@
 						<li>The front section of a dual-spool compressor is called the low pressure, low speed, or N1 compressor. This low pressure compressor is typically driven by a two-stage turbine at the rear of the turbine section.</li>
 						<li>The second compressor section of a twin-spool compressor is called the high pressure, high speed, or N2 compressor and is typically driven by a single stage high-pressure turbine at the front of the turbine section.</li>
 					</ul>
-					<div class="image-center">
-						<img src="/images/turbofan-module3/img_13.png" alt="Dual Spool Compressor" class="center-image" />
+					<div class="image-wrapper">
+						<img src="/images/turbofan-module3/img_13.png" alt="Dual Spool Compressor" />
 					</div>
 					<h5 class="detail-heading">Triple Spool Compressor</h5>
 					<ul class="content-list">
@@ -687,8 +858,8 @@
 						<li>The compressor next in line is called the intermediate, or N2 compressor,</li>
 						<li>The innermost compressor is the high pressure, or N3 compressor.</li>
 					</ul>
-					<div class="image-center">
-						<img src="/images/turbofan-module3/img_14.png" alt="Triple Spool Compressor" class="center-image" />
+					<div class="image-wrapper">
+						<img src="/images/turbofan-module3/img_14.png" alt="Triple Spool Compressor" />
 					</div>
 				</section>
 
@@ -733,13 +904,16 @@
 						<p><strong>Hung Stalls:</strong> Hung stalls are severe stalls that can significantly impair engine performance, cause loss of power, and can damage the engine.</p>
 					</div>
 				</section>
+				{/if}
 
+				<!-- Page 3: HOT SECTION (Combustion, Turbine, Exhaust, Accessories, APU) -->
+				{#if currentPageSections === 3}
 				<!-- Hot Section - Combustion -->
 				<section class="content-section">
 					<h3 class="section-heading">HOT SECTION</h3>
 					<h4 class="subsection-heading">COMBUSTION SECTION</h4>
-					<div class="image-center">
-						<img src="/images/turbofan-module3/3d_img_4.png" alt="Combustion Section" class="center-image" />
+					<div class="image-wrapper">
+						<img src="/images/turbofan-module3/3d_img_4.png" alt="Combustion Section" />
 					</div>
 					<ul class="content-list">
 						<li>A combustion section is typically located directly between the compressor diffuser and turbine section.</li>
@@ -750,8 +924,8 @@
 						<p><strong>Fuel Injection System:</strong> The fuel injection system meters the appropriate amount of fuel through the fuel nozzles into the combustors. Fuel nozzles are located in the combustion chamber case. Fuel is delivered through the nozzles into the liners in a finely atomized spray to ensure thorough mixing with the incoming air.</p>
 						<p><strong>Fuel Drainage System:</strong> A fuel drainage system accomplishes the important task of draining the unburned fuel after engine shutdown. In addition, draining the unburned fuel helps to prevent gum deposits in the fuel manifold, nozzles, and combustion chambers, which are caused by fuel residue.</p>
 					</div>
-					<div class="image-center">
-						<img src="/images/turbofan-module3/img_15.png" alt="Combustion Chamber Components" class="center-image" />
+					<div class="image-wrapper">
+						<img src="/images/turbofan-module3/img_15.png" alt="Combustion Chamber Components" />
 					</div>
 				</section>
 
@@ -766,8 +940,8 @@
 					<p class="content-text">
 						The multiple-can type combustion chamber consists of a series of individual combustor cans, which act as individual burner units. It is well-suited to centrifugal compressor engines because of the way the compressor discharge air is equally divided at the diffuser.
 					</p>
-					<div class="image-center">
-						<img src="/images/turbofan-module3/img_16.png" alt="Multiple Can Type Combustor" class="center-image" />
+					<div class="image-wrapper">
+						<img src="/images/turbofan-module3/img_16.png" alt="Multiple Can Type Combustor" />
 					</div>
 					<p class="content-text">
 						One of the major advantages of this type of combustor chamber is that multiple combustors can be individually removed for inspection. The individual combustors in a typical multiple-can combustion chamber are interconnected with small flame propagation tubes. The combustion starts in the two cans equipped with igniter plugs; the flame then travels through the tubes and ignites the fuel/air mixture in the other cans. There are 8 or 10 cans in a typical multiple-can combustion section.
@@ -776,15 +950,15 @@
 					<p class="content-text">
 						An annular combustion chamber consists of a housing and a perforated inner liner, or basket. It must be removed as a single unit for repair or replacement. Annular combustors are commonly used in both small and large engines. Normally, the ignition source consists of two spark igniters similar to the type found in multiple-can combustors. In a conventional annular combustor, airflow enters at the front and is discharged at the rear, with primary and secondary airflow much the same as in the multiple-can design.
 					</p>
-					<div class="image-center">
-						<img src="/images/turbofan-module3/img_17.png" alt="Annular Type Combustor" class="center-image" />
+					<div class="image-wrapper">
+						<img src="/images/turbofan-module3/img_17.png" alt="Annular Type Combustor" />
 					</div>
 					<h6 class="detail-subheading">Can-Annular Type Combustor / Tuboannular</h6>
 					<p class="content-text">
 						Can-annular combustion sections represent a combination of the multiple-can combustor and the annular type combustor. It was invented by Pratt & Whitney and consists of a removable steel shroud that encircles the entire combustion section. An individual can and liner is removed and installed as one unit for maintenance. This design combines the ease of overhaul and testing of the multiple-can arrangement with the compactness of the annular combustor.
 					</p>
-					<div class="image-center">
-						<img src="/images/turbofan-module3/img_18.png" alt="Can-Annular Type Combustor" class="center-image" />
+					<div class="image-wrapper">
+						<img src="/images/turbofan-module3/img_18.png" alt="Can-Annular Type Combustor" />
 					</div>
 				</section>
 
@@ -804,8 +978,8 @@
 						<li>Primary, or combustion air, is directed inside the liner in the front end of a combustor. It is used to support the combustion.</li>
 						<li>The secondary airflow in the combustion section forms a cooling air blanket on both sides of the liner and centers the combustion flames so they do not contact the liner. It also cools the hot gases before they enter the turbine section.</li>
 					</ul>
-					<div class="image-center">
-						<img src="/images/turbofan-module3/img_19.png" alt="Primary and Secondary Air" class="center-image" />
+					<div class="image-wrapper">
+						<img src="/images/turbofan-module3/img_19.png" alt="Primary and Secondary Air" />
 					</div>
 				</section>
 
@@ -829,15 +1003,15 @@
 				<!-- Turbine Section -->
 				<section class="content-section">
 					<h4 class="subsection-heading">TURBINE SECTION</h4>
-					<div class="image-center">
-						<img src="/images/turbofan-module3/3d_img_5.png" alt="Turbine Section" class="center-image" />
+					<div class="image-wrapper">
+						<img src="/images/turbofan-module3/3d_img_5.png" alt="Turbine Section" />
 					</div>
 					<p class="content-text">
 						A turbine transforms a portion of the kinetic energy in the hot exhaust gases into mechanical energy to drive the compressor and accessories. The turbine section of a turbojet engine is located downstream of the combustion section and consists of four basic elements: a case, a stator, a shroud, and a rotor.
 					</p>
-					<div class="image-pair">
-						<img src="/images/turbofan-module3/img_20.1.png" alt="Turbine Components" class="side-image" />
-						<img src="/images/turbofan-module3/img_20.2.png" alt="Turbine Assembly" class="side-image" />
+					<div class="image-row">
+						<img src="/images/turbofan-module3/img_20.1.png" alt="Turbine Components" class="image-wrapper-inline" />
+						<img src="/images/turbofan-module3/img_20.2.png" alt="Turbine Assembly" class="image-wrapper-inline" />
 					</div>
 				</section>
 
@@ -865,8 +1039,8 @@
 					<p class="content-text">
 						<strong>Growth or Creep</strong> – it is a phenomenon in which extreme stress on turbine blades may cause the turbine blades to grow in length due to severe centrifugal loads imposed by high rotational speeds.
 					</p>
-					<div class="image-center">
-						<img src="/images/turbofan-module3/img_21.png" alt="Turbine Rotor" class="center-image" />
+					<div class="image-wrapper">
+						<img src="/images/turbofan-module3/img_21.png" alt="Turbine Rotor" />
 					</div>
 				</section>
 
@@ -876,24 +1050,24 @@
 					<p class="content-text">
 						Turbine blades are airfoil-shaped components designed to extract the maximum amount of energy from the flow of hot gases. Turbine blades fit loosely into a turbine disk when an engine is cold, but expand to fit tightly at normal operating temperatures. The most commonly used method for attaching turbine blades is by fir tree slots cut into the turbine disk rim and matching bases cast or machined into the turbine blade base. It can be classified as impulse blades, reaction blades, and impulse-reaction blades.
 					</p>
-					<div class="image-center">
-						<img src="/images/turbofan-module3/img_22.png" alt="Turbine Blade Attachment" class="center-image" />
+					<div class="image-wrapper">
+						<img src="/images/turbofan-module3/img_22.png" alt="Turbine Blade Attachment" />
 					</div>
 					<ul class="content-list">
 						<li><strong>Impulse Turbine Blades</strong> – the blades merely change the direction of airflow coming from the turbine nozzle and cause relatively no change in gas pressure or velocity.</li>
 						<li><strong>Reaction Turbine Blades</strong> – produce a turning force based on an aerodynamic action. To do this, the turbine blades form a series of converging ducts that increase gas velocity and reduce pressure.</li>
 					</ul>
-					<div class="image-pair">
-						<img src="/images/turbofan-module3/img_23.1.png" alt="Impulse Blade" class="side-image" />
-						<img src="/images/turbofan-module3/img_23.2.png" alt="Reaction Blade" class="side-image" />
+					<div class="image-row">
+						<img src="/images/turbofan-module3/img_23.1.png" alt="Impulse Blade" class="image-wrapper-inline" />
+						<img src="/images/turbofan-module3/img_23.2.png" alt="Reaction Blade" class="image-wrapper-inline" />
 					</div>
 					<ul class="content-list">
 						<li><strong>Impulse-Reaction Turbine Blades</strong> – a combination of impulse and reaction blades, the workload along the length of the blade is evenly distributed. The blade base is impulse-shaped while the blade tip is reaction-shaped.</li>
 					</ul>
-					<div class="image-triple">
-						<img src="/images/turbofan-module3/img_24.1.png" alt="Impulse-Reaction Blade" class="triple-image" />
-						<img src="/images/turbofan-module3/img_24.2.png" alt="Blade Cross Section" class="triple-image" />
-						<img src="/images/turbofan-module3/img_24.3.png" alt="Blade Profile" class="triple-image" />
+					<div class="image-row">
+						<img src="/images/turbofan-module3/img_24.1.png" alt="Impulse-Reaction Blade" class="image-wrapper-inline" />
+						<img src="/images/turbofan-module3/img_24.2.png" alt="Blade Cross Section" class="image-wrapper-inline" />
+						<img src="/images/turbofan-module3/img_24.3.png" alt="Blade Profile" class="image-wrapper-inline" />
 					</div>
 				</section>
 
@@ -914,8 +1088,8 @@
 					<p class="content-text">
 						<strong>Active Tip Clearance Control (ACC)</strong> – ACC controls the thermal expansion rate of the turbine case by regulating the flow of cooling air around the turbine case.
 					</p>
-					<div class="image-center">
-						<img src="/images/turbofan-module3/img_25.png" alt="Turbine Cooling" class="center-image" />
+					<div class="image-wrapper">
+						<img src="/images/turbofan-module3/img_25.png" alt="Turbine Cooling" />
 					</div>
 					<p class="content-text">
 						<strong>Counter-rotating turbines</strong> – are chosen by engine designers for their effectiveness in dampening gyroscopic effects and reducing engine vibration, not for aerodynamic reasons.
@@ -925,14 +1099,14 @@
 				<!-- Exhaust Section -->
 				<section class="content-section">
 					<h4 class="subsection-heading">EXHAUST SECTION</h4>
-					<div class="image-center">
-						<img src="/images/turbofan-module3/3d_img_6.png" alt="Exhaust Section" class="center-image" />
+					<div class="image-wrapper">
+						<img src="/images/turbofan-module3/3d_img_6.png" alt="Exhaust Section" />
 					</div>
 					<p class="content-text">
 						A typical exhaust section extends from the rear of the turbine section to the point where the exhaust gases leave the engine. It must direct the flow of hot gases rearward in such a manner as to prevent turbulence and, at the same time, impart a high final or exit velocity to the gases. It is comprised of several components including the exhaust cone, exhaust duct or tailpipe, and exhaust nozzle.
 					</p>
-					<div class="image-center">
-						<img src="/images/turbofan-module3/img_26.png" alt="Exhaust Components" class="center-image" />
+					<div class="image-wrapper">
+						<img src="/images/turbofan-module3/img_26.png" alt="Exhaust Components" />
 					</div>
 				</section>
 
@@ -954,9 +1128,9 @@
 						<li><strong>Converging Exhaust Nozzle</strong> – the convergent shape produces a venturi that accelerates the exhaust gases and increases engine thrust.</li>
 						<li><strong>Converging-Diverging Nozzle</strong> – the converging portion of the exhaust nozzle accelerates the turbine exhaust gases to supersonic speed at the narrowest part of the duct, then, they are accelerated further in the nozzle's divergent portion, so the exhaust gases exit the nozzle well above the speed of sound.</li>
 					</ul>
-					<div class="image-pair">
-						<img src="/images/turbofan-module3/img_27.1.png" alt="Converging Nozzle" class="side-image" />
-						<img src="/images/turbofan-module3/img_27.2.png" alt="Converging-Diverging Nozzle" class="side-image" />
+					<div class="image-row">
+						<img src="/images/turbofan-module3/img_27.1.png" alt="Converging Nozzle" class="image-wrapper-inline" />
+						<img src="/images/turbofan-module3/img_27.2.png" alt="Converging-Diverging Nozzle" class="image-wrapper-inline" />
 					</div>
 				</section>
 
@@ -966,9 +1140,9 @@
 					<p class="content-text">
 						On fan or bypass type engines, there are two gas streams venting to the atmosphere; high temperature gases are discharged by the turbine and cool air mass moved rearward by the fan section. In a low by-pass engine, the flow of cool and hot air are combined in a mixer unit that ensures mixing of the two streams prior to exiting the engine
 					</p>
-					<div class="image-pair">
-						<img src="/images/turbofan-module3/img_28.1.png" alt="Mixer Unit" class="side-image" />
-						<img src="/images/turbofan-module3/img_28.2.png" alt="Mixer Configuration" class="side-image" />
+					<div class="image-row">
+						<img src="/images/turbofan-module3/img_28.1.png" alt="Mixer Unit" class="image-wrapper-inline" />
+						<img src="/images/turbofan-module3/img_28.2.png" alt="Mixer Configuration" class="image-wrapper-inline" />
 					</div>
 				</section>
 
@@ -990,8 +1164,8 @@
 					<p class="content-text">
 						Noise suppressors used on the ground include portable devices that can be positioned near the rear of an engine whenever prolonged ground operation is anticipated. Internal noise due to fan, compressor, and turbine blades is also suppressed by the design of the compressor and turbine blades - appropriate spacing between the blades and vanes to reduce wake and turbulence.
 					</p>
-					<div class="image-center">
-						<img src="/images/turbofan-module3/img_29.png" alt="Noise Suppressors" class="center-image" />
+					<div class="image-wrapper">
+						<img src="/images/turbofan-module3/img_29.png" alt="Noise Suppressors" />
 					</div>
 				</section>
 
@@ -1004,14 +1178,14 @@
 					<p class="content-text">
 						Typical places where an accessory drive is located include the engine's midsection, or the front or rear of the engine. The power needed for Accessory drives is typically designed to blend with the engine profile to minimize drag.
 					</p>
-					<div class="image-center">
-						<img src="/images/turbofan-module3/img_30.png" alt="Accessory Section" class="center-image" />
+					<div class="image-wrapper">
+						<img src="/images/turbofan-module3/img_30.png" alt="Accessory Section" />
 					</div>
 					<p class="content-text">
 						A set of beveled gears is used to drive an accessory shaft, which, in turn, drives an accessory gearbox. Since turbine engines operate at a relatively high rpm, reduction gearing is necessary in the accessory drive system to provide appropriate drive speeds for the accessories. In some installations, an intermediate or transfer gearbox is necessary to obtain the appropriate reduction gearing for the accessories.
 					</p>
-					<div class="image-center">
-						<img src="/images/turbofan-module3/img_31.png" alt="Accessory Gearbox" class="center-image" />
+					<div class="image-wrapper">
+						<img src="/images/turbofan-module3/img_31.png" alt="Accessory Gearbox" />
 					</div>
 				</section>
 
@@ -1029,15 +1203,56 @@
 							<li>Bleed air for air conditioning/pressurization and wing anti-ice in flight.</li>
 						</ul>
 					</div>
-					<div class="image-pair">
-						<img src="/images/turbofan-module3/img_32.1.png" alt="APU System" class="side-image" />
-						<img src="/images/turbofan-module3/img_32.2.png" alt="APU Installation" class="side-image" />
+					<div class="image-row">
+						<img src="/images/turbofan-module3/img_32.1.png" alt="APU System" class="image-wrapper-inline" />
+						<img src="/images/turbofan-module3/img_32.2.png" alt="APU Installation" class="image-wrapper-inline" />
 					</div>
-					<div class="image-pair">
-						<img src="/images/turbofan-module3/img_33.1.png" alt="APU Components" class="side-image" />
-						<img src="/images/turbofan-module3/img_33.2.png" alt="APU Configuration" class="side-image" />
+					<div class="image-row">
+						<img src="/images/turbofan-module3/img_33.1.png" alt="APU Components" class="image-wrapper-inline" />
+						<img src="/images/turbofan-module3/img_33.2.png" alt="APU Configuration" class="image-wrapper-inline" />
 					</div>
 				</section>
+				{/if}
+			</div>
+
+			<!-- Pagination Controls for Engine Sections -->
+			<div class="pagination-controls">
+				<button 
+					class="pagination-button prev"
+					onclick={prevPageSections}
+					disabled={currentPageSections === 1}
+					aria-label="Previous Page"
+				>
+					<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+						<polyline points="15 18 9 12 15 6"></polyline>
+					</svg>
+					<span>Previous</span>
+				</button>
+
+				<div class="page-numbers">
+					{#each Array(totalPagesSections) as _, i}
+						<button
+							class="page-number"
+							class:active={currentPageSections === i + 1}
+							onclick={() => goToPageSections(i + 1)}
+							aria-label={`Go to page ${i + 1}`}
+						>
+							{i + 1}
+						</button>
+					{/each}
+				</div>
+
+				<button 
+					class="pagination-button next"
+					onclick={nextPageSections}
+					disabled={currentPageSections === totalPagesSections}
+					aria-label="Next Page"
+				>
+					<span>Next</span>
+					<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+						<polyline points="9 18 15 12 9 6"></polyline>
+					</svg>
+				</button>
 			</div>
 		</div>
 	{/if}
@@ -1098,7 +1313,7 @@
 	.turbofan-page {
 		min-height: 100vh;
 		padding: 6rem 2rem 4rem;
-		max-width: 1400px;
+		max-width: 1100px;
 		margin: 0 auto;
 		position: relative;
 		z-index: 1;
@@ -1223,110 +1438,280 @@
 		min-height: 500px;
 	}
 
-	/* More Info Container - A4 Size Scrollable */
+	/* More Info Container - Full Screen Layout */
 	.more-info-container {
-		max-width: 210mm; /* A4 width */
-		margin: 0 auto;
-		max-height: 297mm; /* A4 height */
-		overflow-y: auto;
-		padding: 3rem;
+		width: 100%;
+		max-width: 1100px;
+		margin: 2rem auto;
+		padding: 3rem 4rem;
+		background: rgba(255, 255, 255, 0.95);
+		backdrop-filter: blur(10px);
+		border-radius: 1.5rem;
+		box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+		display: flex;
+		flex-direction: column;
 	}
 
-	.more-info-content {
+	.more-info-container .box-title {
+		color: #1a1a1a;
+		margin-bottom: 3rem;
+		font-size: 2rem;
+		text-align: center;
+		border-bottom: 3px solid #3498db;
+		padding-bottom: 1.5rem;
+		text-transform: uppercase;
+		letter-spacing: 1px;
+	}
+
+	.section-subtitle {
+		font-size: 1.6rem;
+		color: #2c3e50;
+		margin: 0 0 2rem 0;
+		padding-bottom: 1rem;
+		border-bottom: 2px solid rgba(52, 152, 219, 0.3);
+		font-weight: 700;
+		text-transform: uppercase;
+		letter-spacing: 0.5px;
+	}
+
+	.pagination-content {
+		flex: 1;
+		display: flex;
+		flex-direction: column;
+		min-height: 600px;
+	}
+
+	.page-view {
 		display: flex;
 		flex-direction: column;
 		gap: 3rem;
+		animation: fadeIn 0.4s ease-in-out;
+	}
+
+	@keyframes fadeIn {
+		from {
+			opacity: 0;
+			transform: translateY(20px);
+		}
+		to {
+			opacity: 1;
+			transform: translateY(0);
+		}
 	}
 
 	.content-section {
 		display: flex;
 		flex-direction: column;
-		gap: 1.5rem;
+		gap: 2rem;
+		padding: 1rem 0;
 	}
 
-	/* Image Styling */
-	.image-pair {
+	/* Image Styling - Full Screen Layout */
+	/* Images with decimal (side-by-side) */
+	.image-row {
 		display: flex;
-		justify-content: space-between;
-		gap: 1.5rem;
-		margin-bottom: 1rem;
+		gap: 2rem;
+		margin: 2rem 0;
+		justify-content: center;
+		align-items: flex-start;
+		flex-wrap: wrap;
 	}
 
-	.side-image {
-		width: 48%;
+	.image-row img,
+	.image-row .image-wrapper-inline {
+		flex: 1;
+		max-width: 48%;
 		height: auto;
-		border-radius: 1rem;
-		border: 2px solid rgba(135, 206, 235, 0.4);
-		box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5);
+		border-radius: 12px;
+		box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 		transition: all 0.3s ease;
+		border: 1px solid rgba(0, 0, 0, 0.1);
 		object-fit: contain;
-		background: rgba(255, 255, 255, 0.05);
-		padding: 0.5rem;
 	}
 
-	.side-image:hover {
-		transform: scale(1.02);
-		border-color: var(--ui-yellow);
-		box-shadow: 0 6px 24px rgba(255, 217, 102, 0.4);
+	.image-row img:hover,
+	.image-row .image-wrapper-inline:hover {
+		transform: translateY(-4px);
+		box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
 	}
 
-	.image-center {
+	/* Images without decimal (centered, original size) */
+	.image-wrapper {
 		display: flex;
 		justify-content: center;
-		margin-bottom: 1rem;
+		margin: 2rem 0;
 	}
 
-	.center-image {
-		max-width: 80%;
+	.image-wrapper img {
+		max-width: 100%;
 		height: auto;
-		border-radius: 1rem;
-		border: 2px solid rgba(135, 206, 235, 0.4);
-		box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5);
+		border-radius: 12px;
+		box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 		transition: all 0.3s ease;
-		object-fit: contain;
-		background: rgba(255, 255, 255, 0.05);
-		padding: 0.5rem;
+		border: 1px solid rgba(0, 0, 0, 0.1);
 	}
 
-	.center-image:hover {
-		transform: scale(1.02);
-		border-color: var(--ui-yellow);
-		box-shadow: 0 6px 24px rgba(255, 217, 102, 0.4);
+	.image-wrapper img:hover {
+		transform: translateY(-4px);
+		box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
 	}
 
-	/* Content Text Styling */
-	.content-text {
-		font-family: var(--font-body);
-		font-size: 1.1rem;
+
+
+	.text-content {
+		background: white;
+		padding: 3rem;
+		border-radius: 16px;
+		border-left: 6px solid #3498db;
+		line-height: 1.9;
+		box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+	}
+
+	.text-content p {
+		margin: 0 0 1.5rem 0;
+		color: #2c3e50;
+		font-size: 1.15rem;
+		line-height: 1.9;
+	}
+
+	.text-content p:last-child {
+		margin-bottom: 0;
+	}
+
+	.text-content strong {
+		color: #1a252f;
+		font-weight: 700;
+		font-size: 1.2rem;
+	}
+
+	.bullet-list {
+		list-style: none;
+		padding-left: 0;
+		margin: 2rem 0;
+	}
+
+	.bullet-list li {
+		position: relative;
+		padding-left: 2.5rem;
+		margin-bottom: 1.25rem;
+		color: #2c3e50;
 		line-height: 1.8;
-		color: var(--font-secondary);
-		text-align: justify;
-		text-shadow: 0 1px 4px rgba(0, 0, 0, 0.6);
-		margin: 0;
-		padding: 1rem;
-		background: rgba(10, 47, 53, 0.3);
-		border-radius: 0.5rem;
-		border-left: 4px solid var(--ui-light-blue);
+		font-size: 1.1rem;
 	}
 
-	/* Custom Scrollbar for More Info Container */
-	.more-info-container::-webkit-scrollbar {
-		width: 10px;
+	.bullet-list li::before {
+		content: "▸";
+		position: absolute;
+		left: 0.5rem;
+		color: #3498db;
+		font-weight: bold;
+		font-size: 1.4rem;
 	}
 
-	.more-info-container::-webkit-scrollbar-track {
-		background: rgba(10, 47, 53, 0.5);
-		border-radius: 5px;
+	/* Single column bullet list for specific cases */
+	.bullet-list.single-column {
+		display: block;
 	}
 
-	.more-info-container::-webkit-scrollbar-thumb {
-		background: linear-gradient(180deg, var(--ui-light-blue), var(--ui-yellow));
-		border-radius: 5px;
+	/* Content Section Layout */
+	.content-section {
+		display: flex;
+		flex-direction: column;
+		gap: 2.5rem;
+		padding: 2rem;
+		background: rgba(248, 249, 250, 0.5);
+		border-radius: 1rem;
+		border: 1px solid rgba(52, 152, 219, 0.2);
+	}
+
+	/* Pagination Controls */
+	.pagination-controls {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		gap: 1.5rem;
+		margin: 3rem 0;
+		flex-wrap: wrap;
+		position: relative;
+		z-index: 10;
+	}
+
+	.pagination-button {
+		display: flex;
+		align-items: center;
+		gap: 0.5rem;
+		padding: 0.75rem 1.5rem;
+		background: rgba(52, 152, 219, 0.1);
+		backdrop-filter: blur(10px);
+		border: 2px solid rgba(52, 152, 219, 0.4);
+		border-radius: 12px;
+		color: #2c3e50;
+		font-weight: 600;
+		font-size: 1rem;
+		cursor: pointer;
 		transition: all 0.3s ease;
+		box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 	}
 
-	.more-info-container::-webkit-scrollbar-thumb:hover {
-		background: linear-gradient(180deg, var(--ui-yellow), var(--ui-light-blue));
+	.pagination-button:not(:disabled):hover {
+		border-color: #3498db;
+		background: rgba(52, 152, 219, 0.2);
+		box-shadow: 0 4px 20px rgba(52, 152, 219, 0.3);
+		transform: translateY(-2px);
+	}
+
+	.pagination-button:disabled {
+		opacity: 0.5;
+		cursor: not-allowed;
+	}
+
+	.pagination-button svg {
+		color: #3498db;
+	}
+
+	.page-numbers {
+		display: flex;
+		align-items: center;
+		gap: 0.5rem;
+		position: relative;
+		z-index: 10;
+	}
+
+	.page-number {
+		width: 48px;
+		height: 48px;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		background: rgba(255, 255, 255, 0.95);
+		backdrop-filter: blur(10px);
+		border: 2px solid rgba(52, 152, 219, 0.3);
+		border-radius: 50%;
+		color: #2c3e50;
+		font-weight: 600;
+		font-size: 1rem;
+		cursor: pointer;
+		box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+		transition: all 0.3s ease;
+		position: relative;
+		z-index: 10;
+		pointer-events: auto;
+	}
+
+	.page-number:hover {
+		border-color: #3498db;
+		background: rgba(52, 152, 219, 0.15);
+		transform: scale(1.1);
+		box-shadow: 0 4px 12px rgba(52, 152, 219, 0.3);
+	}
+
+	.page-number.active {
+		background: linear-gradient(135deg, #3498db, #2980b9);
+		border-color: #3498db;
+		color: #FFFFFF;
+		box-shadow: 0 4px 20px rgba(52, 152, 219, 0.5);
+		transform: scale(1.15);
+		font-weight: 700;
 	}
 
 	.zoom-icon {
@@ -1411,69 +1796,50 @@
 	/* Sections Content */
 	.sections-content {
 		margin-top: 2rem;
-		background: rgba(10, 47, 53, 0.5);
+		background: rgba(255, 255, 255, 0.98);
 		backdrop-filter: blur(20px) saturate(180%);
 		-webkit-backdrop-filter: blur(20px) saturate(180%);
 		border-radius: 1.5rem;
 		padding: 4rem 3rem;
-		border: 1px solid rgba(135, 206, 235, 0.3);
-		box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+		border: 1px solid rgba(0, 0, 0, 0.1);
+		box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1), 0 2px 8px rgba(0, 0, 0, 0.05);
 		min-height: 500px;
+		max-width: 1100px;
+		margin-left: auto;
+		margin-right: auto;
 	}
 
 	.module-title {
 		font-family: var(--font-heading);
 		font-size: clamp(1.8rem, 3vw, 2.5rem);
 		font-weight: 900;
-		color: var(--font-accent-yellow);
+		color: #0a2f35;
 		text-align: center;
 		margin: 0 0 3rem 0;
 		line-height: 1.4;
-		text-shadow: 0 3px 12px rgba(0, 0, 0, 0.8);
+		text-shadow: none;
 		text-transform: uppercase;
 		letter-spacing: 2px;
 	}
 
-	/* Module 3 Content Styling */
-	.module3-content {
-		max-width: 210mm; /* A4 width */
-		margin: 0 auto;
-		max-height: 297mm; /* A4 height */
-		overflow-y: auto;
-		padding: 2rem;
-		display: flex;
-		flex-direction: column;
-		gap: 3rem;
-	}
-
-	/* Custom Scrollbar for Module 3 */
-	.module3-content::-webkit-scrollbar {
-		width: 12px;
-	}
-
-	.module3-content::-webkit-scrollbar-track {
-		background: rgba(10, 47, 53, 0.5);
-		border-radius: 6px;
-	}
-
-	.module3-content::-webkit-scrollbar-thumb {
-		background: linear-gradient(180deg, var(--ui-light-blue), var(--ui-yellow));
-		border-radius: 6px;
-		transition: all 0.3s ease;
-	}
-
-	.module3-content::-webkit-scrollbar-thumb:hover {
-		background: linear-gradient(180deg, var(--ui-yellow), var(--ui-light-blue));
+	/* Pagination Content Styling for Engine Sections */
+	.pagination-content {
+		width: 100%;
+		padding: 0;
+		animation: fadeIn 0.4s ease-in-out;
 	}
 
 	.content-section {
 		display: flex;
 		flex-direction: column;
 		gap: 1.5rem;
-		padding: 1.5rem;
-		background: rgba(10, 47, 53, 0.3);
-		border-radius: 1rem;
-		border-left: 4px solid var(--ui-light-blue);
+		padding: 2rem 0;
+		margin-bottom: 2rem;
+		border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+	}
+
+	.content-section:last-child {
+		border-bottom: none;
 	}
 
 	/* Headings */
@@ -1481,9 +1847,9 @@
 		font-family: var(--font-heading);
 		font-size: 1.8rem;
 		font-weight: 900;
-		color: var(--font-accent-yellow);
+		color: #0a2f35;
 		margin: 0 0 1rem 0;
-		text-shadow: 0 2px 8px rgba(0, 0, 0, 0.8);
+		text-shadow: none;
 		text-transform: uppercase;
 		letter-spacing: 1.5px;
 		border-bottom: 3px solid var(--ui-yellow);
@@ -1494,9 +1860,9 @@
 		font-family: var(--font-heading);
 		font-size: 1.5rem;
 		font-weight: 800;
-		color: var(--ui-light-blue);
+		color: #0a2f35;
 		margin: 1rem 0 0.8rem 0;
-		text-shadow: 0 2px 6px rgba(0, 0, 0, 0.6);
+		text-shadow: none;
 		text-transform: uppercase;
 		letter-spacing: 1px;
 	}
@@ -1505,19 +1871,28 @@
 		font-family: var(--font-heading);
 		font-size: 1.3rem;
 		font-weight: 700;
-		color: var(--font-accent-cyan);
+		color: #1a5f6f;
 		margin: 0.8rem 0 0.6rem 0;
-		text-shadow: 0 1px 4px rgba(0, 0, 0, 0.6);
+		text-shadow: none;
 	}
 
 	.detail-subheading {
 		font-family: var(--font-heading);
 		font-size: 1.15rem;
 		font-weight: 600;
-		color: #FFB347;
+		color: #2a7f8f;
 		margin: 0.6rem 0 0.5rem 0;
-		text-shadow: 0 1px 4px rgba(0, 0, 0, 0.6);
+		text-shadow: none;
 		font-style: italic;
+	}
+
+	/* Content Text */
+	.content-text {
+		font-family: var(--font-body);
+		font-size: 1.05rem;
+		line-height: 1.8;
+		color: #333;
+		margin: 0.8rem 0;
 	}
 
 	/* Content Lists */
@@ -1525,7 +1900,7 @@
 		font-family: var(--font-body);
 		font-size: 1.05rem;
 		line-height: 1.8;
-		color: var(--font-secondary);
+		color: #333;
 		margin: 0.5rem 0;
 		padding-left: 2rem;
 		list-style-type: disc;
@@ -1537,8 +1912,8 @@
 
 	/* Info Boxes */
 	.info-box {
-		background: rgba(135, 206, 235, 0.1);
-		border: 2px solid rgba(135, 206, 235, 0.4);
+		background: rgba(26, 95, 111, 0.08);
+		border: 2px solid rgba(26, 95, 111, 0.2);
 		border-radius: 0.8rem;
 		padding: 1.5rem;
 		margin: 1rem 0;
@@ -1548,16 +1923,16 @@
 		font-family: var(--font-heading);
 		font-size: 1.2rem;
 		font-weight: 700;
-		color: var(--ui-light-blue);
+		color: #1a5f6f;
 		margin: 0 0 1rem 0;
-		text-shadow: 0 1px 4px rgba(0, 0, 0, 0.6);
+		text-shadow: none;
 	}
 
 	.info-box p {
 		font-family: var(--font-body);
 		font-size: 1.05rem;
 		line-height: 1.8;
-		color: var(--font-secondary);
+		color: #333;
 		margin: 0.5rem 0;
 	}
 
@@ -1565,7 +1940,7 @@
 		font-family: var(--font-body);
 		font-size: 1.05rem;
 		line-height: 1.8;
-		color: var(--font-secondary);
+		color: #333;
 		margin: 0.5rem 0;
 		padding-left: 2rem;
 	}
@@ -1610,7 +1985,7 @@
 		font-size: 1.2rem;
 		font-weight: 700;
 		margin: 0 0 1rem 0;
-		text-shadow: 0 1px 4px rgba(0, 0, 0, 0.6);
+		text-shadow: none;
 		text-align: center;
 		text-transform: uppercase;
 		letter-spacing: 1px;
@@ -1620,7 +1995,7 @@
 		font-family: var(--font-body);
 		font-size: 1.05rem;
 		line-height: 1.8;
-		color: var(--font-secondary);
+		color: #333;
 		margin: 0;
 		padding-left: 1.5rem;
 		list-style-type: none;
@@ -1650,31 +2025,7 @@
 		font-size: 1.2rem;
 	}
 
-	/* Image Triple for 3 images side by side */
-	.image-triple {
-		display: flex;
-		justify-content: space-between;
-		gap: 1rem;
-		margin: 1rem 0;
-	}
 
-	.triple-image {
-		width: 32%;
-		height: auto;
-		border-radius: 0.8rem;
-		border: 2px solid rgba(135, 206, 235, 0.4);
-		box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5);
-		transition: all 0.3s ease;
-		object-fit: contain;
-		background: rgba(255, 255, 255, 0.05);
-		padding: 0.5rem;
-	}
-
-	.triple-image:hover {
-		transform: scale(1.02);
-		border-color: var(--ui-yellow);
-		box-shadow: 0 6px 24px rgba(255, 217, 102, 0.4);
-	}
 
 	/* Responsive Design */
 	@media (max-width: 968px) {
@@ -1716,43 +2067,67 @@
 
 		/* More Info Responsive */
 		.more-info-container {
-			max-width: 100%;
-			max-height: 80vh;
-			padding: 2rem 1.5rem;
+			width: 95%;
+			padding: 2.5rem 2rem;
+			margin: 1rem auto;
 		}
 
-		.image-pair {
-			flex-direction: column;
-			gap: 1rem;
+		.more-info-container .box-title {
+			font-size: 1.6rem;
+			margin-bottom: 2rem;
 		}
 
-		.side-image {
-			width: 100%;
+		.section-subtitle {
+			font-size: 1.3rem;
 		}
 
-		.center-image {
-			max-width: 100%;
-		}
-
-		.content-text {
-			font-size: 1rem;
-			padding: 0.8rem;
-		}
-
-		.more-info-content {
-			gap: 2rem;
+		.pagination-content {
+			min-height: 500px;
 		}
 
 		.content-section {
+			padding: 1.5rem;
+			gap: 2rem;
+		}
+
+		.image-row {
+			flex-direction: column;
+			gap: 2rem;
+		}
+
+		.image-wrapper {
+			max-width: 100%;
+			min-width: 100%;
+		}
+
+		.text-content {
+			padding: 2rem;
+		}
+
+		.text-content p {
+			font-size: 1.05rem;
+		}
+
+		.bullet-list li {
+			font-size: 1rem;
+		}
+
+		.pagination-controls {
 			gap: 1rem;
 		}
 
-		/* Module 3 Responsive */
-		.module3-content {
-			max-width: 100%;
-			max-height: 80vh;
-			padding: 1.5rem;
+		.pagination-button {
+			padding: 0.6rem 1.2rem;
+			font-size: 0.9rem;
 		}
+
+		.page-number {
+			width: 40px;
+			height: 40px;
+			font-size: 0.9rem;
+		}
+
+
 
 		.section-heading {
 			font-size: 1.5rem;
@@ -1771,33 +2146,71 @@
 			gap: 1rem;
 		}
 
-		.image-triple {
-			flex-direction: column;
-			gap: 1rem;
-		}
 
-		.triple-image {
-			width: 100%;
-		}
 	}
 
 	@media (max-width: 480px) {
 		.more-info-container {
-			padding: 1.5rem 1rem;
+			width: 100%;
+			padding: 2rem 1rem;
+			border-radius: 0;
 		}
 
-		.content-text {
-			font-size: 0.95rem;
+		.more-info-container .box-title {
+			font-size: 1.4rem;
+			padding-bottom: 1rem;
+			margin-bottom: 1.5rem;
 		}
 
-		.box-title {
+		.section-subtitle {
 			font-size: 1.2rem;
+			margin-bottom: 1.5rem;
 		}
 
-		/* Module 3 Mobile */
-		.module3-content {
+		.content-section {
 			padding: 1rem;
+			gap: 1.5rem;
 		}
+
+		.text-content {
+			padding: 1.5rem;
+		}
+
+		.text-content p {
+			font-size: 1rem;
+		}
+
+		.text-content strong {
+			font-size: 1.05rem;
+		}
+
+		.bullet-list li {
+			font-size: 1rem;
+			padding-left: 2rem;
+			margin-bottom: 1rem;
+		}
+
+		.image-wrapper {
+			padding: 1rem;
+			min-width: 100%;
+		}
+
+		.pagination-button {
+			padding: 0.5rem 1rem;
+			font-size: 0.85rem;
+		}
+
+		.pagination-button span {
+			display: none;
+		}
+
+		.page-number {
+			width: 36px;
+			height: 36px;
+			font-size: 0.85rem;
+		}
+
+
 
 		.content-section {
 			padding: 1rem;

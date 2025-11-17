@@ -50,8 +50,7 @@
 
 {#if !isOpen}
 	<button class="chat-fab" onclick={toggleChat} aria-label="Open JAJA Assistant">
-		<span class="fab-icon">🤖</span>
-		<span class="fab-text">Ask JAJA</span>
+		<img src="/images/jaja-popup.png" alt="JAJA Assistant" class="fab-image" />
 	</button>
 {:else}
 	<div class="chatbot-popup" class:minimized={isMinimized}>
@@ -139,33 +138,31 @@
 		position: fixed;
 		bottom: 2rem;
 		right: 2rem;
-		background: linear-gradient(
-			135deg,
-			var(--ui-yellow) 0%,
-			var(--font-accent-cyan) 50%,
-			var(--ui-light-blue) 100%
-		);
-		background-size: 300% 100%;
-		color: var(--font-primary);
+		background: transparent;
 		border: none;
-		border-radius: 50px;
-		padding: 1rem 1.75rem;
-		font-family: 'Roboto', sans-serif;
-		font-size: 1rem;
-		font-weight: 700;
+		padding: 0;
 		cursor: pointer;
-		box-shadow: 0 8px 24px rgba(255, 217, 102, 0.4);
 		display: flex;
 		align-items: center;
-		gap: 0.75rem;
+		justify-content: center;
 		transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 		z-index: 9998;
-		animation: pulse 2s ease-in-out infinite, gradient-flash 4s ease-in-out infinite;
 	}
 
 	.chat-fab:hover {
 		transform: translateY(-4px) scale(1.05);
-		box-shadow: 0 12px 32px rgba(0, 206, 209, 0.5);
+	}
+
+	.fab-image {
+		width: 150px;
+		height: auto;
+		object-fit: contain;
+		filter: drop-shadow(0 8px 24px rgba(0, 0, 0, 0.3));
+		transition: filter 0.3s ease;
+	}
+
+	.chat-fab:hover .fab-image {
+		filter: drop-shadow(0 12px 32px rgba(0, 0, 0, 0.4));
 	}
 
 	@keyframes pulse {
@@ -492,6 +489,10 @@
 		.chat-fab {
 			right: 1rem;
 			bottom: 1rem;
+		}
+
+		.fab-image {
+			width: 120px;
 		}
 	}
 </style>

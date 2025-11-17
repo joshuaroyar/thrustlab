@@ -11,7 +11,7 @@
 	
 	// Check if we're on the JAJA page to hide the popup
 	let isJajaPage = $derived(page.url.pathname === '/jaja');
-	// Check if we're on the home page for transparent navbar
+	// Check if we're on the home page for transparent navbar and JAJA icon
 	let isHomePage = $derived(page.url.pathname === '/');
 
 	onMount(() => {
@@ -55,7 +55,7 @@
 	{@render children()}
 </main>
 
-{#if !isJajaPage}
+{#if isHomePage}
 	<ChatbotPopup />
 {/if}
 

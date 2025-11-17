@@ -5,6 +5,7 @@
 	let { user = null, isTransparent = false } = $props<{ user: any; isTransparent?: boolean }>();
 
 	let mobileMenuOpen = $state(false);
+	let hamburgerMenuOpen = $state(false);
 	let isScrolled = $state(false);
 	let scrollProgress = $state(0); // 0 = day, 0.5 = evening, 1 = night
 	let navbarBgColor = $state('rgba(135, 206, 235, 0.15)'); // Default day theme
@@ -81,11 +82,18 @@
 		mobileMenuOpen = false;
 	}
 
+	function toggleHamburgerMenu() {
+		hamburgerMenuOpen = !hamburgerMenuOpen;
+	}
+
+	function closeHamburgerMenu() {
+		hamburgerMenuOpen = false;
+	}
+
 	const publicLinks = [
 		{ href: '/hangar-zone', label: 'Hangar Zone' },
-		{ href: '/turbofan-zone', label: 'Turbofan Zone' },
-		{ href: '/overhaul-station', label: 'Overhaul Station' },
-		{ href: '/jaja', label: 'JAJA' }
+		{ href: '/turbofan-zone', label: 'Turbofan Engine' },
+		{ href: '/overhaul-station', label: 'Overhaul Station' }
 	];
 
 	const authLinks = [
@@ -94,7 +102,11 @@
 	];
 
 	const protectedLinks = [
-		{ href: '/test-bay', label: 'Test Bay' },
+		{ href: '/test-bay', label: 'Test Bay' }
+	];
+
+	const hamburgerLinks = [
+		{ href: '/profile', label: 'Profile' },
 		{ href: '/dashboard', label: 'Dashboard' }
 	];
 
@@ -145,9 +157,6 @@
 						{link.label}
 					</a>
 				{/each}
-				<button onclick={handleLogout} class="nav-link logout-button">
-					Log Out
-				</button>
 			{:else}
 				{#each authLinks as link}
 					<a
@@ -160,6 +169,15 @@
 				{/each}
 			{/if}
 		</div>
+
+		<!-- Hamburger Menu Button (only when logged in) - on the right side -->
+		{#if user}
+			<button class="hamburger-menu-button" onclick={toggleHamburgerMenu} aria-label="Toggle user menu">
+				<svg class="menu-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+					<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+				</svg>
+			</button>
+		{/if}
 
 		<!-- Mobile Menu Button -->
 		<button class="mobile-menu-button" onclick={toggleMobileMenu} aria-label="Toggle menu">
@@ -217,6 +235,25 @@
 			{/if}
 		</div>
 	{/if}
+
+	<!-- Hamburger Dropdown Menu (only when logged in) -->
+	{#if user && hamburgerMenuOpen}
+		<div class="hamburger-dropdown">
+			{#each hamburgerLinks as link}
+				<a
+					href={link.href}
+					class="hamburger-nav-link"
+					class:active={page.url.pathname === link.href}
+					onclick={closeHamburgerMenu}
+				>
+					{link.label}
+				</a>
+			{/each}
+			<button onclick={handleLogout} class="hamburger-nav-link logout-button">
+				Log Out
+			</button>
+		</div>
+	{/if}
 </nav>
 
 <style>
@@ -257,6 +294,30 @@
 		align-items: center;
 		justify-content: space-between;
 		padding: 1rem 1.5rem;
+		position: relative;
+	}
+
+	.hamburger-menu-button {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		padding: 0.5rem;
+		background: none;
+		border: none;
+		color: #FFFFFF;
+		cursor: pointer;
+		border-radius: 0.375rem;
+		transition: background-color 0.3s ease;
+		margin-right: 0;
+	}
+
+	.hamburger-menu-button:hover {
+		background-color: rgba(255, 217, 102, 0.2);
+	}
+
+	.hamburger-menu-button .menu-icon {
+		width: 1.5rem;
+		height: 1.5rem;
 	}
 
 	.navbar-brand {
@@ -406,5 +467,60 @@
 	.logout-button:hover {
 		background-color: rgba(215, 94, 46, 0.2); /* Orange with opacity */
 		color: var(--bg-secondary); /* Orange */
+	}
+
+	/* Hamburger Dropdown Menu */
+	.hamburger-dropdown {
+		position: absolute;
+		top: 100%;
+		right: 1rem; /* Changed from left to right */
+		background: var(--navbar-bg-color, rgba(135, 206, 235, 0.95));
+		backdrop-filter: blur(20px) saturate(180%);
+		-webkit-backdrop-filter: blur(20px) saturate(180%);
+		border-radius: 0.75rem;
+		box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+		border: 1px solid rgba(255, 255, 255, 0.2);
+		min-width: 200px;
+		padding: 0.5rem;
+		z-index: 1001;
+		margin-top: 0.5rem;
+		display: flex;
+		flex-direction: column;
+	}
+
+	.hamburger-nav-link {
+		font-family: var(--font-heading);
+		font-size: 1rem;
+		font-weight: 700;
+		color: #FFFFFF;
+		text-decoration: none;
+		padding: 0.75rem 1rem;
+		border-radius: 0.375rem;
+		transition: all 0.3s ease;
+		text-transform: uppercase;
+		letter-spacing: 0.5px;
+		text-shadow: 0 1px 3px rgba(0, 0, 0, 0.8);
+		cursor: pointer;
+		background: none;
+		border: none;
+		text-align: left;
+		width: 100%;
+	}
+
+	.hamburger-nav-link:hover {
+		background-color: rgba(255, 217, 102, 0.2);
+		color: #FFFFFF;
+	}
+
+	.hamburger-nav-link.active {
+		background-color: var(--ui-yellow);
+		color: #000000;
+		font-weight: 600;
+		text-shadow: none;
+	}
+
+	.hamburger-nav-link.logout-button:hover {
+		background-color: rgba(215, 94, 46, 0.2);
+		color: var(--bg-secondary);
 	}
 </style>

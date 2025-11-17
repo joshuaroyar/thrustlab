@@ -1,14 +1,5 @@
-this section deals with the additional information regarding turbofan with its images, 'which is found in the 3rd container of the turbofan zone and the container heading is more about turbofan engine'
+instructions: (in the following the content and its related image path will be in single quotes and i want the image to be displayed where ever its path is mentioned and if the image has a naming with decimal like img 1.1 and img 1.2 then i want these images to be pasted side by side and if the image has no decimal pint like img 2 then this type of image should be pasted with a center alignemnt)
 
-task 1 :
-    instructions: i want you to make this container a little more large and it should be scrollable and the images and its related content should be displayed together and i dont want the reader to face this problem where the image is displayed but not its related content, so you can also make this container a a4 size scrollable box with images and its related content displayed together in a neat manner.
-
-task 2 :
-    in the following task 3 i will be pasting the content and its related image path will be in single quotes and i want the image to be displayed where ever its path is mentioned and if the image has a naming with decimal like img 1.1 and img 1.2 then i want these images to be pasted side by side and if the image has no decimal pint like img 2 then this type of image should be pasted with a center alignemnt
-
-task 3 :
-        ( implement the below content with task 1 and task 2   instructions )
- 
  /home/joyboy/Desktop/ThrustLab/thrustlab/md files/turbofan tab/turbofan more info pg/img 1.1.png and /home/joyboy/Desktop/ThrustLab/thrustlab/md files/turbofan tab/turbofan more info pg/img 1.2.png
 
  The airlines’ choice. Turbofans are like Turbojets but also have a large fan accelerating the air’s entry into the engine and adding to the thrust as an internal propeller.
