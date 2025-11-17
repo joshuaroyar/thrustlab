@@ -710,7 +710,6 @@
 					Back to Modules
 				</button>
 				<div class="module-title">
-					<span class="module-icon">{selectedModule.icon}</span>
 					<h2>Module {selectedModule.id}: {selectedModule.title}</h2>
 				</div>
 			</div>
@@ -804,7 +803,6 @@
 		<!-- Results View -->
 		<div class="results-container">
 			<div class="results-header">
-				<div class="results-icon">{score >= 70 ? '🎉' : '📚'}</div>
 				<h1>{score >= 70 ? 'Congratulations!' : 'Assessment Complete'}</h1>
 				<p class="results-subtitle">Module {selectedModule.id}: {selectedModule.title}</p>
 			</div>

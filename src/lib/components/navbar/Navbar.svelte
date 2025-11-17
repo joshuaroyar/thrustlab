@@ -129,7 +129,7 @@
 		<!-- Logo -->
 		<div class="navbar-brand">
 			<a href="/" class="logo-link">
-				<span class="logo-text">ThrustLab</span>
+				<img src="/icons/thrustlab-logo.png" alt="Thrustlab Logo" class="navbar-logo" />
 			</a>
 		</div>
 
@@ -218,6 +218,19 @@
 						{link.label}
 					</a>
 				{/each}
+				
+				<!-- Hamburger links merged into mobile menu -->
+				{#each hamburgerLinks as link}
+					<a
+						href={link.href}
+						class="mobile-nav-link"
+						class:active={page.url.pathname === link.href}
+						onclick={closeMobileMenu}
+					>
+						{link.label}
+					</a>
+				{/each}
+				
 				<button onclick={handleLogout} class="mobile-nav-link logout-button">
 					Log Out
 				</button>
@@ -292,8 +305,9 @@
 		margin: 0 auto;
 		display: flex;
 		align-items: center;
-		justify-content: space-between;
-		padding: 1rem 1.5rem;
+		justify-content: center;
+		padding: 0.5rem 1.5rem;
+		height: 100px;
 		position: relative;
 	}
 
@@ -324,30 +338,36 @@
 		flex-shrink: 0;
 	}
 
+	/* Logo positioned on left side of navbar */
 	.logo-link {
+		position: absolute;
+		left: 1.5rem;
+		top: 50%;
+		transform: translateY(-50%);
+		z-index: 1001;
 		text-decoration: none;
-		display: flex;
-		align-items: center;
+		display: block;
 	}
 
-	.logo-text {
-		font-family: var(--font-heading);
-		font-size: 1.5rem;
-		font-weight: 900;
-		color: #FFFFFF;
-		text-shadow: 0 2px 4px rgba(0, 0, 0, 0.8);
+	.navbar-logo {
+		height: 10rem;
+		width: auto;
+		display: block;
 		transition: all 0.3s ease;
+		filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.5));
 	}
 
-	.logo-link:hover .logo-text {
-		color: var(--ui-yellow);
-		text-shadow: 0 2px 8px rgba(255, 217, 102, 0.6);
+	.logo-link:hover .navbar-logo {
+		transform: scale(1.05);
+		filter: drop-shadow(0 4px 8px rgba(255, 217, 102, 0.6));
 	}
 
 	.navbar-menu {
 		display: none;
 		align-items: center;
+		justify-content: center;
 		gap: 0.5rem;
+		flex: 1;
 	}
 
 	@media (min-width: 768px) {
@@ -414,7 +434,7 @@
 	.mobile-menu {
 		display: flex;
 		flex-direction: column;
-		padding: 1rem 1.5rem;
+		padding: 1rem;
 		/* Glassmorphism Effect */
 		background: var(--navbar-bg-color, rgba(135, 206, 235, 0.12));
 		backdrop-filter: blur(20px) saturate(180%);
@@ -469,23 +489,37 @@
 		color: var(--bg-secondary); /* Orange */
 	}
 
-	/* Hamburger Dropdown Menu */
+	/* Hamburger Dropdown Menu - Desktop only */
+	.hamburger-menu-button {
+		display: none;
+	}
+
 	.hamburger-dropdown {
-		position: absolute;
-		top: 100%;
-		right: 1rem; /* Changed from left to right */
-		background: var(--navbar-bg-color, rgba(135, 206, 235, 0.95));
-		backdrop-filter: blur(20px) saturate(180%);
-		-webkit-backdrop-filter: blur(20px) saturate(180%);
-		border-radius: 0.75rem;
-		box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
-		border: 1px solid rgba(255, 255, 255, 0.2);
-		min-width: 200px;
-		padding: 0.5rem;
-		z-index: 1001;
-		margin-top: 0.5rem;
-		display: flex;
-		flex-direction: column;
+		display: none;
+	}
+
+	@media (min-width: 768px) {
+		.hamburger-menu-button {
+			display: flex;
+		}
+
+		.hamburger-dropdown {
+			display: flex;
+			flex-direction: column;
+			position: absolute;
+			right: 1rem;
+			top: 100%;
+			background: var(--navbar-bg-color, rgba(135, 206, 235, 0.95));
+			backdrop-filter: blur(20px) saturate(180%);
+			-webkit-backdrop-filter: blur(20px) saturate(180%);
+			border-radius: 0.75rem;
+			box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+			border: 1px solid rgba(255, 255, 255, 0.2);
+			max-width: 200px;
+			padding: 0.5rem;
+			z-index: 1001;
+			margin-top: 0.5rem;
+		}
 	}
 
 	.hamburger-nav-link {

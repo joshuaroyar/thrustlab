@@ -12,6 +12,7 @@
 
 	// Canvas references for each layer
 	let skyCanvas: HTMLCanvasElement;
+	let purpleSkyCanvas: HTMLCanvasElement;
 	let farCloudsCanvas: HTMLCanvasElement;
 	let midCloudsCanvas: HTMLCanvasElement;
 	let nearCloudsCanvas: HTMLCanvasElement;
@@ -61,6 +62,7 @@
 
 		// Initialize sky
 		initializeSkies();
+		initializePurpleSky();
 
 		// Start continuous animation loop
 		let animationId: number;
@@ -322,6 +324,74 @@
 		const b = Math.round(b1 + (b2 - b1) * t);
 		
 		return `#${((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1)}`;
+	}
+
+	// Purple variant of the sky for researchers section
+	function initializePurpleSky() {
+		if (!purpleSkyCanvas) return;
+		const ctx = purpleSkyCanvas.getContext('2d');
+		if (!ctx) return;
+
+		const width = purpleSkyCanvas.width;
+		const height = purpleSkyCanvas.height;
+
+		// Clear canvas
+		ctx.clearRect(0, 0, width, height);
+
+		// Create purple/lavender gradient
+		const gradient = ctx.createLinearGradient(0, 0, 0, height);
+		gradient.addColorStop(0, '#4a2c5f');    // Deep purple
+		gradient.addColorStop(0.3, '#6b4a7d');  // Medium purple
+		gradient.addColorStop(0.6, '#8b6b9d');  // Light purple
+		gradient.addColorStop(1, '#9b7eb8');    // Lavender
+
+		ctx.fillStyle = gradient;
+		ctx.fillRect(0, 0, width, height);
+
+		// Add stars with purple tint
+		const starCount = 80;
+		ctx.fillStyle = 'rgba(255, 230, 255, 0.6)'; // Purple-tinted stars
+		
+		ctx.beginPath();
+		for (let i = 0; i < starCount; i++) {
+			const x = Math.random() * width;
+			const y = Math.random() * height * 0.6;
+			const radius = Math.random() * 1.5 + 0.5;
+			
+			ctx.moveTo(x + radius, y);
+			ctx.arc(x, y, radius, 0, Math.PI * 2);
+		}
+		ctx.fill();
+
+		// Add a soft purple moon
+		const moonX = width * 0.15;
+		const moonY = height * 0.25;
+		const moonRadius = 35;
+
+		// Purple moon glow
+		const moonGlow = ctx.createRadialGradient(moonX, moonY, moonRadius * 0.5, moonX, moonY, moonRadius * 2.5);
+		moonGlow.addColorStop(0, 'rgba(200, 180, 255, 0.2)');
+		moonGlow.addColorStop(1, 'rgba(200, 180, 255, 0)');
+		ctx.fillStyle = moonGlow;
+		ctx.fillRect(moonX - moonRadius * 2.5, moonY - moonRadius * 2.5, moonRadius * 5, moonRadius * 5);
+
+		// Purple-tinted moon body
+		const moonGradient = ctx.createRadialGradient(
+			moonX - moonRadius * 0.3, 
+			moonY - moonRadius * 0.3, 
+			moonRadius * 0.2, 
+			moonX, 
+			moonY, 
+			moonRadius
+		);
+		moonGradient.addColorStop(0, '#f0e6ff');
+		moonGradient.addColorStop(0.7, '#d8c8f0');
+		moonGradient.addColorStop(1, '#c0b0e0');
+		
+		ctx.fillStyle = moonGradient;
+		ctx.beginPath();
+		ctx.arc(moonX, moonY, moonRadius, 0, Math.PI * 2);
+		ctx.fill();
 	}
 
 	function animateCloudLayers() {
@@ -674,6 +744,14 @@
 
 	<!-- Researchers Section -->
 	<section class="researchers-section">
+		<!-- Purple Sky Background for Researchers Section -->
+		<canvas 
+			bind:this={purpleSkyCanvas}
+			class="purple-sky-layer"
+			width="3200"
+			height="1800"
+		></canvas>
+		
 		<div class="container">
 			<!-- Section Header -->
 			<div class="section-header animate-on-scroll">
@@ -747,7 +825,6 @@
 			<!-- Bottom Info Bar -->
 			<div class="info-bar animate-on-scroll">
 				<div class="info-item">
-					<div class="info-icon">🎓</div>
 					<div class="info-text">
 						<span class="info-label">Academic Year</span>
 						<span class="info-value">2025-2026</span>
@@ -755,7 +832,6 @@
 				</div>
 				<div class="info-divider"></div>
 				<div class="info-item">
-					<div class="info-icon">👨‍🏫</div>
 					<div class="info-text">
 						<span class="info-label">Research Adviser</span>
 						<span class="info-value">Engr. Johannah Marie T. Reynaldo</span>
@@ -903,6 +979,18 @@
 		/* No transform, stays fixed */
 	}
 
+	/* Purple Sky Layer - For researchers section only */
+	.purple-sky-layer {
+		position: absolute;
+		top: 0;
+		left: 0;
+		width: 100%;
+		height: 100%;
+		z-index: 0;
+		pointer-events: none;
+		object-fit: cover;
+	}
+
 	/* Far Clouds - Slowest parallax with seamless wrapping */
 	.far-clouds-layer {
 		z-index: 2;
@@ -963,12 +1051,21 @@
 		margin: 0 0 1rem 0;
 		line-height: 1.2;
 		color: white;
-		text-shadow: 0 3px 10px rgba(0, 0, 0, 0.9), 0 2px 5px rgba(0, 0, 0, 0.8);
+		background-size: 200% 100%;
 	}
 
 	.gradient-text {
-		color: var(--ui-yellow);
-		text-shadow: 0 3px 10px rgba(0, 0, 0, 0.9), 0 2px 5px rgba(0, 0, 0, 0.8);
+		background: linear-gradient(
+			90deg,
+			var(--ui-yellow) 0%,
+			var(--font-accent-cyan) 50%,
+			var(--ui-yellow) 100%
+		);
+		background-size: 200% 100%;
+		-webkit-background-clip: text;
+		-webkit-text-fill-color: transparent;
+		background-clip: text;
+		animation: gradient-flash 3.5s ease-in-out infinite;
 	}
 
 	.hero-subtitle {
@@ -977,7 +1074,7 @@
 		margin: 0 0 1.5rem 0;
 		font-weight: 400;
 		color: var(--ui-yellow);
-		text-shadow: 0 3px 10px rgba(0, 0, 0, 0.9), 0 2px 5px rgba(0, 0, 0, 0.8);
+		text-shadow: 0 2px 8px rgba(0, 0, 0, 0.7);
 	}
 
 	.hero-description {
@@ -1138,27 +1235,24 @@
 
 	.section-title {
 		font-family: var(--font-heading);
-		font-size: clamp(2rem, 4vw, 3rem);
+		font-size: clamp(2.5rem, 6vw, 4.5rem);
 		font-weight: 900;
 		text-align: center;
 		margin: 0 0 3rem 0;
+		line-height: 1.2;
 		background: linear-gradient(
 			90deg,
 			var(--ui-yellow) 0%,
-			var(--font-accent-cyan) 25%,
-			var(--ui-light-blue) 50%,
-			var(--font-accent-cyan) 75%,
+			var(--font-accent-cyan) 50%,
 			var(--ui-yellow) 100%
 		);
-		background-size: 300% 100%;
+		background-size: 200% 100%;
 		-webkit-background-clip: text;
 		-webkit-text-fill-color: transparent;
 		background-clip: text;
-		animation: gradient-flash 4s ease-in-out infinite;
-		filter: drop-shadow(0 3px 12px rgba(0, 0, 0, 0.8)) drop-shadow(0 0 20px rgba(255, 217, 102, 0.3));
-		/* Performance: Isolate this expensive animation */
+		animation: gradient-flash 3.5s ease-in-out infinite;
+		filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.8));
 		will-change: background-position;
-		contain: paint;
 	}
 
 	.features-grid {
@@ -1486,8 +1580,8 @@
 	}
 
 	.researchers-section .section-title {
-		font-size: clamp(3rem, 6vw, 5rem);
-		letter-spacing: -2px;
+		font-size: clamp(2.5rem, 6vw, 4.5rem);
+		letter-spacing: -1px;
 	}
 
 	/* Overview Content */
@@ -1737,23 +1831,13 @@
 		justify-content: center;
 		align-items: center;
 		gap: 3rem;
-		padding: 2rem 3rem;
-		background: rgba(0, 0, 0, 0.3);
-		border: 2px solid rgba(135, 206, 235, 0.3);
-		border-radius: 100px;
-		backdrop-filter: blur(10px);
-		-webkit-backdrop-filter: blur(10px);
+		padding: 2rem 0;
 	}
 
 	.info-item {
 		display: flex;
 		align-items: center;
 		gap: 1.5rem;
-	}
-
-	.info-icon {
-		font-size: 2.5rem;
-		filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.5));
 	}
 
 	.info-text {
@@ -1878,8 +1962,7 @@
 		.info-bar {
 			flex-direction: column;
 			gap: 2rem;
-			padding: 2rem;
-			border-radius: 30px;
+			padding: 2rem 0;
 		}
 
 		.info-divider {
@@ -1930,10 +2013,6 @@
 			height: 360px;
 		}
 
-		.section-title {
-			font-size: 2.5rem;
-		}
-
 		.photo-wrapper {
 			width: 140px;
 			height: 140px;
@@ -1942,10 +2021,6 @@
 		.photo-wrapper img {
 			width: 140px;
 			height: 140px;
-		}
-
-		.info-icon {
-			font-size: 2rem;
 		}
 	}
 </style>
