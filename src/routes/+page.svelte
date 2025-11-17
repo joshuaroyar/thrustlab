@@ -6,6 +6,7 @@
 	let mounted = $state(false);
 	let mouseX = $state(0);
 	let mouseY = $state(0);
+	let showJajaIcon = $state(true); // Control JAJA icon visibility based on scroll
 
 	const BASE_DRIFT_SPEED = 0.61;
 
@@ -71,11 +72,16 @@
 
 		// Scroll handler for background transition
 		const handleScroll = () => {
+			const currentScroll = window.scrollY;
+			
+			// Control JAJA icon visibility - hide when scrolled past hero section
+			// Hero section is roughly 100vh, so hide after scrolling 50% of viewport height
+			showJajaIcon = currentScroll < (window.innerHeight * 0.5);
+			
 			if (scrollRafId !== null) return;
 			
 			scrollRafId = requestAnimationFrame(() => {
 				const scrollHeight = document.documentElement.scrollHeight - window.innerHeight;
-				const currentScroll = window.scrollY;
 				const progress = Math.min(currentScroll / scrollHeight, 1);
 				
 				// Only update if progress changed by more than 1%
@@ -552,6 +558,13 @@
 </div>
 
 <div class="homepage">
+	<!-- JAJA Popup Icon - visible only when at top of homepage -->
+	{#if showJajaIcon}
+		<div class="jaja-popup-icon">
+			<img src="/images/jaja-popup.png" alt="JAJA Assistant" />
+		</div>
+	{/if}
+
 	<!-- Hero Section -->
 	<section class="hero" bind:this={heroRef}>
 		
@@ -768,6 +781,63 @@
 		position: relative;
 		/* Performance: Use CSS containment to isolate layout/paint work */
 		contain: layout style paint;
+	}
+
+	/* JAJA Popup Icon - Fixed position on homepage */
+	.jaja-popup-icon {
+		position: fixed;
+		bottom: 20px;
+		right: 20px;
+		z-index: 999;
+		width: 150px;
+		height: auto;
+		cursor: pointer;
+		animation: popupBounce 3s ease-in-out infinite, fadeInPopup 0.5s ease-out;
+		transition: transform 0.3s ease, opacity 0.5s ease;
+	}
+
+	.jaja-popup-icon img {
+		width: 100%;
+		height: auto;
+		filter: drop-shadow(0 8px 20px rgba(0, 0, 0, 0.4));
+		transition: transform 0.3s ease;
+	}
+
+	.jaja-popup-icon:hover {
+		transform: scale(1.1);
+	}
+
+	.jaja-popup-icon:hover img {
+		filter: drop-shadow(0 12px 30px rgba(34, 58, 94, 0.6));
+	}
+
+	@keyframes popupBounce {
+		0%, 100% {
+			transform: translateY(0px);
+		}
+		50% {
+			transform: translateY(-15px);
+		}
+	}
+
+	@keyframes fadeInPopup {
+		from {
+			opacity: 0;
+			transform: translateY(30px) scale(0.8);
+		}
+		to {
+			opacity: 1;
+			transform: translateY(0) scale(1);
+		}
+	}
+
+	/* Responsive sizing for JAJA popup */
+	@media (max-width: 768px) {
+		.jaja-popup-icon {
+			width: 100px;
+			bottom: 15px;
+			right: 15px;
+		}
 	}
 
 	/* Hero Section */
@@ -1450,6 +1520,14 @@
 		height: 60px;
 		object-fit: contain;
 		filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.2));
+		border-radius: 8px; /* Add curved edges to all icons */
+	}
+
+	/* JAJA Icon - 10% larger with curved edges */
+	.zone-card:nth-child(5) .zone-icon img {
+		width: 66px; /* 10% increase from 60px */
+		height: 66px;
+		border-radius: 12px; /* Slightly more rounded for larger icon */
 	}
 
 	/* Researchers Container */

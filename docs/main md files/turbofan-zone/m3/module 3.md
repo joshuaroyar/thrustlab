@@ -1,14 +1,12 @@
-this section deals with the turbofan zone tab's engine section button click which has a 'container with the name Learning Module 3'
+task 1 : content formatting
+    1.1 : (this is in turbofan engine page) 
+    1.2 :
+        in the turbofan engine tab there are these two sections which are overview and engine sections and these two sections have content with its images 
+        
+            1.2.1 : i want the content in engine section's Learning module 3 part with images in these section to be like the ones under the hangar zone's learning module 1 container when opened it gives a scrollable notes with images and text and also the next page option , i want the turbofan engine's Learning module 3 page also to be like that also to be like that 
 
-taks 1 :
-    instructions: i want you to make this container larger like a reading mode size and it should be scrollable and the images and its related content should be displayed together and i dont want the reader to face this problem where the image is displayed but not its related content, so you can also make this container a a4 size scrollable box with images and its related content displayed together in a neat manner.
-
-task 2 :
-    in the following task 3 i will be pasting the content and its related image path will be in single quotes and i want the image to be displayed where ever its path is mentioned and if the image has a naming with decimal like img 1.1 and img 1.2 then i want these images to be pasted side by side and if the image has no decimal point like img 2 then this type of image should be pasted with a center alignemnt
-
-task 3 :
-     ( implement the below content with task 1 and task 2   instructions )
-
+instructions:(in the following the content and its related image path will be in single quotes and i want the image to be displayed where ever its path is mentioned and if the image has a naming with decimal like img 1.1 and img 1.2 then i want these images to be pasted side by side and if the image has no decimal pint like img 2 then this type of image should be pasted with a center alignemnt) the content is below :
+   
 ENGINE COMPONENTS
 There are 5 major sections of the gas turbine engine that are grouped into 2 sections: the hot section and the cold section.
 A turbine engine's hot section includes the combustion, turbine, and exhaust sections. The cold section, on the other hand, includes the air inlet duct and the compressor section.
