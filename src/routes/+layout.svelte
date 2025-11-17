@@ -9,8 +9,8 @@
 
 	let { children, data } = $props<{ children: any; data: LayoutData }>();
 	
-	// Check if we're on the JAJA page to hide the popup
-	let isJajaPage = $derived(page.url.pathname === '/jaja');
+	// Check if we're on the Test Bay page to hide the popup
+	let isTestBayPage = $derived(page.url.pathname === '/test-bay');
 	// Check if we're on the home page for transparent navbar and JAJA icon
 	let isHomePage = $derived(page.url.pathname === '/');
 
@@ -49,13 +49,13 @@
 	/>
 </svelte:head>
 
-<Navbar user={data.user} isTransparent={isHomePage} />
+<Navbar user={data.user} isTransparent />
 
 <main class:home-page={isHomePage}>
 	{@render children()}
 </main>
 
-{#if isHomePage}
+{#if !isTestBayPage}
 	<ChatbotPopup />
 {/if}
 

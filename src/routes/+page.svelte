@@ -12,7 +12,6 @@
 
 	// Canvas references for each layer
 	let skyCanvas: HTMLCanvasElement;
-	let purpleSkyCanvas: HTMLCanvasElement;
 	let farCloudsCanvas: HTMLCanvasElement;
 	let midCloudsCanvas: HTMLCanvasElement;
 	let nearCloudsCanvas: HTMLCanvasElement;
@@ -62,7 +61,6 @@
 
 		// Initialize sky
 		initializeSkies();
-		initializePurpleSky();
 
 		// Start continuous animation loop
 		let animationId: number;
@@ -324,74 +322,6 @@
 		const b = Math.round(b1 + (b2 - b1) * t);
 		
 		return `#${((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1)}`;
-	}
-
-	// Purple variant of the sky for researchers section
-	function initializePurpleSky() {
-		if (!purpleSkyCanvas) return;
-		const ctx = purpleSkyCanvas.getContext('2d');
-		if (!ctx) return;
-
-		const width = purpleSkyCanvas.width;
-		const height = purpleSkyCanvas.height;
-
-		// Clear canvas
-		ctx.clearRect(0, 0, width, height);
-
-		// Create purple/lavender gradient
-		const gradient = ctx.createLinearGradient(0, 0, 0, height);
-		gradient.addColorStop(0, '#4a2c5f');    // Deep purple
-		gradient.addColorStop(0.3, '#6b4a7d');  // Medium purple
-		gradient.addColorStop(0.6, '#8b6b9d');  // Light purple
-		gradient.addColorStop(1, '#9b7eb8');    // Lavender
-
-		ctx.fillStyle = gradient;
-		ctx.fillRect(0, 0, width, height);
-
-		// Add stars with purple tint
-		const starCount = 80;
-		ctx.fillStyle = 'rgba(255, 230, 255, 0.6)'; // Purple-tinted stars
-		
-		ctx.beginPath();
-		for (let i = 0; i < starCount; i++) {
-			const x = Math.random() * width;
-			const y = Math.random() * height * 0.6;
-			const radius = Math.random() * 1.5 + 0.5;
-			
-			ctx.moveTo(x + radius, y);
-			ctx.arc(x, y, radius, 0, Math.PI * 2);
-		}
-		ctx.fill();
-
-		// Add a soft purple moon
-		const moonX = width * 0.15;
-		const moonY = height * 0.25;
-		const moonRadius = 35;
-
-		// Purple moon glow
-		const moonGlow = ctx.createRadialGradient(moonX, moonY, moonRadius * 0.5, moonX, moonY, moonRadius * 2.5);
-		moonGlow.addColorStop(0, 'rgba(200, 180, 255, 0.2)');
-		moonGlow.addColorStop(1, 'rgba(200, 180, 255, 0)');
-		ctx.fillStyle = moonGlow;
-		ctx.fillRect(moonX - moonRadius * 2.5, moonY - moonRadius * 2.5, moonRadius * 5, moonRadius * 5);
-
-		// Purple-tinted moon body
-		const moonGradient = ctx.createRadialGradient(
-			moonX - moonRadius * 0.3, 
-			moonY - moonRadius * 0.3, 
-			moonRadius * 0.2, 
-			moonX, 
-			moonY, 
-			moonRadius
-		);
-		moonGradient.addColorStop(0, '#f0e6ff');
-		moonGradient.addColorStop(0.7, '#d8c8f0');
-		moonGradient.addColorStop(1, '#c0b0e0');
-		
-		ctx.fillStyle = moonGradient;
-		ctx.beginPath();
-		ctx.arc(moonX, moonY, moonRadius, 0, Math.PI * 2);
-		ctx.fill();
 	}
 
 	function animateCloudLayers() {
@@ -744,14 +674,6 @@
 
 	<!-- Researchers Section -->
 	<section class="researchers-section">
-		<!-- Purple Sky Background for Researchers Section -->
-		<canvas 
-			bind:this={purpleSkyCanvas}
-			class="purple-sky-layer"
-			width="3200"
-			height="1800"
-		></canvas>
-		
 		<div class="container">
 			<!-- Section Header -->
 			<div class="section-header animate-on-scroll">
@@ -977,18 +899,6 @@
 	.sky-layer {
 		z-index: 1;
 		/* No transform, stays fixed */
-	}
-
-	/* Purple Sky Layer - For researchers section only */
-	.purple-sky-layer {
-		position: absolute;
-		top: 0;
-		left: 0;
-		width: 100%;
-		height: 100%;
-		z-index: 0;
-		pointer-events: none;
-		object-fit: cover;
 	}
 
 	/* Far Clouds - Slowest parallax with seamless wrapping */
