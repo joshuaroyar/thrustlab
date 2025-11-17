@@ -376,7 +376,7 @@
 <!-- Main Content -->
 <div class="turbofan-page">
 	<!-- Title Section -->
-	<h1 class="main-title">Turbofan Zone</h1>
+	<h1 class="main-title">Turbofan Engine</h1>
 	
 	<!-- Description -->
 	<p class="main-description">
