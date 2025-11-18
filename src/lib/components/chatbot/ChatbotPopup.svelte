@@ -56,7 +56,9 @@
 	<div class="chatbot-popup" class:minimized={isMinimized}>
 		<div class="chat-header">
 			<div class="header-left">
-				<div class="header-avatar">🤖</div>
+				<div class="header-avatar">
+					<img src="/icons/jaja.png" alt="JAJA Avatar" class="avatar-img" />
+				</div>
 				<div class="header-info">
 					<h3>JAJA</h3>
 					<p>Your AI co-engineer</p>
@@ -87,7 +89,9 @@
 					{#each messages as message}
 						<div class="message {message.type}-message">
 							{#if message.type === 'ai'}
-								<div class="message-avatar">🤖</div>
+								<div class="message-avatar">
+									<img src="/icons/jaja.png" alt="JAJA Avatar" class="avatar-img" />
+								</div>
 							{/if}
 							<div class="message-bubble {message.type}-bubble">
 								<p>{message.content}</p>
@@ -250,11 +254,14 @@
 	.header-avatar {
 		font-size: 2rem;
 		animation: float 3s ease-in-out infinite;
+		width: 50px;
+		height: 50px;
 	}
 
-	@keyframes float {
-		0%, 100% { transform: translateY(0); }
-		50% { transform: translateY(-5px); }
+	.avatar-img {
+		width: 100%;
+		height: 100%;
+		object-fit: contain;
 	}
 
 	.header-info h3 {

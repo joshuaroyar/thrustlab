@@ -28,7 +28,7 @@
 		if (currentPage < totalPages) {
 			goToPage(currentPage + 1);
 		} else {
-			goto('/turbofan-zone');
+			goto('/turbofan-engine');
 		}
 	}
 	

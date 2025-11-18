@@ -92,7 +92,7 @@
 
 	const publicLinks = [
 		{ href: '/hangar-zone', label: 'Hangar Zone' },
-		{ href: '/turbofan-zone', label: 'Turbofan Engine' },
+		{ href: '/turbofan-engine', label: 'Turbofan Engine' },
 		{ href: '/overhaul-station', label: 'Overhaul Station' }
 	];
 

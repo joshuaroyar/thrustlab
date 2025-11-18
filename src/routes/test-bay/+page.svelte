@@ -616,12 +616,13 @@
 	}
 
 	function backToSelection() {
-		viewState = 'selection';
 		selectedModule = null;
 		currentQuestionIndex = 0;
 		userAnswers = [];
 		score = 0;
 		showReview = false;
+		viewState = 'selection';
+		location.reload();
 	}
 
 	function toggleReview() {
@@ -703,7 +704,7 @@
 		<!-- Quiz View -->
 		<div class="quiz-container">
 			<div class="quiz-header">
-				<button class="back-button" onclick={backToSelection}>
+				<button type="button" class="back-button" onclick={backToSelection}>
 					<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
 						<path d="M19 12H5M12 19l-7-7 7-7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
 					</svg>
@@ -846,7 +847,7 @@
 					</svg>
 					Retake Module
 				</button>
-				<button class="action-button" onclick={backToSelection}>
+				<button type="button" class="action-button" onclick={backToSelection}>
 					<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
 						<path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
 					</svg>
