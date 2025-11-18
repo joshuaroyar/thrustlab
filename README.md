@@ -30,7 +30,7 @@
 - **Dashboard** - User-specific dashboard with personalized content
 - **Hangar Zone** - Project management and organization
 - **Test Bay** - Testing and experimentation area
-- **Turbofan Zone** - Performance optimization tools
+- **Turbofan Engine** - Performance optimization tools
 - **Overhaul Station** - Maintenance and updates section
 - **Profile** - User profile management
 - **Authentication** - Login and sign-up flows

@@ -492,9 +492,9 @@
 			gradient: 'linear-gradient(135deg, #223A5E 0%, #74B3D4 100%)'
 		},
 		{
-			title: 'TURBOFAN ZONE',
+			title: 'TURBOFAN ENGINE',
 			description: 'An immersive hub where students explore a fully rotatable 3D turbofan engine, interact with its components, and discover each section that powers modern flight.',
-			link: '/turbofan-zone',
+			link: '/turbofan-engine',
 			icon: '/icons/turbofan-engine.png',
 			gradient: 'linear-gradient(135deg, #74B3D4 0%, #D75E2E 100%)'
 		},

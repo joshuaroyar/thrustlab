@@ -16,7 +16,7 @@ To begin your journey with ThrustLab, simply navigate through our user-friendly 
 ## Explore More
 
 - Visit the [Hangar Zone](/hangar-zone) to learn about Gas Turbine Engines.
-- Check out the [Turbofan Zone](/turbofan-zone) for insights into Turbofan Engines.
+- Check out the [Turbofan Engine](/turbofan-engine) for insights into Turbofan Engines.
 - Head to the [Overhaul Station](/overhaul-station) to interact with 3D models of engine assemblies.
 - Meet JAJA, our AI assistant, at the [JAJA page](/jaja) for personalized support.
 

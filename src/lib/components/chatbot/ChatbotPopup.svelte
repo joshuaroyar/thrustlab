@@ -1,9 +1,9 @@
 <script lang="ts">
 	let isOpen = $state(false);
 	let isMinimized = $state(false);
-	let messages = $state<Array<{type: 'ai' | 'user', content: string}>>([
+	let messages = $state<Array<{type: 'assistant' | 'user', content: string}>>([
 		{
-			type: 'ai',
+			type: 'assistant',
 			content: 'Hi! I\'m JAJA - your AI co-engineer bot for learning inside ThrustLab!'
 		}
 	]);
@@ -20,23 +20,77 @@
 		isMinimized = !isMinimized;
 	}
 
-	function sendMessage() {
-		if (inputMessage.trim()) {
-			messages.push({
-				type: 'user',
-				content: inputMessage
+	async function sendMessage() {
+		if (!inputMessage.trim()) return;
+				
+		const userMessage = inputMessage.trim();
+		messages.push({ type: 'user', content: userMessage });
+		inputMessage = '';
+
+		// Add placeholder for AI response
+		const aiMessageIndex = messages.length;
+		messages.push({ type: 'assistant', content: '' });
+
+		try {
+			const response = await fetch('/api/chat', {
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json'
+				},
+				body: JSON.stringify({
+					message: userMessage,
+					history: messages.slice(0, -2) // Exclude the user message we just added and the placeholder
+				})
 			});
-			
-			const userMsg = inputMessage;
-			inputMessage = '';
-			
-			// Simulate AI response
-			setTimeout(() => {
-				messages.push({
-					type: 'ai',
-					content: `Thank you for your question about "${userMsg}". I'm here to help you learn! (This is a demo response - connect to a real AI backend for actual answers.)`
-				});
-			}, 1000);
+
+			if (!response.ok) {
+				throw new Error('Failed to get response');
+			}
+
+			// Handle streaming response
+			const reader = response.body?.getReader();
+			const decoder = new TextDecoder();
+
+			if (reader) {
+				let accumulatedText = '';
+				let buffer = '';
+				
+				while (true) {
+					const { done, value } = await reader.read();
+					if (done) break;
+					
+					buffer += decoder.decode(value, { stream: true });
+					const lines = buffer.split('\n');
+					
+					// Keep the last incomplete line in the buffer
+					buffer = lines.pop() || '';
+					
+					for (const line of lines) {
+						if (line.trim()) {
+							console.log('Received line:', line);
+							// Parse the stream data format
+							if (line.startsWith('0:')) {
+								const jsonStr = line.substring(2);
+								try {
+									const text = JSON.parse(jsonStr);
+									accumulatedText += text;
+									messages[aiMessageIndex] = { ...messages[aiMessageIndex], content: accumulatedText };
+									console.log('Accumulated text:', accumulatedText);
+								} catch (e) {
+									console.error('Parse error:', e, 'Line:', line);
+								}
+							}
+						}
+					}
+				}
+				
+				if (!accumulatedText) {
+					messages[aiMessageIndex].content = 'I received your message but couldn\'t generate a response. Please try again.';
+				}
+			}
+		} catch (error) {
+			console.error('Error sending message:', error);
+			messages[aiMessageIndex].content = 'Sorry, I encountered an error. Please try again.';
 		}
 	}
 
@@ -88,7 +142,7 @@
 				<div class="chat-messages">
 					{#each messages as message}
 						<div class="message {message.type}-message">
-							{#if message.type === 'ai'}
+							{#if message.type === 'assistant'}
 								<div class="message-avatar">
 									<img src="/icons/jaja.png" alt="JAJA Avatar" class="avatar-img" />
 								</div>

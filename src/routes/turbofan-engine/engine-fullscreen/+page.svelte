@@ -3,10 +3,10 @@
 	import { onMount } from 'svelte';
 
 	onMount(() => {
-		// Handle escape key to go back to turbofan zone
+		// Handle escape key to go back to turbofan engine
 		const handleKeyPress = (e: KeyboardEvent) => {
 			if (e.key === 'Escape') {
-				goto('/turbofan-zone');
+				goto('/turbofan-engine');
 			}
 		};
 
@@ -18,7 +18,7 @@
 	});
 
 	function handleBackClick() {
-		goto('/turbofan-zone');
+		goto('/turbofan-engine');
 	}
 </script>
 
@@ -32,7 +32,7 @@
 				<line x1="19" y1="12" x2="5" y2="12"></line>
 				<polyline points="12 19 5 12 12 5"></polyline>
 			</svg>
-			Back to Turbofan Zone
+			Back to Turbofan Engine
 		</button>
 
 		<div class="control-group">
@@ -93,7 +93,7 @@
 	</div>
 
 	<div class="footer-info">
-		<p>Press <kbd>ESC</kbd> to return to Turbofan Zone</p>
+		<p>Press <kbd>ESC</kbd> to return to Turbofan Engine</p>
 	</div>
 </div>
 

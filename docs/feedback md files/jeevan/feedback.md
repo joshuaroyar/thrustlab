@@ -1,6 +1,6 @@
 task 1 : content formatting
-    1.1 : (this is in turbofan zone page)
-        i want you to rename the turbofan zone tab name to turbofan engine 
+    1.1 : (this is in turbofan engine page)
+        i want you to rename the turbofan engine tab name to turbofan engine 
     1.2 :
         in the renamed turbofan engine tab there are these two sections which are overview and engine sections and these two sections have content with its images 
         

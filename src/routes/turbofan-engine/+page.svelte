@@ -407,8 +407,8 @@
 				class="content-box engine-box clickable"
 				role="button"
 				tabindex="0"
-				onclick={() => goto('/turbofan-zone/engine-instructions')}
-				onkeydown={(e) => e.key === 'Enter' && goto('/turbofan-zone/engine-instructions')}
+				onclick={() => goto('/turbofan-engine/engine-instructions')}
+				onkeydown={(e) => e.key === 'Enter' && goto('/turbofan-engine/engine-instructions')}
 			>
 				<button 
 					class="zoom-icon"
@@ -1309,6 +1309,21 @@
 		opacity: 0.95;
 	}
 
+	@keyframes gradient-flash {
+		0%, 100% {
+			background-position: 0% 50%;
+		}
+		25% {
+			background-position: 50% 50%;
+		}
+		50% {
+			background-position: 100% 50%;
+		}
+		75% {
+			background-position: 50% 50%;
+		}
+	}
+
 	/* Main Page Layout */
 	.turbofan-page {
 		min-height: 100vh;
@@ -1323,10 +1338,24 @@
 		font-family: var(--font-heading);
 		font-size: clamp(2.5rem, 5vw, 4rem);
 		font-weight: 900;
-		color: var(--font-accent-yellow);
 		text-align: center;
 		margin: 0 0 2rem 0;
-		text-shadow: 0 4px 12px rgba(0, 0, 0, 0.8), 0 2px 6px rgba(0, 0, 0, 0.6);
+		background: linear-gradient(
+			90deg,
+			var(--ui-yellow) 0%,
+			var(--font-accent-cyan) 20%,
+			var(--ui-light-blue) 40%,
+			var(--font-accent-yellow) 60%,
+			var(--ui-yellow) 80%,
+			var(--font-accent-cyan) 100%
+		);
+		background-size: 300% 100%;
+		-webkit-background-clip: text;
+		-webkit-text-fill-color: transparent;
+		background-clip: text;
+		animation: gradient-flash 4s ease-in-out infinite;
+		filter: drop-shadow(0 4px 20px rgba(0, 0, 0, 0.9));
+		letter-spacing: -1px;
 	}
 
 	.main-description {

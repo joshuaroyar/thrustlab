@@ -25,42 +25,6 @@
 </div>
 
 <style>
-	/* Parallax Background */
-	.parallax-container {
-		position: fixed;
-		top: 0;
-		left: 0;
-		width: 100%;
-		height: 100vh;
-		z-index: 0;
-		overflow: hidden;
-	}
-
-	.parallax-layer {
-		position: absolute;
-		top: 0;
-		left: 0;
-		width: 100%;
-		height: 100%;
-		object-fit: cover;
-	}
-
-	.sky-layer {
-		z-index: 1;
-	}
-
-	.far-clouds-layer {
-		z-index: 2;
-	}
-
-	.mid-clouds-layer {
-		z-index: 3;
-	}
-
-	.near-clouds-layer {
-		z-index: 4;
-	}
-
 	/* Page Container */
 	.page-container {
 		position: relative;

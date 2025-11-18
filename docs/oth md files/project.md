@@ -48,7 +48,7 @@ ThrustLab is a web-based educational platform that enables students and instruct
 Open Routes:
 / — ThrustLab (Homepage)
 /hangar-zone — Hangar Zone (Tutorial on Gas Turbine Engine)
-/turbofan-zone — Turbofan Zone (Tutorial on Turbofan Engine)
+/turbofan-engine — Turbofan Engine (Tutorial on Turbofan Engine)
 /overhaul-station — Overhaul Station (3D model viewer on assembly and disassembly)
 /jaja — JAJA (AI-powered assistant)
 /login — Login

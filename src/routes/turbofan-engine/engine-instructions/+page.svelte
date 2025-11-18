@@ -8,7 +8,7 @@
 		// Handle escape key to go back
 		const handleKeyPress = (e: KeyboardEvent) => {
 			if (e.key === 'Escape') {
-				goto('/turbofan-zone');
+				goto('/turbofan-engine');
 			}
 		};
 
@@ -20,12 +20,12 @@
 	});
 
 	function handleContainerClick() {
-		goto('/turbofan-zone/engine-fullscreen');
+		goto('/turbofan-engine/engine-fullscreen');
 	}
 
 	function handleBackClick(e: Event) {
 		e.stopPropagation();
-		goto('/turbofan-zone');
+		goto('/turbofan-engine');
 	}
 </script>
 

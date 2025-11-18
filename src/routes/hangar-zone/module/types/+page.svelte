@@ -346,7 +346,7 @@
 			<span>Previous: {currentPage === 1 ? 'History of Gas Turbine Engines' : `Page ${currentPage - 1}`}</span>
 		</button>
 		<button on:click={nextPage} class="nav-link next">
-			<span>Next: {currentPage === totalPages ? 'Turbofan Zone' : `Page ${currentPage + 1}`}</span>
+			<span>Next: {currentPage === totalPages ? 'Turbofan Engine' : `Page ${currentPage + 1}`}</span>
 			<span class="nav-arrow">→</span>
 		</button>
 	</div>

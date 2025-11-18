@@ -307,16 +307,47 @@
 		border: 2px solid rgba(255, 255, 255, 0.5);
 	}
 
+	@keyframes gradient-flash {
+		0%, 100% {
+			background-position: 0% 50%;
+		}
+		25% {
+			background-position: 50% 50%;
+		}
+		50% {
+			background-position: 100% 50%;
+		}
+		75% {
+			background-position: 50% 50%;
+		}
+	}
+
 	/* Tab Content */
 	.tab-content {
 		width: 100%;
 	}
 
 	h1 {
-		font-family: 'Montserrat', sans-serif;
+		font-family: var(--font-heading), 'Montserrat', sans-serif;
 		font-size: 2.5rem;
-		color: #223A5E;
+		font-weight: 900;
 		margin: 0 0 1rem 0;
+		background: linear-gradient(
+			90deg,
+			var(--ui-yellow) 0%,
+			var(--font-accent-cyan) 20%,
+			var(--ui-light-blue) 40%,
+			var(--font-accent-yellow) 60%,
+			var(--ui-yellow) 80%,
+			var(--font-accent-cyan) 100%
+		);
+		background-size: 300% 100%;
+		-webkit-background-clip: text;
+		-webkit-text-fill-color: transparent;
+		background-clip: text;
+		animation: gradient-flash 4s ease-in-out infinite;
+		filter: drop-shadow(0 4px 20px rgba(0, 0, 0, 0.3));
+		letter-spacing: -1px;
 	}
 
 	.welcome {

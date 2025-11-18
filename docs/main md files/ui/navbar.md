@@ -9,7 +9,7 @@ Left:
 
 Right:
     - [Hangar Zone](/hangar-zone)
-    - [Turbofan Zone](/turbofan-zone)
+    - [Turbofan Engine](/turbofan-engine)
     - [Overhaul Station](/overhaul-station)
     - [JAJA](/jaja)
     - [Sign Up](/sign-up)

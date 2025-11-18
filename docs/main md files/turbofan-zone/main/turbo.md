@@ -1,7 +1,7 @@
 task 1 : basic set-up
     1.1 remove all teh current content in turbofan page except for the background
-    1.2 replace turbofan zone title with turbofan engine and also i want you to remove the current container, i dont want any container
-    1.3 below the turbofan engine title add this short desctiption "Enter the Turbofan Engine Zone, an immersive hub where students can explore a fully rotatable 3D turbofan engine in stunning detail. Here, they can interact with each component, uncover the inner workings of every section, and gain a clear understanding of how these powerful machines drive modern aircraft to the skies."
+    1.2 replace turbofan engine title with turbofan engine and also i want you to remove the current container, i dont want any container
+    1.3 below the turbofan engine title add this short desctiption "Enter the Turbofan Engine, an immersive hub where students can explore a fully rotatable 3D turbofan engine in stunning detail. Here, they can interact with each component, uncover the inner workings of every section, and gain a clear understanding of how these powerful machines drive modern aircraft to the skies."
    
 task 2 : conterization
     2.1 refer to this screenshot in the location /home/joyboy/Desktop/ThrustLab/thrustlab/md files/turbo fan md/turbo-ss.png as i will provide instruction below based on this screenshot

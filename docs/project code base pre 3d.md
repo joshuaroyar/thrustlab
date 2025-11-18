@@ -30,7 +30,7 @@
 
 **ThrustLab** is a modern, interactive educational web platform designed to teach users about turbofan engines through immersive 3D visualizations, interactive modules, and comprehensive learning materials. The application features:
 
-- **Educational Zones**: Hangar Zone, Test Bay, Turbofan Zone, Overhaul Station
+- **Educational Zones**: Hangar Zone, Test Bay, Turbofan Engine, Overhaul Station
 - **3D Visualizations**: Interactive turbofan engine models using Three.js
 - **Dynamic UI**: Scroll-based parallax sky backgrounds with procedurally generated clouds
 - **User Management**: Complete authentication system with session management
@@ -148,7 +148,7 @@ thrustlab/
 │       ├── test-bay/             # Test bay module
 │       │   └── +page.svelte
 │       │
-│       └── turbofan-zone/        # Main turbofan learning zone
+│       └── turbofan-engine/      # Main turbofan learning zone
 │           ├── +page.svelte
 │           ├── engine-fullscreen/    # Fullscreen 3D view
 │           ├── engine-instructions/  # Interactive instructions
@@ -173,7 +173,7 @@ thrustlab/
 │   │   ├── overhaul-tab/
 │   │   ├── test-bay/
 │   │   ├── turbofan-3d/
-│   │   ├── turbofan-zone/
+│   │   ├── turbofan-engine/
 │   │   └── ui/
 │   └── oth md files/             # Other documentation
 │       └── speed-optimizatioin/
@@ -201,7 +201,7 @@ ThrustLab uses SvelteKit's file-based routing and server-side rendering:
 src/routes/+page.svelte              → /
 src/routes/dashboard/+page.svelte    → /dashboard
 src/routes/login/+page.svelte        → /login
-src/routes/turbofan-zone/+page.svelte → /turbofan-zone
+src/routes/turbofan-engine/+page.svelte → /turbofan-engine
 ```
 
 ### **2. Server-Side Hooks (Authentication Flow)**
@@ -633,7 +633,7 @@ const navLinks = [
     { name: 'Home', path: '/' },
     { name: 'Hangar Zone', path: '/hangar-zone' },
     { name: 'Test Bay', path: '/test-bay' },
-    { name: 'Turbofan Zone', path: '/turbofan-zone' },
+    { name: 'Turbofan Engine', path: '/turbofan-engine' },
     { name: 'Overhaul Station', path: '/overhaul-station' }
 ];
 ```
@@ -744,9 +744,9 @@ interface Props {
 
 **Protected Route:** Requires authentication
 
-### **Turbofan Zone** (`/turbofan-zone`)
+### **Turbofan Engine** (`/turbofan-engine`)
 
-**File:** `src/routes/turbofan-zone/+page.svelte` (1828 lines)
+**File:** `src/routes/turbofan-engine/+page.svelte` (1828 lines)
 
 **Features:**
 - Evening sky theme (orange/pink sunset)
@@ -756,9 +756,9 @@ interface Props {
 - Learning modules (Module 3, More Info, etc.)
 
 **Sub-routes:**
-- `/turbofan-zone/engine-fullscreen` - 3D engine viewer
-- `/turbofan-zone/engine-instructions` - Interactive instructions
-- `/turbofan-zone/module/*` - Learning modules
+- `/turbofan-engine/engine-fullscreen` - 3D engine viewer
+- `/turbofan-engine/engine-instructions` - Interactive instructions
+- `/turbofan-engine/module/*` - Learning modules
 
 ### **Hangar Zone** (`/hangar-zone`)
 

@@ -46,7 +46,7 @@ task 4:
         
         Container 2:
         Icon: Turbofan Engine Icon.png
-        Title: Turbofan Zone
+        Title: Turbofan Engine
         Description: An immersive hub where students expAlore a fully rotatable 3D turbofan engine, interact with its components, and discover each section that powers modern flight.
         
         Container 3:
