@@ -305,10 +305,11 @@
 		margin: 0 auto;
 		display: flex;
 		align-items: center;
-		justify-content: center;
+		justify-content: space-between;
 		padding: 0.5rem 1.5rem;
 		height: 100px;
 		position: relative;
+		gap: 1rem;
 	}
 
 	.hamburger-menu-button {
@@ -322,7 +323,8 @@
 		cursor: pointer;
 		border-radius: 0.375rem;
 		transition: background-color 0.3s ease;
-		margin-right: 0;
+		margin-left: auto;
+		flex-shrink: 0;
 	}
 
 	.hamburger-menu-button:hover {
@@ -336,15 +338,12 @@
 
 	.navbar-brand {
 		flex-shrink: 0;
+		display: flex;
+		align-items: center;
 	}
 
 	/* Logo positioned on left side of navbar */
 	.logo-link {
-		position: absolute;
-		left: 1.5rem;
-		top: 50%;
-		transform: translateY(-50%);
-		z-index: 1001;
 		text-decoration: none;
 		display: block;
 	}
@@ -362,17 +361,50 @@
 		filter: drop-shadow(0 4px 8px rgba(255, 217, 102, 0.6));
 	}
 
+	/* Responsive logo sizing */
+	@media (max-width: 1200px) {
+		.navbar-logo {
+			height: 8rem;
+		}
+	}
+
+	@media (max-width: 1024px) {
+		.navbar-logo {
+			height: 6rem;
+		}
+	}
+
+	@media (max-width: 768px) {
+		.navbar-logo {
+			height: 4rem;
+		}
+	}
+
+	@media (max-width: 480px) {
+		.navbar-logo {
+			height: 3rem;
+		}
+	}
+
 	.navbar-menu {
 		display: none;
 		align-items: center;
 		justify-content: center;
 		gap: 0.5rem;
 		flex: 1;
+		margin: 0 1rem;
 	}
 
 	@media (min-width: 768px) {
 		.navbar-menu {
 			display: flex;
+		}
+	}
+
+	/* Adjust navbar menu spacing on medium screens */
+	@media (min-width: 768px) and (max-width: 1024px) {
+		.navbar-menu {
+			gap: 0.25rem;
 		}
 	}
 
@@ -389,6 +421,14 @@
 		text-shadow: 0 1px 3px rgba(0, 0, 0, 0.8);
 		text-transform: uppercase; /* ALL CAPS */
 		letter-spacing: 0.5px;
+	}
+
+	/* Responsive nav link sizing */
+	@media (min-width: 768px) and (max-width: 1024px) {
+		.nav-link {
+			font-size: 0.875rem;
+			padding: 0.5rem 0.75rem;
+		}
 	}
 
 	.nav-link:hover {
@@ -414,6 +454,8 @@
 		cursor: pointer;
 		border-radius: 0.375rem;
 		transition: background-color 0.3s ease;
+		margin-left: auto;
+		flex-shrink: 0;
 	}
 
 	.mobile-menu-button:hover {
