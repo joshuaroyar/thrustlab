@@ -46,6 +46,9 @@
 	},
 	"dependencies": {
 		"@ai-sdk/openai": "^2.0.68",
+		"@babylonjs/core": "^8.38.0",
+		"@babylonjs/loaders": "^8.38.0",
+		"@types/babylonjs": "^2.3.31",
 		"@types/three": "^0.181.0",
 		"ai": "^5.0.93",
 		"cookie": "^1.0.2",

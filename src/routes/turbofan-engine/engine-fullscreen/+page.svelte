@@ -1,6 +1,40 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
 	import { onMount } from 'svelte';
+	import ModelViewer from '$lib/components/ModelViewer.svelte';
+
+	let showLabels = $state(true);
+	let modelLoaded = $state(false);
+
+	// Part descriptions for highlighting
+	const partDescriptions = {
+		'Fan': {
+			name: 'Fan',
+			description: 'Large rotating blades that draw air into the engine and provide bypass thrust.'
+		},
+		'Compressor': {
+			name: 'Compressor',
+			description: 'Increases the pressure of incoming air before combustion.'
+		},
+		'Combustor': {
+			name: 'Combustion Chamber',
+			description: 'Where fuel is mixed with compressed air and ignited to produce hot gases.'
+		},
+		'Turbine': {
+			name: 'Turbine',
+			description: 'Extracts energy from hot gases to drive the compressor and fan.'
+		},
+		'Nozzle': {
+			name: 'Exhaust Nozzle',
+			description: 'Accelerates exhaust gases to produce thrust.'
+		},
+		'Bypass': {
+			name: 'Bypass Duct',
+			description: 'Channel for air that bypasses the engine core, providing additional thrust.'
+		}
+	};
+
+	let cameraResetTrigger = $state(0);
 
 	onMount(() => {
 		// Handle escape key to go back to turbofan engine
@@ -20,6 +54,19 @@
 	function handleBackClick() {
 		goto('/turbofan-engine');
 	}
+
+	function toggleLabels() {
+		showLabels = !showLabels;
+	}
+
+	function resetView() {
+		// Trigger camera reset by changing the key
+		cameraResetTrigger++;
+	}
+
+	function handleModelLoaded() {
+		modelLoaded = true;
+	}
 </script>
 
 <!-- Evening Sky Background -->
@@ -36,7 +83,7 @@
 		</button>
 
 		<div class="control-group">
-			<button class="control-button" title="Reset View">
+			<button class="control-button" title="Reset View" onclick={resetView}>
 				<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
 					<polyline points="23 4 23 10 17 10"></polyline>
 					<polyline points="1 20 1 14 7 14"></polyline>
@@ -45,7 +92,11 @@
 				Reset
 			</button>
 
-			<button class="control-button" title="Toggle Labels">
+			<button 
+				class="control-button {showLabels ? 'active' : ''}" 
+				title="Toggle Labels"
+				onclick={toggleLabels}
+			>
 				<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
 					<line x1="12" y1="2" x2="12" y2="6"></line>
 					<line x1="12" y1="18" x2="12" y2="22"></line>
@@ -71,25 +122,23 @@
 	</div>
 
 	<div class="engine-container">
-		<div class="placeholder-content">
-			<div class="placeholder-icon">⚙️</div>
-			<h2>3D Turbofan Engine Viewer</h2>
-			<p class="placeholder-text">Interactive 3D model will be integrated here</p>
-			<div class="placeholder-instructions">
-				<div class="instruction-badge">
-					<span>🖱️ Scroll to Zoom</span>
-				</div>
-				<div class="instruction-badge">
-					<span>🔄 Drag to Rotate</span>
-				</div>
-				<div class="instruction-badge">
-					<span>👆 Click Parts for Info</span>
-				</div>
-				<div class="instruction-badge">
-					<span>⎋ Press ESC to Exit</span>
-				</div>
+		{#if !modelLoaded}
+			<div class="loading-overlay">
+				<div class="loading-spinner"></div>
+				<p>Loading 3D Model...</p>
 			</div>
-		</div>
+		{/if}
+		
+		{#key cameraResetTrigger}
+			<ModelViewer 
+				modelPath="/models/Turbofan.glb"
+				canvasClass="fullscreen-canvas"
+				cameraPosition={{ alpha: Math.PI / 2, beta: Math.PI / 3, radius: 8 }}
+				enableHighlight={showLabels}
+				partDescriptions={partDescriptions}
+				onModelLoaded={handleModelLoaded}
+			/>
+		{/key}
 	</div>
 
 	<div class="footer-info">
@@ -188,11 +237,11 @@
 		border: 2px solid rgba(135, 206, 235, 0.3);
 		box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
 		display: flex;
-		align-items: center;
-		justify-content: center;
+		position: relative; /* Ensure loading overlay is positioned relative to this */
 		min-height: 600px;
 		margin-bottom: 1rem;
 		animation: fadeIn 0.6s ease;
+		overflow: hidden; /* Ensure content doesn't spill out */
 	}
 
 	@keyframes fadeIn {
@@ -206,70 +255,47 @@
 		}
 	}
 
-	.placeholder-content {
+	.loading-overlay {
+		position: absolute;
+		top: 0;
+		left: 0;
+		right: 0;
+		bottom: 0;
 		display: flex;
 		flex-direction: column;
 		align-items: center;
 		justify-content: center;
-		gap: 2rem;
-		padding: 3rem;
-		text-align: center;
+		background: rgba(10, 47, 53, 0.9);
+		z-index: 100;
+		gap: 1.5rem;
 	}
 
-	.placeholder-icon {
-		font-size: 8rem;
-		animation: rotate 10s linear infinite;
+	.loading-spinner {
+		width: 60px;
+		height: 60px;
+		border: 4px solid rgba(135, 206, 235, 0.2);
+		border-top-color: var(--ui-light-blue);
+		border-radius: 50%;
+		animation: spin 1s linear infinite;
 	}
 
-	@keyframes rotate {
-		from {
-			transform: rotate(0deg);
-		}
+	@keyframes spin {
 		to {
 			transform: rotate(360deg);
 		}
 	}
 
-	.placeholder-content h2 {
-		font-family: var(--font-heading);
-		font-size: clamp(1.8rem, 3vw, 2.5rem);
-		font-weight: 900;
-		color: var(--font-accent-yellow);
-		margin: 0;
-		text-shadow: 0 3px 12px rgba(0, 0, 0, 0.8);
-	}
-
-	.placeholder-text {
-		font-family: var(--font-body);
-		font-size: 1.2rem;
-		color: var(--font-secondary);
-		margin: 0;
-		text-shadow: 0 2px 6px rgba(0, 0, 0, 0.6);
-	}
-
-	.placeholder-instructions {
-		display: flex;
-		flex-wrap: wrap;
-		gap: 1rem;
-		justify-content: center;
-		margin-top: 1rem;
-	}
-
-	.instruction-badge {
-		padding: 0.75rem 1.5rem;
-		background: rgba(28, 62, 74, 0.7);
-		border-radius: 50px;
-		border: 1px solid rgba(135, 206, 235, 0.3);
-		font-family: var(--font-body);
-		font-size: 0.95rem;
+	.loading-overlay p {
 		color: var(--font-accent-cyan);
-		transition: all 0.3s ease;
+		font-family: var(--font-heading);
+		font-size: 1.2rem;
+		font-weight: 600;
 	}
 
-	.instruction-badge:hover {
-		background: rgba(28, 62, 74, 0.9);
+	.control-button.active {
+		background: rgba(28, 62, 74, 1);
 		border-color: var(--ui-light-blue);
-		transform: translateY(-2px);
+		box-shadow: 0 0 20px rgba(135, 206, 235, 0.4);
 	}
 
 	.footer-info {
@@ -322,18 +348,6 @@
 
 		.engine-container {
 			min-height: 400px;
-		}
-
-		.placeholder-icon {
-			font-size: 5rem;
-		}
-
-		.placeholder-instructions {
-			flex-direction: column;
-		}
-
-		.instruction-badge {
-			width: 100%;
 		}
 	}
 </style>

@@ -1,19 +1,10 @@
-task 1 :
-     hey so i have a turbofan.glb file at /home/joyboy/Desktop/ThrustLab/thrustlab/docs/main md files/turbofan-3d/turbofan.glb and it has a 3d model of a turbofan engine , now below i will provide instruction on 
-     what is ot be done with it
-    1.1 :
-      in the website - turbofan engine page - overview section has 3d turbofan engine model and when it is clicked it opens an welcome aboard and then it opens an 3D Turbofan Engine Viewer container , now i want this turbofan.glb 3d model to be loaded in that container and below i will provide futher instructions
-    1.2 :
-      i want you to install the required libraries or dependencied to load the turbofan.glb 3d model in the 3D Turbofan Engine Viewer container on the turbofan engine page of the website
-    1.3 :
-      i also want the model to be interactive so that user can rotate it 360 degrees and zoom in and out on the model
-    1.4 :
-      and when the user clicks on different parts of the turbofan engine model i want a tooltip or info box to appear showing the name and a brief description of that part of the engine
-    1.5 :
-      when the user clicks on the close button of the 3D Turbofan Engine Viewer container i want the model to be unloaded and all resources to be freed up
-    1.6 :
-      finally i want you to test the implementation on different browsers and devices to ensure compatibility and responsiveness 
-    1.7 :
-      i want you to code this in a clean and efficient manner following best practices for web development and 3D model integration
+Task 1: (Turbofan Engine 3D Model Overview - Implement this 3D Viewer when the overview container is clicked and after the user sees the instruction page)
+  Note: Ensure the ModelViewer component is only loaded (lazyloaded) when the user clicks on the overview container to optimize performance.
+  Note 2: ENsure the ModelViewer component is a resuable component that can be used in other parts of the application if needed.
 
-       
+  1.1 I want you to implement the interactive view of the 3d model of a turbofan engine, 1. 1.1.1 Install the required dependencies for babylon.ja in order for the 3d model to wotk efficiently.
+  1.2 The glb 3D model file is located at "static/models/Turbofan.glb", and I want you to load this model into the viewer.
+  1.3 Use Babylon.js to create the interactive view.
+  1.4 The view should allow users to rotate, zoom, and pan around the 3D model using both mousebinds and keybinds.
+  1.5 Additionally, implement a feature that highlights different parts of the engine when hovered over with the mouse, displaying a tooltip with the part's name and description.
+  1.6 Ensure that the model loads efficiently and is responsive across different devices.
