@@ -1,106 +1,92 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-	
+
 	let heroRef: HTMLElement;
 	let isHovering = $state(false);
 	let mounted = $state(false);
-	let mouseX = $state(0);
-	let mouseY = $state(0);
 	let showJajaIcon = $state(true); // Control JAJA icon visibility based on scroll
 
-	const BASE_DRIFT_SPEED = 0.61;
-
-	// Canvas references for each layer
+	// Cloud Animation State
 	let skyCanvas: HTMLCanvasElement;
 	let farCloudsCanvas: HTMLCanvasElement;
 	let midCloudsCanvas: HTMLCanvasElement;
 	let nearCloudsCanvas: HTMLCanvasElement;
+	let mouseX = $state(0);
+	let mouseY = $state(0);
+	const BASE_DRIFT_SPEED = 0.61;
 
 	let farClouds = $state([
-		{ x: -200, y: 380, w: 350, h: 120, color: 'rgba(255, 255, 255, 0.5)' },
-		{ x: 400, y: 480, w: 400, h: 140, color: 'rgba(255, 255, 255, 0.45)' },
-		{ x: 1200, y: 430, w: 420, h: 150, color: 'rgba(255, 255, 255, 0.48)' },
-		{ x: 2000, y: 360, w: 380, h: 130, color: 'rgba(255, 255, 255, 0.47)' }
+		{ x: -200, y: 200, w: 350, h: 120, color: 'rgba(255, 255, 255, 0.5)' },
+		{ x: 400, y: 300, w: 400, h: 140, color: 'rgba(255, 255, 255, 0.45)' },
+		{ x: 1200, y: 250, w: 420, h: 150, color: 'rgba(255, 255, 255, 0.48)' },
+		{ x: 2000, y: 180, w: 380, h: 130, color: 'rgba(255, 255, 255, 0.47)' }
 	]);
 
 	let midClouds = $state([
-		{ x: -100, y: 580, w: 300, h: 100, color: 'rgba(255, 255, 255, 0.65)' },
-		{ x: 500, y: 680, w: 320, h: 110, color: 'rgba(255, 255, 255, 0.62)' },
-		{ x: 1200, y: 630, w: 340, h: 115, color: 'rgba(255, 255, 255, 0.64)' },
-		{ x: 1900, y: 660, w: 310, h: 105, color: 'rgba(255, 255, 255, 0.63)' },
-		{ x: 2600, y: 600, w: 330, h: 112, color: 'rgba(255, 255, 255, 0.62)' }
+		{ x: -100, y: 400, w: 300, h: 100, color: 'rgba(255, 255, 255, 0.65)' },
+		{ x: 500, y: 500, w: 320, h: 110, color: 'rgba(255, 255, 255, 0.62)' },
+		{ x: 1200, y: 450, w: 340, h: 115, color: 'rgba(255, 255, 255, 0.64)' },
+		{ x: 1900, y: 480, w: 310, h: 105, color: 'rgba(255, 255, 255, 0.63)' },
+		{ x: 2600, y: 420, w: 330, h: 112, color: 'rgba(255, 255, 255, 0.62)' }
 	]);
 
 	let nearClouds = $state([
-		{ x: -150, y: 880, w: 250, h: 80, color: 'rgba(255, 255, 255, 0.8)' },
-		{ x: 400, y: 930, w: 270, h: 85, color: 'rgba(255, 255, 255, 0.78)' },
-		{ x: 950, y: 980, w: 260, h: 82, color: 'rgba(255, 255, 255, 0.79)' },
-		{ x: 1500, y: 900, w: 280, h: 87, color: 'rgba(255, 255, 255, 0.77)' },
-		{ x: 2100, y: 960, w: 265, h: 84, color: 'rgba(255, 255, 255, 0.78)' },
-		{ x: 2700, y: 920, w: 275, h: 86, color: 'rgba(255, 255, 255, 0.8)' }
+		{ x: -150, y: 700, w: 250, h: 80, color: 'rgba(255, 255, 255, 0.8)' },
+		{ x: 400, y: 750, w: 270, h: 85, color: 'rgba(255, 255, 255, 0.78)' },
+		{ x: 950, y: 800, w: 260, h: 82, color: 'rgba(255, 255, 255, 0.79)' },
+		{ x: 1500, y: 720, w: 280, h: 87, color: 'rgba(255, 255, 255, 0.77)' },
+		{ x: 2100, y: 780, w: 265, h: 84, color: 'rgba(255, 255, 255, 0.78)' },
+		{ x: 2700, y: 740, w: 275, h: 86, color: 'rgba(255, 255, 255, 0.8)' }
 	]);
 
-	// Scroll-based background transition (REVERSED)
-	let scrollProgress = $state(0); // 0 = midnight/night, 0.5 = evening, 1 = day
-
-	// Throttle scroll handler
-	let lastScrollProgress = -1;
-	let scrollRafId: number | null = null;
-	let skyRegenerationTimeout: number | null = null;
+	// Day/Night Cycle State
+	let time = $state(24); // Start at Night
+	let stars: { x: number; y: number; size: number; alpha: number }[] = [];
 
 	onMount(() => {
 		mounted = true;
 
-		// Mouse tracking
+		// Generate stars
+		stars = Array.from({ length: 100 }, () => ({
+			x: Math.random() * window.innerWidth,
+			y: Math.random() * window.innerHeight,
+			size: Math.random() * 2 + 0.5,
+			alpha: Math.random()
+		}));
+
+		// Mouse tracking for parallax
 		const handleMouseMove = (e: MouseEvent) => {
 			mouseX = e.clientX;
 			mouseY = e.clientY;
 		};
-
 		window.addEventListener('mousemove', handleMouseMove);
-
-		// Initialize sky
-		initializeSkies();
 
 		// Start continuous animation loop
 		let animationId: number;
 		const animate = () => {
+			// Time is now controlled by scroll
+			updateSky();
 			animateCloudLayers();
 			animationId = requestAnimationFrame(animate);
 		};
 		animate();
 
-		// Scroll handler for background transition
+		// Scroll handler for JAJA icon and Time
 		const handleScroll = () => {
 			const currentScroll = window.scrollY;
-			
 			// Control JAJA icon visibility - hide when scrolled past hero section
-			// Hero section is roughly 100vh, so hide after scrolling 50% of viewport height
-			showJajaIcon = currentScroll < (window.innerHeight * 0.5);
-			
-			if (scrollRafId !== null) return;
-			
-			scrollRafId = requestAnimationFrame(() => {
-				const scrollHeight = document.documentElement.scrollHeight - window.innerHeight;
-				const progress = Math.min(currentScroll / scrollHeight, 1);
-				
-				// Only update if progress changed by more than 1%
-				if (Math.abs(progress - lastScrollProgress) > 0.01) {
-					scrollProgress = progress;
-					lastScrollProgress = progress;
-					
-					// Debounce expensive sky regeneration
-					if (skyRegenerationTimeout !== null) {
-						clearTimeout(skyRegenerationTimeout);
-					}
-					skyRegenerationTimeout = setTimeout(() => {
-						initializeSkies();
-						skyRegenerationTimeout = null;
-					}, 100) as unknown as number;
-				}
-				
-				scrollRafId = null;
-			});
+			showJajaIcon = currentScroll < window.innerHeight * 0.5;
+
+			// Update time based on scroll position
+			const maxScroll = document.body.scrollHeight - window.innerHeight;
+			const scrollRatio = Math.min(Math.max(currentScroll / maxScroll, 0), 1);
+
+			// Map scroll (0 to 1) to time (24 down to 6.5)
+			// 0 -> 24 (Night)
+			// 0.33 -> ~18 (Evening)
+			// 0.66 -> ~12 (Day)
+			// 1.0 -> 6.5 (Dawn)
+			time = 24 - scrollRatio * 17.5;
 		};
 
 		window.addEventListener('scroll', handleScroll, { passive: true });
@@ -113,7 +99,7 @@
 		};
 
 		const observer = new IntersectionObserver((entries) => {
-			entries.forEach(entry => {
+			entries.forEach((entry) => {
 				if (entry.isIntersecting) {
 					entry.target.classList.add('visible');
 				}
@@ -123,205 +109,152 @@
 		// Observe all elements with animate-on-scroll class
 		setTimeout(() => {
 			const animateElements = document.querySelectorAll('.animate-on-scroll');
-			animateElements.forEach(el => observer.observe(el));
+			animateElements.forEach((el) => observer.observe(el));
 		}, 100);
 
 		return () => {
-			window.removeEventListener('mousemove', handleMouseMove);
 			window.removeEventListener('scroll', handleScroll);
+			window.removeEventListener('mousemove', handleMouseMove);
 			if (animationId) {
 				cancelAnimationFrame(animationId);
 			}
 			observer.disconnect();
-			
-			if (scrollRafId !== null) cancelAnimationFrame(scrollRafId);
-			if (skyRegenerationTimeout !== null) clearTimeout(skyRegenerationTimeout);
 		};
 	});
 
-	// Initialize sky with dynamic gradient based on scroll progress
-	function initializeSkies() {
+	function updateSky() {
 		if (!skyCanvas) return;
 		const ctx = skyCanvas.getContext('2d');
 		if (!ctx) return;
 
-		const width = skyCanvas.width;
-		const height = skyCanvas.height;
+		const w = skyCanvas.width;
+		const h = skyCanvas.height;
 
 		// Clear canvas
-		ctx.clearRect(0, 0, width, height);
+		ctx.clearRect(0, 0, w, h);
 
-		// Define color stops for midnight, night, evening, and day (REVERSED)
-		let topColor, midTopColor, midBottomColor, bottomColor;
+		// Sky Gradient Interpolation
+		let topColor: number[], bottomColor: number[];
 
-		if (scrollProgress < 0.25) {
-			// Midnight (0 to 0.25) - Black gradient
-			const t = scrollProgress / 0.25; // Normalize to 0-1
-			topColor = interpolateColor('#000000', '#0a1628', t);       // Pure black → Deep navy
-			midTopColor = interpolateColor('#0a0a0a', '#1a2847', t);    // Near black → Dark blue
-			midBottomColor = interpolateColor('#1a1a1a', '#2d3f66', t); // Dark gray → Medium blue
-			bottomColor = interpolateColor('#2a2a2a', '#4a5f8f', t);    // Charcoal → Lighter blue
-		} else if (scrollProgress < 0.5) {
-			// Night (0.25 to 0.5)
-			const t = (scrollProgress - 0.25) / 0.25; // Normalize to 0-1
-			topColor = interpolateColor('#0a1628', '#FF6B6B', t);       // Deep navy → Orange
-			midTopColor = interpolateColor('#1a2847', '#FF8C42', t);    // Dark blue → Light orange
-			midBottomColor = interpolateColor('#2d3f66', '#FFB347', t); // Medium blue → Peach
-			bottomColor = interpolateColor('#4a5f8f', '#FFD700', t);    // Lighter blue → Gold
-		} else if (scrollProgress < 0.75) {
-			// Evening (0.5 to 0.75)
-			const t = (scrollProgress - 0.5) / 0.25; // Normalize to 0-1
-			topColor = interpolateColor('#FF6B6B', '#87CEEB', t);       // Orange → Sky blue
-			midTopColor = interpolateColor('#FF8C42', '#8FB4D4', t);    // Light orange → Softer blue
-			midBottomColor = interpolateColor('#FFB347', '#BDDDF0', t); // Peach → Muted light blue
-			bottomColor = interpolateColor('#FFD700', '#D5E8F0', t);    // Gold → Softer blue
+		if (time >= 5 && time < 8) {
+			// Sunrise (5-8) - Dawn (Purple)
+			const t = (time - 5) / 3;
+			// Transition from Purple (at time=5) to Day Blue (at time=8)
+			topColor = interpolateColor([45, 27, 78], [135, 206, 235], t); // Deep Purple to Day Blue
+			bottomColor = interpolateColor([255, 168, 213], [255, 223, 186], t); // Pink to Peach
+		} else if (time >= 8 && time < 16) {
+			// Day (8-16)
+			topColor = [135, 206, 235]; // Sky Blue
+			bottomColor = [255, 255, 255]; // White/Light Blue
+		} else if (time >= 16 && time < 19) {
+			// Sunset (16-19)
+			const t = (time - 16) / 3;
+			topColor = interpolateColor([135, 206, 235], [25, 25, 112], t); // Day Blue to Midnight Blue
+			bottomColor = interpolateColor([255, 255, 255], [255, 140, 0], t); // White to Orange
 		} else {
-			// Day (0.75 to 1) - Full daylight
-			topColor = '#87CEEB';      // Sky blue
-			midTopColor = '#8FB4D4';   // Softer blue
-			midBottomColor = '#BDDDF0'; // Muted light blue
-			bottomColor = '#D5E8F0';    // Softer blue
+			// Night (19-5)
+			topColor = [10, 10, 30];
+			bottomColor = [20, 20, 60];
 		}
 
-		// Create gradient with interpolated colors
-		const gradient = ctx.createLinearGradient(0, 0, 0, height);
-		gradient.addColorStop(0, topColor);
-		gradient.addColorStop(0.3, midTopColor);
-		gradient.addColorStop(0.6, midBottomColor);
-		gradient.addColorStop(1, bottomColor);
-
+		const gradient = ctx.createLinearGradient(0, 0, 0, h);
+		gradient.addColorStop(0, `rgb(${topColor.join(',')})`);
+		gradient.addColorStop(1, `rgb(${bottomColor.join(',')})`);
 		ctx.fillStyle = gradient;
-		ctx.fillRect(0, 0, width, height);
+		ctx.fillRect(0, 0, w, h);
 
-		// Add stars (only visible at night - before 0.6 scroll progress)
-		if (scrollProgress < 0.6) {
-			const starOpacity = scrollProgress < 0.25 
-				? 0.8 // Full stars in midnight
-				: 1 - ((scrollProgress - 0.25) / 0.35); // Fade out as we approach day
-			
-			const starCount = scrollProgress < 0.25 ? 100 : 75;
-			ctx.fillStyle = `rgba(255, 255, 255, ${starOpacity * 0.8})`;
-			
-			// Batch render stars for better performance
-			ctx.beginPath();
-			for (let i = 0; i < starCount; i++) {
-				const x = Math.random() * width;
-				const y = Math.random() * height * 0.6; // Stars in upper portion
-				const radius = Math.random() * 1.5 + 0.5;
-				
-				ctx.moveTo(x + radius, y);
-				ctx.arc(x, y, radius, 0, Math.PI * 2);
-			}
-			ctx.fill();
+		// Draw Stars (Night only)
+		if (time < 6 || time > 18) {
+			const opacity =
+				time > 18 && time < 20 ? (time - 18) / 2 : time > 4 && time < 6 ? (6 - time) / 2 : 1;
+			drawStars(ctx, w, h, opacity);
 		}
 
-		// Add a simple moon (visible during night phases - before 0.6 scroll progress)
-		if (scrollProgress < 0.6) {
-			const moonOpacity = scrollProgress < 0.25 
-				? 0.9 // Full moon in midnight
-				: scrollProgress < 0.5
-					? 0.85 // Slightly dimmer in night phase
-					: 1 - ((scrollProgress - 0.5) / 0.1); // Fade out in evening
-			
-			const moonX = width * 0.85; // Right side of sky
-			const moonY = height * 0.2; // Upper portion
-			const moonRadius = 40; // Simple, modest size
-
-			// Subtle moon glow
-			const moonGlow = ctx.createRadialGradient(moonX, moonY, moonRadius * 0.5, moonX, moonY, moonRadius * 2.5);
-			moonGlow.addColorStop(0, `rgba(255, 255, 245, ${moonOpacity * 0.15})`);
-			moonGlow.addColorStop(1, 'rgba(255, 255, 245, 0)');
-			ctx.fillStyle = moonGlow;
-			ctx.fillRect(moonX - moonRadius * 2.5, moonY - moonRadius * 2.5, moonRadius * 5, moonRadius * 5);
-
-			// Simple moon body
-			const moonGradient = ctx.createRadialGradient(
-				moonX - moonRadius * 0.3, 
-				moonY - moonRadius * 0.3, 
-				moonRadius * 0.2, 
-				moonX, 
-				moonY, 
-				moonRadius
-			);
-			moonGradient.addColorStop(0, '#fffef5');
-			moonGradient.addColorStop(0.7, '#f5f3e8');
-			moonGradient.addColorStop(1, '#e8e6d8');
-			
-			ctx.globalAlpha = moonOpacity;
-			ctx.fillStyle = moonGradient;
-			ctx.beginPath();
-			ctx.arc(moonX, moonY, moonRadius, 0, Math.PI * 2);
-			ctx.fill();
-			
-			// Add subtle craters for realism
-			ctx.fillStyle = 'rgba(220, 218, 210, 0.3)';
-			ctx.beginPath();
-			ctx.arc(moonX - 10, moonY + 8, 8, 0, Math.PI * 2);
-			ctx.fill();
-			ctx.beginPath();
-			ctx.arc(moonX + 12, moonY - 5, 6, 0, Math.PI * 2);
-			ctx.fill();
-			
-			ctx.globalAlpha = 1; // Reset alpha
+		// Draw Sun (Day)
+		if (time > 4 && time < 20) {
+			const sunProgress = (time - 4) / 16; // 0 to 1 across the sky
+			const sunX = w * sunProgress;
+			const sunY = h * 0.8 - Math.sin(sunProgress * Math.PI) * (h * 0.6);
+			drawSun(ctx, sunX, sunY);
 		}
 
-		// Add a simple sun (visible during day phase - after 0.75 scroll progress)
-		if (scrollProgress >= 0.75) {
-			const sunOpacity = Math.min((scrollProgress - 0.75) / 0.15, 1); // Fade in smoothly
-			
-			const sunX = width * 0.2; // Left side of sky
-			const sunY = height * 0.18; // Upper portion
-			const sunRadius = 50; // Simple, modest size
+		// Draw Moon (Night)
+		if (time < 6 || time > 18) {
+			// Normalize time for moon path: 18->24->6 becomes 0->1
+			let moonProgress;
+			if (time > 18) moonProgress = (time - 18) / 12;
+			else moonProgress = (time + 6) / 12;
 
-			// Warm sun glow
-			const sunGlow = ctx.createRadialGradient(sunX, sunY, sunRadius * 0.3, sunX, sunY, sunRadius * 3);
-			sunGlow.addColorStop(0, `rgba(255, 220, 100, ${sunOpacity * 0.3})`);
-			sunGlow.addColorStop(0.5, `rgba(255, 200, 80, ${sunOpacity * 0.15})`);
-			sunGlow.addColorStop(1, 'rgba(255, 180, 60, 0)');
-			ctx.fillStyle = sunGlow;
-			ctx.fillRect(sunX - sunRadius * 3, sunY - sunRadius * 3, sunRadius * 6, sunRadius * 6);
-
-			// Simple sun body
-			const sunGradient = ctx.createRadialGradient(
-				sunX - sunRadius * 0.2, 
-				sunY - sunRadius * 0.2, 
-				sunRadius * 0.2, 
-				sunX, 
-				sunY, 
-				sunRadius
-			);
-			sunGradient.addColorStop(0, '#FFF9E6');
-			sunGradient.addColorStop(0.6, '#FFE87C');
-			sunGradient.addColorStop(1, '#FFD54F');
-			
-			ctx.globalAlpha = sunOpacity;
-			ctx.fillStyle = sunGradient;
-			ctx.beginPath();
-			ctx.arc(sunX, sunY, sunRadius, 0, Math.PI * 2);
-			ctx.fill();
-			
-			ctx.globalAlpha = 1; // Reset alpha
+			const moonX = w * moonProgress;
+			const moonY = h * 0.8 - Math.sin(moonProgress * Math.PI) * (h * 0.6);
+			drawMoon(ctx, moonX, moonY);
 		}
 	}
 
-	// Helper function to interpolate between two hex colors
-	function interpolateColor(color1: string, color2: string, t: number): string {
-		const c1 = parseInt(color1.slice(1), 16);
-		const c2 = parseInt(color2.slice(1), 16);
-		
-		const r1 = (c1 >> 16) & 255;
-		const g1 = (c1 >> 8) & 255;
-		const b1 = c1 & 255;
-		
-		const r2 = (c2 >> 16) & 255;
-		const g2 = (c2 >> 8) & 255;
-		const b2 = c2 & 255;
-		
-		const r = Math.round(r1 + (r2 - r1) * t);
-		const g = Math.round(g1 + (g2 - g1) * t);
-		const b = Math.round(b1 + (b2 - b1) * t);
-		
-		return `#${((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1)}`;
+	function interpolateColor(c1: number[], c2: number[], t: number) {
+		return c1.map((c, i) => Math.round(c + (c2[i] - c) * t));
+	}
+
+	function drawStars(ctx: CanvasRenderingContext2D, w: number, h: number, opacity: number) {
+		ctx.save();
+		ctx.globalAlpha = opacity;
+		ctx.fillStyle = 'white';
+		stars.forEach((star) => {
+			ctx.beginPath();
+			ctx.arc(star.x, star.y, star.size, 0, Math.PI * 2);
+			ctx.fill();
+		});
+		ctx.restore();
+	}
+
+	function drawSun(ctx: CanvasRenderingContext2D, x: number, y: number) {
+		const sunRadius = 70;
+
+		// Soft glow around sun
+		const sunGlow = ctx.createRadialGradient(x, y, sunRadius * 0.3, x, y, sunRadius * 2.5);
+		sunGlow.addColorStop(0, 'rgba(255, 240, 180, 0.5)');
+		sunGlow.addColorStop(0.5, 'rgba(255, 230, 150, 0.2)');
+		sunGlow.addColorStop(1, 'rgba(255, 220, 130, 0)');
+		ctx.fillStyle = sunGlow;
+		ctx.fillRect(x - sunRadius * 2.5, y - sunRadius * 2.5, sunRadius * 5, sunRadius * 5);
+
+		// Main sun body with gradient
+		const sunGradient = ctx.createRadialGradient(x, y, 0, x, y, sunRadius);
+		sunGradient.addColorStop(0, '#FFFEF0'); // Bright cream center
+		sunGradient.addColorStop(0.4, '#FFF4C4'); // Light golden
+		sunGradient.addColorStop(0.8, '#FFE680'); // Golden yellow
+		sunGradient.addColorStop(1, '#FFD54F'); // Darker golden edge
+		ctx.fillStyle = sunGradient;
+		ctx.beginPath();
+		ctx.arc(x, y, sunRadius, 0, Math.PI * 2);
+		ctx.fill();
+	}
+
+	function drawMoon(ctx: CanvasRenderingContext2D, x: number, y: number) {
+		const moonRadius = 50;
+
+		// Moon Glow
+		const moonGlow = ctx.createRadialGradient(x, y, moonRadius * 0.5, x, y, moonRadius * 3);
+		moonGlow.addColorStop(0, 'rgba(255, 255, 255, 0.3)');
+		moonGlow.addColorStop(1, 'rgba(255, 255, 255, 0)');
+		ctx.fillStyle = moonGlow;
+		ctx.beginPath();
+		ctx.arc(x, y, moonRadius * 3, 0, Math.PI * 2);
+		ctx.fill();
+
+		// Moon Body
+		ctx.fillStyle = '#F4F6F0';
+		ctx.beginPath();
+		ctx.arc(x, y, moonRadius, 0, Math.PI * 2);
+		ctx.fill();
+
+		// Craters
+		ctx.fillStyle = '#E6E6E6';
+		ctx.beginPath();
+		ctx.arc(x - 15, y - 10, 8, 0, Math.PI * 2);
+		ctx.arc(x + 20, y + 15, 12, 0, Math.PI * 2);
+		ctx.arc(x - 10, y + 25, 6, 0, Math.PI * 2);
+		ctx.fill();
 	}
 
 	function animateCloudLayers() {
@@ -345,13 +278,21 @@
 		const farCursorOffsetY = -(deltaY / centerY) * farMouseMultiplier * 0.5;
 
 		farCtx.clearRect(0, 0, farCloudsCanvas.width, farCloudsCanvas.height);
-		
+
 		for (const cloud of farClouds) {
 			cloud.x += BASE_DRIFT_SPEED * farLayerSpeed;
-			if (cloud.x - (cloud.w * 0.35) > farCloudsCanvas.width) {
+			if (cloud.x - cloud.w * 0.35 > farCloudsCanvas.width) {
 				cloud.x = -(cloud.w * 0.35);
 			}
-			drawEnhancedCloud(farCtx, cloud.x + farCursorOffsetX, cloud.y + farCursorOffsetY, cloud.w, cloud.h, cloud.color, 20);
+			drawEnhancedCloud(
+				farCtx,
+				cloud.x + farCursorOffsetX,
+				cloud.y + farCursorOffsetY,
+				cloud.w,
+				cloud.h,
+				cloud.color,
+				20
+			);
 		}
 
 		// Mid clouds
@@ -361,13 +302,21 @@
 		const midCursorOffsetY = -(deltaY / centerY) * midMouseMultiplier * 0.5;
 
 		midCtx.clearRect(0, 0, midCloudsCanvas.width, midCloudsCanvas.height);
-		
+
 		for (const cloud of midClouds) {
 			cloud.x += BASE_DRIFT_SPEED * midLayerSpeed;
-			if (cloud.x - (cloud.w * 0.35) > midCloudsCanvas.width) {
+			if (cloud.x - cloud.w * 0.35 > midCloudsCanvas.width) {
 				cloud.x = -(cloud.w * 0.35);
 			}
-			drawEnhancedCloud(midCtx, cloud.x + midCursorOffsetX, cloud.y + midCursorOffsetY, cloud.w, cloud.h, cloud.color, 20);
+			drawEnhancedCloud(
+				midCtx,
+				cloud.x + midCursorOffsetX,
+				cloud.y + midCursorOffsetY,
+				cloud.w,
+				cloud.h,
+				cloud.color,
+				20
+			);
 		}
 
 		// Near clouds
@@ -377,13 +326,21 @@
 		const nearCursorOffsetY = -(deltaY / centerY) * nearMouseMultiplier * 0.5;
 
 		nearCtx.clearRect(0, 0, nearCloudsCanvas.width, nearCloudsCanvas.height);
-		
+
 		for (const cloud of nearClouds) {
 			cloud.x += BASE_DRIFT_SPEED * nearLayerSpeed;
-			if (cloud.x - (cloud.w * 0.35) > nearCloudsCanvas.width) {
+			if (cloud.x - cloud.w * 0.35 > nearCloudsCanvas.width) {
 				cloud.x = -(cloud.w * 0.35);
 			}
-			drawEnhancedCloud(nearCtx, cloud.x + nearCursorOffsetX, cloud.y + nearCursorOffsetY, cloud.w, cloud.h, cloud.color, 20);
+			drawEnhancedCloud(
+				nearCtx,
+				cloud.x + nearCursorOffsetX,
+				cloud.y + nearCursorOffsetY,
+				cloud.w,
+				cloud.h,
+				cloud.color,
+				20
+			);
 		}
 	}
 
@@ -398,10 +355,10 @@
 	) {
 		const rgbaMatch = color.match(/rgba?\((\d+),\s*(\d+),\s*(\d+),?\s*([\d.]+)?\)/);
 		if (!rgbaMatch) return;
-		
+
 		const [, r, g, b, a = '1'] = rgbaMatch;
 		const baseAlpha = parseFloat(a);
-		const boostedAlpha = Math.min(baseAlpha * 1.3, 0.95);
+		const boostedAlpha = Math.min(baseAlpha * 1.2, 0.95);
 
 		const puffs = [
 			{ x: x, y: y, radiusX: width * 0.35, radiusY: height * 0.5 },
@@ -413,8 +370,8 @@
 
 		ctx.save();
 		ctx.filter = 'none';
-		
-		puffs.forEach(puff => {
+
+		puffs.forEach((puff) => {
 			const puffGradient = ctx.createRadialGradient(
 				puff.x - puff.radiusX * 0.2,
 				puff.y - puff.radiusY * 0.2,
@@ -426,33 +383,13 @@
 			puffGradient.addColorStop(0, `rgba(${r}, ${g}, ${b}, ${boostedAlpha})`);
 			puffGradient.addColorStop(0.7, `rgba(${r}, ${g}, ${b}, ${boostedAlpha * 0.8})`);
 			puffGradient.addColorStop(1, `rgba(${r}, ${g}, ${b}, ${boostedAlpha * 0.3})`);
-			
+
 			ctx.fillStyle = puffGradient;
 			ctx.beginPath();
 			ctx.ellipse(puff.x, puff.y, puff.radiusX, puff.radiusY, 0, 0, Math.PI * 2);
 			ctx.fill();
 		});
 
-		ctx.restore();
-
-		// Add highlights
-		ctx.save();
-		ctx.filter = 'none';
-		ctx.globalAlpha = 0.4;
-		
-		const highlightGradient = ctx.createRadialGradient(
-			x - width * 0.12, y - height * 0.18, 0,
-			x - width * 0.12, y - height * 0.18, width * 0.3
-		);
-		highlightGradient.addColorStop(0, 'rgba(255, 255, 255, 0.8)');
-		highlightGradient.addColorStop(0.5, 'rgba(255, 255, 255, 0.4)');
-		highlightGradient.addColorStop(1, 'rgba(255, 255, 255, 0)');
-		
-		ctx.fillStyle = highlightGradient;
-		ctx.beginPath();
-		ctx.ellipse(x - width * 0.12, y - height * 0.18, width * 0.3, height * 0.25, 0, 0, Math.PI * 2);
-		ctx.fill();
-		
 		ctx.restore();
 	}
 
@@ -472,13 +409,15 @@
 		{
 			icon: '📊',
 			title: 'Instant Assessments',
-			description: 'Test your knowledge with integrated quizzes and track your performance over time.',
+			description:
+				'Test your knowledge with integrated quizzes and track your performance over time.',
 			color: '#00CED1'
 		},
 		{
 			icon: '🤖',
 			title: 'AI-Powered Assistance',
-			description: 'Get expert guidance and technical support from our advanced AI assistant, JAJA.',
+			description:
+				'Get expert guidance and technical support from our advanced AI assistant, JAJA.',
 			color: '#4CAF50'
 		}
 	];
@@ -486,35 +425,40 @@
 	const zones = [
 		{
 			title: 'HANGAR ZONE',
-			description: 'A learning space where students explore the history and evolution of gas turbine engines, including their types and developments over time.',
+			description:
+				'A learning space where students explore the history and evolution of gas turbine engines, including their types and developments over time.',
 			link: '/hangar-zone',
 			icon: '/icons/hangar-zone.png',
 			gradient: 'linear-gradient(135deg, #223A5E 0%, #74B3D4 100%)'
 		},
 		{
 			title: 'TURBOFAN ENGINE',
-			description: 'An immersive hub where students explore a fully rotatable 3D turbofan engine, interact with its components, and discover each section that powers modern flight.',
+			description:
+				'An immersive hub where students explore a fully rotatable 3D turbofan engine, interact with its components, and discover each section that powers modern flight.',
 			link: '/turbofan-engine',
 			icon: '/icons/turbofan-engine.png',
 			gradient: 'linear-gradient(135deg, #74B3D4 0%, #D75E2E 100%)'
 		},
 		{
 			title: 'OVERHAUL STATION',
-			description: 'A hands-on virtual workshop where students experience the assembly and disassembly of turbofan engine parts while learning the fundamentals of gas turbine engine overhaul.',
+			description:
+				'A hands-on virtual workshop where students experience the assembly and disassembly of turbofan engine parts while learning the fundamentals of gas turbine engine overhaul.',
 			link: '/overhaul-station',
 			icon: '/icons/overhaul-station.png',
 			gradient: 'linear-gradient(135deg, #D75E2E 0%, #9B8AA4 100%)'
 		},
 		{
 			title: 'TEST BAY',
-			description: 'A checkpoint where students test their knowledge from the Hangar Zone, Turbofan Engine, and Overhaul Bay—time to prove your skills!',
+			description:
+				'A checkpoint where students test their knowledge from the Hangar Zone, Turbofan Engine, and Overhaul Bay—time to prove your skills!',
 			link: '/test-bay',
 			icon: '/icons/test-bay.png',
 			gradient: 'linear-gradient(135deg, #9B8AA4 0%, #223A5E 100%)'
 		},
 		{
 			title: 'JAJA AI-ASSISTANT',
-			description: 'Your co-engineer specialized in turbofan engines—ready to answer your questions, guide your learning, and keep your curiosity soaring!',
+			description:
+				'Your co-engineer specialized in turbofan engines—ready to answer your questions, guide your learning, and keep your curiosity soaring!',
 			link: '/jaja',
 			icon: '/icons/jaja.png',
 			gradient: 'linear-gradient(135deg, #223A5E 0%, #74B3D4 100%)'
@@ -522,42 +466,16 @@
 	];
 </script>
 
-<!-- Anime-Style Parallax Background System - Full Page Coverage -->
-<div class="parallax-background-system">
-	<!-- Static Sky Layer with Stars -->
-	<canvas 
-		bind:this={skyCanvas}
-		class="parallax-layer sky-layer"
-		width="3200"
-		height="1800"
-	></canvas>
-
-	<!-- Far Clouds Layer (slowest parallax) -->
-	<canvas 
-		bind:this={farCloudsCanvas}
-		class="parallax-layer far-clouds-layer"
-		width="3200"
-		height="1800"
-	></canvas>
-
-	<!-- Mid Clouds Layer (medium parallax) -->
-	<canvas 
-		bind:this={midCloudsCanvas}
-		class="parallax-layer mid-clouds-layer"
-		width="3200"
-		height="1800"
-	></canvas>
-
-	<!-- Near Clouds Layer (fastest parallax) -->
-	<canvas 
-		bind:this={nearCloudsCanvas}
-		class="parallax-layer near-clouds-layer"
-		width="3200"
-		height="1800"
-	></canvas>
-</div>
-
 <div class="homepage">
+	<!-- Evening Sky Background -->
+	<div class="sky-background">
+		<canvas bind:this={skyCanvas} width="1920" height="1080" class="sky-canvas"></canvas>
+		<canvas bind:this={farCloudsCanvas} width="1920" height="1080" class="cloud-layer far"></canvas>
+		<canvas bind:this={midCloudsCanvas} width="1920" height="1080" class="cloud-layer mid"></canvas>
+		<canvas bind:this={nearCloudsCanvas} width="1920" height="1080" class="cloud-layer near"
+		></canvas>
+	</div>
+
 	<!-- JAJA Popup Icon - visible only when at top of homepage -->
 	{#if showJajaIcon}
 		<div class="jaja-popup-icon">
@@ -567,37 +485,32 @@
 
 	<!-- Hero Section -->
 	<section class="hero" bind:this={heroRef}>
-		
 		<div class="hero-content">
 			<h1 class="hero-title animate-in">
 				Welcome to <span class="gradient-text">ThrustLab</span>
 			</h1>
-			<p class="hero-subtitle animate-in delay-1">
-				Experience Learning at Full Thrust
-			</p>
+			<p class="hero-subtitle animate-in delay-1">Experience Learning at Full Thrust</p>
 			<p class="hero-description animate-in delay-2">
-				Step inside a virtual hangar where learning takes flight — explore, build, and understand turbofan engines through immersive 3D interaction and real-time AI support.
+				Step inside a virtual hangar where learning takes flight — explore, build, and understand
+				turbofan engines through immersive 3D interaction and real-time AI support.
 			</p>
 			<div class="hero-actions animate-in delay-3">
-				<a 
-					href="/sign-up" 
-					class="cta-button primary"
-				>
+				<a href="/sign-up" class="cta-button primary">
 					Get Started
 					<span class="button-shine"></span>
 				</a>
-				<a 
-					href="/login" 
-					class="cta-button secondary"
-				>
-					Log In
-				</a>
+				<a href="/login" class="cta-button secondary"> Log In </a>
 			</div>
 		</div>
 
 		<div class="scroll-indicator animate-bounce">
 			<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-				<path d="M12 5v14M19 12l-7 7-7-7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+				<path
+					d="M12 5v14M19 12l-7 7-7-7"
+					stroke-width="2"
+					stroke-linecap="round"
+					stroke-linejoin="round"
+				/>
 			</svg>
 		</div>
 	</section>
@@ -608,12 +521,18 @@
 			<h2 class="section-title">Overview</h2>
 			<div class="overview-content animate-on-scroll">
 				<p>
-					The researchers developed a web-based interactive 3D simulator equipped with AI-integrated assistance to teach third-year Aeronautical Engineering students the fundamental concepts and operational principles of gas turbine (turbofan) engines. The simulator aimed to provide an engaging, hands-on virtual environment where learners could explore, assemble, and disassemble engine components while receiving optional real-time AI-guided explanations. In addition, the system featured a quiz-type assessment designed to measure and reinforce students' learning retention after interacting with the simulator.
+					The researchers developed a web-based interactive 3D simulator equipped with AI-integrated
+					assistance to teach third-year Aeronautical Engineering students the fundamental concepts
+					and operational principles of gas turbine (turbofan) engines. The simulator aimed to
+					provide an engaging, hands-on virtual environment where learners could explore, assemble,
+					and disassemble engine components while receiving optional real-time AI-guided
+					explanations. In addition, the system featured a quiz-type assessment designed to measure
+					and reinforce students' learning retention after interacting with the simulator.
 				</p>
 			</div>
 			<div class="features-grid" style="display: none;">
 				{#each features as feature, i}
-					<div 
+					<div
 						class="feature-card animate-on-scroll"
 						role="group"
 						style="--delay: {i * 0.1}s; --accent-color: {feature.color}"
@@ -655,8 +574,8 @@
 			<h2 class="section-title">Explore Our Learning Zones</h2>
 			<div class="zones-grid">
 				{#each zones as zone, i}
-					<a 
-						href={zone.link} 
+					<a
+						href={zone.link}
 						class="zone-card animate-on-scroll"
 						style="--delay: {i * 0.15}s; background: {zone.gradient}"
 					>
@@ -688,7 +607,10 @@
 						<div class="card-front">
 							<div class="photo-wrapper">
 								<div class="photo-glow"></div>
-								<img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 200'%3E%3Crect fill='%23e0e0e0' width='200' height='200'/%3E%3Cpath fill='%23b0b0b0' d='M100 95c13.8 0 25-11.2 25-25s-11.2-25-25-25-25 11.2-25 25 11.2 25 25 25zm0 12.5c-16.7 0-50 8.4-50 25v18.8c0 3.4 2.8 6.2 6.2 6.2h87.5c3.4 0 6.2-2.8 6.2-6.2v-18.8c0-16.6-33.2-25-49.9-25z'/%3E%3C/svg%3E" alt="Jannah Michellaine C. Cristobal" />
+								<img
+									src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 200'%3E%3Crect fill='%23e0e0e0' width='200' height='200'/%3E%3Cpath fill='%23b0b0b0' d='M100 95c13.8 0 25-11.2 25-25s-11.2-25-25-25-25 11.2-25 25 11.2 25 25 25zm0 12.5c-16.7 0-50 8.4-50 25v18.8c0 3.4 2.8 6.2 6.2 6.2h87.5c3.4 0 6.2-2.8 6.2-6.2v-18.8c0-16.6-33.2-25-49.9-25z'/%3E%3C/svg%3E"
+									alt="Jannah Michellaine C. Cristobal"
+								/>
 							</div>
 							<div class="card-info">
 								<h3>Jannah Michellaine C. Cristobal</h3>
@@ -703,7 +625,10 @@
 						<div class="card-front">
 							<div class="photo-wrapper">
 								<div class="photo-glow"></div>
-								<img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 200'%3E%3Crect fill='%23e0e0e0' width='200' height='200'/%3E%3Cpath fill='%23b0b0b0' d='M100 95c13.8 0 25-11.2 25-25s-11.2-25-25-25-25 11.2-25 25 11.2 25 25 25zm0 12.5c-16.7 0-50 8.4-50 25v18.8c0 3.4 2.8 6.2 6.2 6.2h87.5c3.4 0 6.2-2.8 6.2-6.2v-18.8c0-16.6-33.2-25-49.9-25z'/%3E%3C/svg%3E" alt="Alfred Rupert D. De Guzman" />
+								<img
+									src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 200'%3E%3Crect fill='%23e0e0e0' width='200' height='200'/%3E%3Cpath fill='%23b0b0b0' d='M100 95c13.8 0 25-11.2 25-25s-11.2-25-25-25-25 11.2-25 25 11.2 25 25 25zm0 12.5c-16.7 0-50 8.4-50 25v18.8c0 3.4 2.8 6.2 6.2 6.2h87.5c3.4 0 6.2-2.8 6.2-6.2v-18.8c0-16.6-33.2-25-49.9-25z'/%3E%3C/svg%3E"
+									alt="Alfred Rupert D. De Guzman"
+								/>
 							</div>
 							<div class="card-info">
 								<h3>Alfred Rupert D. De Guzman</h3>
@@ -718,7 +643,10 @@
 						<div class="card-front">
 							<div class="photo-wrapper">
 								<div class="photo-glow"></div>
-								<img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 200'%3E%3Crect fill='%23e0e0e0' width='200' height='200'/%3E%3Cpath fill='%23b0b0b0' d='M100 95c13.8 0 25-11.2 25-25s-11.2-25-25-25-25 11.2-25 25 11.2 25 25 25zm0 12.5c-16.7 0-50 8.4-50 25v18.8c0 3.4 2.8 6.2 6.2 6.2h87.5c3.4 0 6.2-2.8 6.2-6.2v-18.8c0-16.6-33.2-25-49.9-25z'/%3E%3C/svg%3E" alt="Janssen M. Palac" />
+								<img
+									src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 200'%3E%3Crect fill='%23e0e0e0' width='200' height='200'/%3E%3Cpath fill='%23b0b0b0' d='M100 95c13.8 0 25-11.2 25-25s-11.2-25-25-25-25 11.2-25 25 11.2 25 25 25zm0 12.5c-16.7 0-50 8.4-50 25v18.8c0 3.4 2.8 6.2 6.2 6.2h87.5c3.4 0 6.2-2.8 6.2-6.2v-18.8c0-16.6-33.2-25-49.9-25z'/%3E%3C/svg%3E"
+									alt="Janssen M. Palac"
+								/>
 							</div>
 							<div class="card-info">
 								<h3>Janssen M. Palac</h3>
@@ -733,7 +661,10 @@
 						<div class="card-front">
 							<div class="photo-wrapper">
 								<div class="photo-glow"></div>
-								<img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 200'%3E%3Crect fill='%23e0e0e0' width='200' height='200'/%3E%3Cpath fill='%23b0b0b0' d='M100 95c13.8 0 25-11.2 25-25s-11.2-25-25-25-25 11.2-25 25 11.2 25 25 25zm0 12.5c-16.7 0-50 8.4-50 25v18.8c0 3.4 2.8 6.2 6.2 6.2h87.5c3.4 0 6.2-2.8 6.2-6.2v-18.8c0-16.6-33.2-25-49.9-25z'/%3E%3C/svg%3E" alt="Marc Ashriel V. San Pedro" />
+								<img
+									src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 200'%3E%3Crect fill='%23e0e0e0' width='200' height='200'/%3E%3Cpath fill='%23b0b0b0' d='M100 95c13.8 0 25-11.2 25-25s-11.2-25-25-25-25 11.2-25 25 11.2 25 25 25zm0 12.5c-16.7 0-50 8.4-50 25v18.8c0 3.4 2.8 6.2 6.2 6.2h87.5c3.4 0 6.2-2.8 6.2-6.2v-18.8c0-16.6-33.2-25-49.9-25z'/%3E%3C/svg%3E"
+									alt="Marc Ashriel V. San Pedro"
+								/>
 							</div>
 							<div class="card-info">
 								<h3>Marc Ashriel V. San Pedro</h3>
@@ -775,10 +706,51 @@
 	.homepage {
 		width: 100%;
 		overflow-x: hidden;
-		background: transparent;
+		background: #0f172a;
 		position: relative;
-		/* Performance: Use CSS containment to isolate layout/paint work */
-		contain: layout style paint;
+	}
+
+	.sky-background {
+		position: fixed;
+		top: 0;
+		left: 0;
+		width: 100%;
+		height: 100%;
+		z-index: 0;
+		pointer-events: none;
+		overflow: hidden;
+	}
+
+	.sky-canvas {
+		position: absolute;
+		top: 0;
+		left: 0;
+		width: 100%;
+		height: 100%;
+		object-fit: cover;
+	}
+
+	.cloud-layer {
+		position: absolute;
+		top: 0;
+		left: 0;
+		width: 100%;
+		height: 100%;
+		object-fit: cover;
+		opacity: 0.9;
+	}
+
+	.far {
+		z-index: 1;
+		opacity: 0.8;
+	}
+	.mid {
+		z-index: 2;
+		opacity: 0.85;
+	}
+	.near {
+		z-index: 3;
+		opacity: 0.9;
 	}
 
 	/* JAJA Popup Icon - Fixed position on homepage */
@@ -790,8 +762,12 @@
 		width: 150px;
 		height: auto;
 		cursor: pointer;
-		animation: popupBounce 3s ease-in-out infinite, fadeInPopup 0.5s ease-out;
-		transition: transform 0.3s ease, opacity 0.5s ease;
+		animation:
+			popupBounce 3s ease-in-out infinite,
+			fadeInPopup 0.5s ease-out;
+		transition:
+			transform 0.3s ease,
+			opacity 0.5s ease;
 	}
 
 	.jaja-popup-icon img {
@@ -810,7 +786,8 @@
 	}
 
 	@keyframes popupBounce {
-		0%, 100% {
+		0%,
+		100% {
 			transform: translateY(0px);
 		}
 		50% {
@@ -848,88 +825,6 @@
 		overflow: hidden;
 	}
 
-	/* ===== ANIME-STYLE PARALLAX BACKGROUND SYSTEM ===== */
-	.parallax-background-system {
-		position: fixed;
-		top: 0;
-		left: 0;
-		width: 100%;
-		height: 100%;
-		overflow: hidden;
-		pointer-events: none;
-		z-index: -1;
-	}
-
-	/* Add gradient mask at bottom to fade into CTA section */
-	.parallax-background-system::after {
-		content: '';
-		position: absolute;
-		bottom: 0;
-		left: 0;
-		right: 0;
-		height: 200px;
-		background: linear-gradient(
-			to bottom,
-			transparent 0%,
-			rgba(34, 58, 94, 0.5) 50%,
-			rgba(34, 58, 94, 0.9) 100%
-		);
-		z-index: 10;
-		pointer-events: none;
-	}
-
-	.parallax-layer {
-		position: absolute;
-		top: 0;
-		left: 0;
-		width: 100%;
-		height: 100%;
-		object-fit: cover;
-		will-change: transform;
-		pointer-events: none;
-		/* Enable seamless wrapping by allowing canvas to extend beyond viewport */
-		transform-origin: center center;
-		/* Performance: Force GPU acceleration */
-		transform: translateZ(0);
-		backface-visibility: hidden;
-		-webkit-backface-visibility: hidden;
-	}
-
-	/* Sky Layer - Static, no movement */
-	.sky-layer {
-		z-index: 1;
-		/* No transform, stays fixed */
-	}
-
-	/* Far Clouds - Slowest parallax with seamless wrapping */
-	.far-clouds-layer {
-		z-index: 2;
-		/* Reduced transition duration for snappier scroll response */
-		transition: transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-		opacity: 0.95;
-		will-change: transform;
-	}
-
-	/* Mid Clouds - Medium parallax with seamless wrapping */
-	.mid-clouds-layer {
-		z-index: 3;
-		/* Reduced transition duration for snappier scroll response */
-		transition: transform 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-		opacity: 0.95;
-		will-change: transform;
-	}
-
-	/* Near Clouds - Fastest parallax with seamless wrapping */
-	.near-clouds-layer {
-		z-index: 4;
-		/* Reduced transition duration for snappier scroll response */
-		transition: transform 0.15s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-		opacity: 0.95;
-		will-change: transform;
-	}
-
-
-
 	.hero-content {
 		position: relative;
 		z-index: 10;
@@ -940,7 +835,8 @@
 
 	/* Unified Animated Gradient for All Main Headings */
 	@keyframes gradient-flash {
-		0%, 100% {
+		0%,
+		100% {
 			background-position: 0% 50%;
 		}
 		25% {
@@ -990,14 +886,16 @@
 	.hero-description {
 		font-family: var(--font-body);
 		font-size: clamp(1.1rem, 2vw, 1.3rem);
-		color: #FFFFFF;
+		color: #ffffff;
 		line-height: 1.8;
 		margin: 0 0 2.5rem 0;
 		max-width: 700px;
 		margin-left: auto;
 		margin-right: auto;
 		font-weight: 500;
-		text-shadow: 0 3px 10px rgba(0, 0, 0, 0.9), 0 2px 5px rgba(0, 0, 0, 0.8);
+		text-shadow:
+			0 3px 10px rgba(0, 0, 0, 0.9),
+			0 2px 5px rgba(0, 0, 0, 0.8);
 	}
 
 	.hero-actions {
@@ -1036,7 +934,9 @@
 		border-radius: 50%;
 		background: rgba(255, 255, 255, 0.3);
 		transform: translate(-50%, -50%);
-		transition: width 0.6s ease, height 0.6s ease;
+		transition:
+			width 0.6s ease,
+			height 0.6s ease;
 		pointer-events: none;
 	}
 
@@ -1046,18 +946,22 @@
 	}
 
 	.cta-button.primary {
-		background: linear-gradient(135deg, var(--ui-yellow) 0%, #FFE66D 100%);
+		background: linear-gradient(135deg, var(--ui-yellow) 0%, #ffe66d 100%);
 		color: #000000;
 		border: 3px solid var(--ui-yellow);
-		box-shadow: 0 6px 20px rgba(255, 217, 102, 0.5), 0 0 40px rgba(255, 217, 102, 0.2);
+		box-shadow:
+			0 6px 20px rgba(255, 217, 102, 0.5),
+			0 0 40px rgba(255, 217, 102, 0.2);
 		font-weight: 700;
 	}
 
 	.cta-button.primary:hover {
-		background: linear-gradient(135deg, #FFE66D 0%, var(--ui-yellow) 100%);
+		background: linear-gradient(135deg, #ffe66d 0%, var(--ui-yellow) 100%);
 		transform: translateY(-5px) scale(1.05);
-		box-shadow: 0 12px 35px rgba(255, 217, 102, 0.7), 0 0 60px rgba(255, 217, 102, 0.4);
-		border-color: #FFE66D;
+		box-shadow:
+			0 12px 35px rgba(255, 217, 102, 0.7),
+			0 0 60px rgba(255, 217, 102, 0.4);
+		border-color: #ffe66d;
 	}
 
 	.cta-button.secondary {
@@ -1073,7 +977,9 @@
 		background: rgba(135, 206, 235, 0.3);
 		border-color: var(--ui-light-blue);
 		transform: translateY(-5px) scale(1.05);
-		box-shadow: 0 8px 25px rgba(135, 206, 235, 0.5), 0 0 40px rgba(135, 206, 235, 0.3);
+		box-shadow:
+			0 8px 25px rgba(135, 206, 235, 0.5),
+			0 0 40px rgba(135, 206, 235, 0.3);
 	}
 
 	.button-shine {
@@ -1107,9 +1013,15 @@
 		animation: fadeInUp 0.8s ease forwards;
 	}
 
-	.delay-1 { animation-delay: 0.2s; }
-	.delay-2 { animation-delay: 0.4s; }
-	.delay-3 { animation-delay: 0.6s; }
+	.delay-1 {
+		animation-delay: 0.2s;
+	}
+	.delay-2 {
+		animation-delay: 0.4s;
+	}
+	.delay-3 {
+		animation-delay: 0.6s;
+	}
 
 	@keyframes fadeInUp {
 		to {
@@ -1119,8 +1031,13 @@
 	}
 
 	@keyframes animate-bounce {
-		0%, 100% { transform: translateX(-50%) translateY(0); }
-		50% { transform: translateX(-50%) translateY(10px); }
+		0%,
+		100% {
+			transform: translateX(-50%) translateY(0);
+		}
+		50% {
+			transform: translateX(-50%) translateY(10px);
+		}
 	}
 
 	.animate-bounce {
@@ -1199,9 +1116,11 @@
 		width: 0;
 		height: 0;
 		border-radius: 50%;
-		background: radial-gradient(circle, var(--accent-color, #FFD966) 0%, transparent 70%);
+		background: radial-gradient(circle, var(--accent-color, #ffd966) 0%, transparent 70%);
 		transform: translate(-50%, -50%);
-		transition: width 0.6s ease, height 0.6s ease;
+		transition:
+			width 0.6s ease,
+			height 0.6s ease;
 		opacity: 0;
 		pointer-events: none;
 	}
@@ -1238,8 +1157,13 @@
 	}
 
 	@keyframes float {
-		0%, 100% { transform: translateY(0); }
-		50% { transform: translateY(-10px); }
+		0%,
+		100% {
+			transform: translateY(0);
+		}
+		50% {
+			transform: translateY(-10px);
+		}
 	}
 
 	.feature-card h3 {
@@ -1275,7 +1199,7 @@
 		left: 0;
 		width: 100%;
 		height: 100%;
-		background: radial-gradient(circle at center, var(--accent-color, #FFD966) 0%, transparent 70%);
+		background: radial-gradient(circle at center, var(--accent-color, #ffd966) 0%, transparent 70%);
 		opacity: 0;
 		transition: opacity 0.4s ease;
 		pointer-events: none;
@@ -1479,7 +1403,8 @@
 	}
 
 	@keyframes pulse-glow {
-		0%, 100% {
+		0%,
+		100% {
 			opacity: 0.5;
 			transform: scaleX(1);
 		}
@@ -1606,7 +1531,9 @@
 	.researcher-card:hover .card-front {
 		border-color: var(--ui-yellow);
 		background: linear-gradient(135deg, rgba(0, 0, 0, 0.6) 0%, rgba(0, 0, 0, 0.3) 100%);
-		box-shadow: 0 20px 60px rgba(255, 217, 102, 0.3), 0 0 80px rgba(135, 206, 235, 0.2);
+		box-shadow:
+			0 20px 60px rgba(255, 217, 102, 0.3),
+			0 0 80px rgba(135, 206, 235, 0.2);
 	}
 
 	.researcher-card:hover .card-front::before {
@@ -1641,7 +1568,8 @@
 	}
 
 	@keyframes pulse-ring {
-		0%, 100% {
+		0%,
+		100% {
 			transform: translate(-50%, -50%) scale(1);
 			opacity: 0.3;
 		}
@@ -1665,7 +1593,9 @@
 
 	.researcher-card:hover .photo-wrapper img {
 		border-color: var(--ui-yellow);
-		box-shadow: 0 12px 50px rgba(255, 217, 102, 0.5), 0 0 60px rgba(255, 217, 102, 0.3);
+		box-shadow:
+			0 12px 50px rgba(255, 217, 102, 0.5),
+			0 0 60px rgba(255, 217, 102, 0.3);
 		transform: scale(1.05);
 	}
 
@@ -1682,12 +1612,7 @@
 		margin: 0 0 0.75rem 0;
 		line-height: 1.3;
 		transition: all 0.3s ease;
-		background: linear-gradient(
-			90deg,
-			#FFFFFF 0%,
-			var(--ui-light-blue) 50%,
-			#FFFFFF 100%
-		);
+		background: linear-gradient(90deg, #ffffff 0%, var(--ui-light-blue) 50%, #ffffff 100%);
 		background-size: 200% 100%;
 		-webkit-background-clip: text;
 		-webkit-text-fill-color: transparent;
@@ -1708,7 +1633,8 @@
 		-webkit-text-fill-color: transparent;
 		background-clip: text;
 		animation: gradient-flash 2.5s ease-in-out infinite;
-		filter: drop-shadow(0 2px 10px rgba(255, 217, 102, 0.6)) drop-shadow(0 0 20px rgba(255, 217, 102, 0.4));
+		filter: drop-shadow(0 2px 10px rgba(255, 217, 102, 0.6))
+			drop-shadow(0 0 20px rgba(255, 217, 102, 0.4));
 	}
 
 	.role-badge {
@@ -1770,12 +1696,7 @@
 		font-family: var(--font-heading);
 		font-size: 1.1rem;
 		font-weight: 700;
-		background: linear-gradient(
-			90deg,
-			#FFFFFF 0%,
-			var(--font-accent-cyan) 50%,
-			#FFFFFF 100%
-		);
+		background: linear-gradient(90deg, #ffffff 0%, var(--font-accent-cyan) 50%, #ffffff 100%);
 		background-size: 200% 100%;
 		-webkit-background-clip: text;
 		-webkit-text-fill-color: transparent;
@@ -1806,7 +1727,7 @@
 		.zones-grid {
 			grid-template-columns: repeat(3, 1fr);
 		}
-		
+
 		.zone-card {
 			min-height: 360px;
 		}
@@ -1890,25 +1811,25 @@
 		.info-text {
 			align-items: center;
 		}
-		
+
 		.zone-card {
 			min-height: auto;
 			padding: 2.5rem 2rem;
 		}
-		
+
 		.zone-icon {
 			font-size: 3.5rem;
 		}
-		
+
 		.zone-icon img {
 			width: 70px;
 			height: 70px;
 		}
-		
+
 		.zone-card h3 {
 			font-size: 1.6rem;
 		}
-		
+
 		.zone-card p {
 			font-size: 1rem;
 		}

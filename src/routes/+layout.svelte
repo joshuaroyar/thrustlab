@@ -8,7 +8,7 @@
 	import type { LayoutData } from './$types';
 
 	let { children, data } = $props<{ children: any; data: LayoutData }>();
-	
+
 	// Check if we're on the Test Bay page to hide the popup
 	let isTestBayPage = $derived(page.url.pathname === '/test-bay');
 	// Check if we're on the home page for transparent navbar and JAJA icon
@@ -22,7 +22,7 @@
 		};
 
 		const observer = new IntersectionObserver((entries) => {
-			entries.forEach(entry => {
+			entries.forEach((entry) => {
 				if (entry.isIntersecting) {
 					entry.target.classList.add('visible');
 				}
@@ -30,8 +30,10 @@
 		}, observerOptions);
 
 		// Observe all elements with animate-on-scroll class
-		const animateElements = document.querySelectorAll('.animate-on-scroll, .animate-slide-left, .animate-slide-right, .animate-scale, .animate-fade');
-		animateElements.forEach(el => observer.observe(el));
+		const animateElements = document.querySelectorAll(
+			'.animate-on-scroll, .animate-slide-left, .animate-slide-right, .animate-scale, .animate-fade'
+		);
+		animateElements.forEach((el) => observer.observe(el));
 
 		return () => {
 			observer.disconnect();
