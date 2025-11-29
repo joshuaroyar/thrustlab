@@ -2,6 +2,7 @@
 	import { goto } from '$app/navigation';
 	import { onMount } from 'svelte';
 	import ModelViewer from '$lib/components/ModelViewer.svelte';
+	import { turbofanPartDescriptions } from '$lib/data/turbofanParts';
 
 	let showLabels = $state(true);
 	let modelLoaded = $state(false);
@@ -40,32 +41,8 @@
 	]);
 
 	// Part descriptions for highlighting
-	const partDescriptions = {
-		Fan: {
-			name: 'Fan',
-			description: 'Large rotating blades that draw air into the engine and provide bypass thrust.'
-		},
-		Compressor: {
-			name: 'Compressor',
-			description: 'Increases the pressure of incoming air before combustion.'
-		},
-		Combustor: {
-			name: 'Combustion Chamber',
-			description: 'Where fuel is mixed with compressed air and ignited to produce hot gases.'
-		},
-		Turbine: {
-			name: 'Turbine',
-			description: 'Extracts energy from hot gases to drive the compressor and fan.'
-		},
-		Nozzle: {
-			name: 'Exhaust Nozzle',
-			description: 'Accelerates exhaust gases to produce thrust.'
-		},
-		Bypass: {
-			name: 'Bypass Duct',
-			description: 'Channel for air that bypasses the engine core, providing additional thrust.'
-		}
-	};
+	// Based on actual 3D model mesh names and colors
+	const partDescriptions = turbofanPartDescriptions;
 
 	let cameraResetTrigger = $state(0);
 

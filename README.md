@@ -117,6 +117,23 @@ npm run lint             # Run ESLint and Prettier checks
 npm run format           # Format code with Prettier
 ```
 
+## 🧠 JAJA Assistant Knowledge Base
+
+JAJA now uses a Retrieval-Augmented Generation (RAG) pipeline. To keep the assistant up to date with Module 1/2/3 notes, engine parts, and other docs:
+
+1. **Set your OpenAI API key** (same one used for chat streaming):
+	```bash
+	export OPENAI_API_KEY=sk-...
+	```
+2. **Rebuild the knowledge base whenever docs change:**
+	```bash
+	npm run knowledge:build
+	```
+	This script chunks every Markdown file under `docs/` plus the turbofan component metadata, embeds them with `text-embedding-3-large`, and writes `src/lib/data/jaja-knowledge.json`.
+3. **Commit the generated JSON** so the deployed app can load it at runtime. If the file is missing or empty JAJA falls back to its default prompt and will say when it lacks module-specific context.
+
+> Tip: schedule `npm run knowledge:build` in your release checklist so new lessons or engine updates immediately become searchable by JAJA.
+
 ## 🗂️ Project Structure
 
 ```
