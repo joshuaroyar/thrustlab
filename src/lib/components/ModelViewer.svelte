@@ -15,6 +15,7 @@
 		Mesh
 	} from '@babylonjs/core';
 	import '@babylonjs/loaders';
+	import { ttsService } from '$lib/utils/tts';
 
 	interface ModelViewerProps {
 		modelPath: string;
@@ -23,6 +24,7 @@
 		enableHighlight?: boolean;
 		partDescriptions?: Record<string, { name: string; description: string }>;
 		onModelLoaded?: () => void;
+		enableTTS?: boolean; // Enable text-to-speech for component descriptions
 	}
 
 	let {
@@ -31,7 +33,8 @@
 		cameraPosition = { alpha: Math.PI / 2, beta: Math.PI / 3, radius: 5 },
 		enableHighlight = true,
 		partDescriptions = {},
-		onModelLoaded
+		onModelLoaded,
+		enableTTS = true
 	}: ModelViewerProps = $props();
 
 	let canvas: HTMLCanvasElement;
@@ -48,6 +51,10 @@
 	// Tooltip state
 	let tooltipVisible = $state(false);
 	let tooltipContent = $state({ name: '', description: '' });
+
+	// TTS state
+	let isPlayingAudio = $state(false);
+	let audioError = $state<string | null>(null);
 
 	const sanitizeValue = (value?: string | null) =>
 		(value || '')
@@ -304,12 +311,33 @@
 		if (observer) {
 			observer.disconnect();
 		}
+		// Stop any playing audio
+		ttsService.stop();
 		engine?.dispose();
 	});
 
 	const handleResize = () => {
 		engine?.resize();
 	};
+
+	/**
+	 * Play audio description for component using text-to-speech
+	 */
+	async function playComponentDescription(description: { name: string; description: string }) {
+		audioError = null;
+		isPlayingAudio = true;
+
+		try {
+			// Combine name and description for audio
+			const textToSpeak = `${description.name}. ${description.description}`;
+			await ttsService.speak(textToSpeak);
+			isPlayingAudio = false;
+		} catch (error) {
+			console.error('Failed to play audio:', error);
+			audioError = 'Failed to play audio';
+			isPlayingAudio = false;
+		}
+	}
 
 	function setupHighlighting(scene: Scene) {
 		highlightLayer = new HighlightLayer('highlightLayer', scene);
@@ -370,6 +398,12 @@
 							highlightLayer?.removeMesh(selectedMesh as Mesh);
 							selectedMesh = null;
 							tooltipVisible = false;
+							// Stop audio when deselecting
+							if (enableTTS) {
+								ttsService.stop();
+								isPlayingAudio = false;
+								audioError = null;
+							}
 						} else {
 							// Select new mesh
 							selectedMesh = mesh;
@@ -379,6 +413,11 @@
 							// Show tooltip above the model
 							tooltipContent = description;
 							tooltipVisible = true;
+
+							// Play text-to-speech if enabled
+							if (enableTTS) {
+								playComponentDescription(description);
+							}
 						}
 
 						// Remove hover highlight if it exists
@@ -393,6 +432,12 @@
 							selectedMesh = null;
 						}
 						tooltipVisible = false;
+						// Stop audio when clicking away
+						if (enableTTS) {
+							ttsService.stop();
+							isPlayingAudio = false;
+							audioError = null;
+						}
 					}
 				} else {
 					// Clicked on background - deselect
@@ -401,6 +446,12 @@
 						selectedMesh = null;
 					}
 					tooltipVisible = false;
+					// Stop audio when clicking away
+					if (enableTTS) {
+						ttsService.stop();
+						isPlayingAudio = false;
+						audioError = null;
+					}
 				}
 			}
 		});
@@ -426,12 +477,41 @@
 
 	{#if tooltipVisible}
 		<div class="model-tooltip fixed-top">
-			<button class="tooltip-close" onclick={() => { tooltipVisible = false; if (selectedMesh) { highlightLayer?.removeMesh(selectedMesh as Mesh); selectedMesh = null; } }} aria-label="Close tooltip">
+			<button class="tooltip-close" onclick={() => { 
+				tooltipVisible = false; 
+				if (selectedMesh) { 
+					highlightLayer?.removeMesh(selectedMesh as Mesh); 
+					selectedMesh = null; 
+				}
+				if (enableTTS) {
+					ttsService.stop();
+					isPlayingAudio = false;
+					audioError = null;
+				}
+			}} aria-label="Close tooltip">
 				<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
 					<line x1="18" y1="6" x2="6" y2="18"></line>
 					<line x1="6" y1="6" x2="18" y2="18"></line>
 				</svg>
 			</button>
+			
+			{#if enableTTS && isPlayingAudio}
+				<div class="audio-indicator">
+					<div class="audio-wave">
+						<span></span>
+						<span></span>
+						<span></span>
+					</div>
+					<span class="audio-text">Playing audio...</span>
+				</div>
+			{/if}
+			
+			{#if audioError}
+				<div class="audio-error">
+					⚠️ {audioError}
+				</div>
+			{/if}
+			
 			<h4>{tooltipContent.name}</h4>
 			<p>{tooltipContent.description}</p>
 		</div>
@@ -546,6 +626,70 @@
 		font-size: 14px;
 		line-height: 1.6;
 		color: rgba(255, 255, 255, 0.95);
+	}
+
+	.audio-indicator {
+		display: flex;
+		align-items: center;
+		gap: 8px;
+		margin-bottom: 12px;
+		padding: 8px 12px;
+		background: rgba(0, 212, 255, 0.1);
+		border-radius: 6px;
+		border-left: 3px solid #00d4ff;
+	}
+
+	.audio-wave {
+		display: flex;
+		align-items: center;
+		gap: 3px;
+		height: 16px;
+	}
+
+	.audio-wave span {
+		display: inline-block;
+		width: 3px;
+		height: 100%;
+		background: #00d4ff;
+		border-radius: 2px;
+		animation: audioWave 1s ease-in-out infinite;
+	}
+
+	.audio-wave span:nth-child(1) {
+		animation-delay: 0s;
+	}
+
+	.audio-wave span:nth-child(2) {
+		animation-delay: 0.2s;
+	}
+
+	.audio-wave span:nth-child(3) {
+		animation-delay: 0.4s;
+	}
+
+	@keyframes audioWave {
+		0%, 100% {
+			transform: scaleY(0.3);
+		}
+		50% {
+			transform: scaleY(1);
+		}
+	}
+
+	.audio-text {
+		font-size: 12px;
+		color: #00d4ff;
+		font-weight: 500;
+	}
+
+	.audio-error {
+		margin-bottom: 12px;
+		padding: 8px 12px;
+		background: rgba(255, 0, 0, 0.1);
+		border-radius: 6px;
+		border-left: 3px solid #ff4444;
+		color: #ffaaaa;
+		font-size: 12px;
 	}
 
 	.controls-info {

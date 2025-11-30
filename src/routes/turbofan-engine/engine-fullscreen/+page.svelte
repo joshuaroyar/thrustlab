@@ -2,7 +2,8 @@
 	import { goto } from '$app/navigation';
 	import { onMount } from 'svelte';
 	import ModelViewer from '$lib/components/ModelViewer.svelte';
-	import { turbofanPartDescriptions } from '$lib/data/turbofanParts';
+	import { turbofanPartDescriptions, turbofanComponentGroups } from '$lib/data/turbofanParts';
+	import { ttsService } from '$lib/utils/tts';
 
 	let showLabels = $state(true);
 	let modelLoaded = $state(false);
@@ -281,6 +282,14 @@
 
 	function handleModelLoaded() {
 		modelLoaded = true;
+		
+		// Preload TTS audio for all components for better performance
+		const textsToPreload = turbofanComponentGroups.map(
+			(group) => `${group.label}. ${group.description}`
+		);
+		ttsService.preload(textsToPreload).catch((error) => {
+			console.warn('Failed to preload TTS audio:', error);
+		});
 	}
 </script>
 
@@ -401,6 +410,7 @@
 				enableHighlight={showLabels}
 				{partDescriptions}
 				onModelLoaded={handleModelLoaded}
+				enableTTS={true}
 			/>
 		{/key}
 	</div>
