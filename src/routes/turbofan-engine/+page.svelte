@@ -2002,14 +2002,7 @@
 		border-color: var(--ui-light-blue);
 	}
 
-	.content-box.clickable {
-		cursor: pointer;
-	}
 
-	.content-box.clickable:hover {
-		border-color: var(--ui-yellow);
-		box-shadow: 0 12px 40px rgba(255, 217, 102, 0.5);
-	}
 
 	.engine-box {
 		min-height: 500px;
@@ -2346,11 +2339,6 @@
 
 	.placeholder-content.small {
 		min-height: 200px;
-	}
-
-	.placeholder-icon {
-		font-size: 5rem;
-		animation: float 3s ease-in-out infinite;
 	}
 
 	@keyframes float {
