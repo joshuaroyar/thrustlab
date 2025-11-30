@@ -1,6 +1,6 @@
 import { json, type RequestHandler } from '@sveltejs/kit';
 import { ElevenLabsClient } from 'elevenlabs';
-import { ELEVENLABS_API_KEY } from '$env/static/private';
+import { env } from '$env/dynamic/private';
 
 export const POST: RequestHandler = async ({ request }) => {
 	try {
@@ -10,13 +10,13 @@ export const POST: RequestHandler = async ({ request }) => {
 			return json({ error: 'Text is required' }, { status: 400 });
 		}
 
-		if (!ELEVENLABS_API_KEY) {
+		if (!env.ELEVENLABS_API_KEY) {
 			return json({ error: 'ElevenLabs API key not configured' }, { status: 500 });
 		}
 
 		// Initialize ElevenLabs client with the API key
 		const elevenlabs = new ElevenLabsClient({
-			apiKey: ELEVENLABS_API_KEY
+			apiKey: env.ELEVENLABS_API_KEY
 		});
 
 		// Generate audio using ElevenLabs
@@ -26,7 +26,7 @@ export const POST: RequestHandler = async ({ request }) => {
 		// - "EXAVITQu4vr4xnSDxMaL" - Sarah (soft female voice)
 		// - "MF3mGyEYCl7XYWbV9V6O" - Elli (young female voice)
 		// - "ThT5KcBeYPX3keUQqHPh" - Dorothy (pleasant female voice)
-		
+
 		const audioStream = await elevenlabs.textToSpeech.convert(
 			'21m00Tcm4TlvDq8ikWAM', // Rachel voice ID (female)
 			{
