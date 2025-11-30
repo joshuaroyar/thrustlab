@@ -1,5 +1,6 @@
 <!-- Page Content -->
 <div class="page-container">
+	
 	<div class="hero-section">
 		<h1 class="gradient-title">Hangar Zone</h1>
 		<p class="description">
@@ -44,7 +45,7 @@
 
 	.gradient-title {
 		font-family: var(--font-heading), 'Poppins', sans-serif;
-		font-size: clamp(3rem, 8vw, 6rem);
+		font-size: clamp(3rem, 6vw, 5rem);
 		font-weight: 900;
 		margin: 0 0 2rem 0;
 		background: linear-gradient(
@@ -87,13 +88,12 @@
 		color: var(--font-primary);
 		max-width: 900px;
 		margin: 0 auto;
-		background: rgba(255, 255, 255, 0.9);
-		backdrop-filter: blur(10px);
-		-webkit-backdrop-filter: blur(10px);
+		background: #FFFFFF;
 		padding: 2rem 3rem;
 		border-radius: 20px;
 		box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-		border: 1px solid rgba(255, 255, 255, 0.3);
+		border: 1px solid rgba(135, 206, 235, 0.3);
+		text-align: justify;
 	}
 
 	/* Modules Container */
@@ -106,17 +106,17 @@
 
 	.module-card {
 		position: relative;
-		background: rgba(10, 47, 53, 0.5);
-		backdrop-filter: blur(15px);
-		-webkit-backdrop-filter: blur(15px);
+		background: #FFFFFF;
 		border: 3px solid rgba(135, 206, 235, 0.4);
 		border-radius: 25px;
 		padding: 3rem 2.5rem;
 		text-decoration: none;
-		color: var(--font-secondary);
+		color: var(--font-primary);
 		transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 		overflow: hidden;
 		cursor: pointer;
+		box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+		text-align: center;
 	}
 
 	.module-card::before {
@@ -138,23 +138,23 @@
 		transform: translateY(-10px) scale(1.02);
 		border-color: var(--ui-yellow);
 		box-shadow: 0 20px 60px rgba(255, 217, 102, 0.4), 0 0 40px rgba(135, 206, 235, 0.3);
-		background: rgba(10, 47, 53, 0.7);
+		background: #FFFFFF;
 	}
 
 	.module-number {
 		font-family: var(--font-heading), 'Poppins', sans-serif;
 		font-size: 4rem;
 		font-weight: 900;
-		color: var(--ui-yellow);
+		color: var(--bg-secondary);
 		margin: 0 0 1rem 0;
-		text-shadow: 0 2px 10px rgba(255, 217, 102, 0.5);
+		text-shadow: 0 2px 10px rgba(215, 94, 46, 0.2);
 	}
 
 	.module-card h2 {
 		font-family: var(--font-body), 'Inter', sans-serif;
 		font-size: 1rem;
 		font-weight: 600;
-		color: var(--font-accent-cyan);
+		color: var(--ui-dark-teal);
 		margin: 0 0 0.5rem 0;
 		letter-spacing: 2px;
 		text-transform: uppercase;
@@ -170,16 +170,16 @@
 		letter-spacing: 0.5px;
 		background: linear-gradient(
 			90deg,
-			var(--font-secondary) 0%,
+			var(--font-primary) 0%,
 			var(--ui-light-blue) 50%,
-			var(--font-secondary) 100%
+			var(--font-primary) 100%
 		);
 		background-size: 200% 100%;
 		-webkit-background-clip: text;
 		-webkit-text-fill-color: transparent;
 		background-clip: text;
 		animation: gradient-flash 3.5s ease-in-out infinite;
-		filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.8));
+		filter: none;
 	}
 
 	.module-card:hover h3 {
@@ -194,7 +194,7 @@
 		-webkit-text-fill-color: transparent;
 		background-clip: text;
 		animation: gradient-flash 2.5s ease-in-out infinite;
-		filter: drop-shadow(0 2px 8px rgba(255, 217, 102, 0.8));
+		filter: none;
 	}
 
 	.arrow {

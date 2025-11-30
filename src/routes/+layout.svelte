@@ -2,26 +2,52 @@
 	import '../app.css';
 	import { onMount } from 'svelte';
 	import { page } from '$app/state';
+	import { invalidate, afterNavigate } from '$app/navigation';
 	import favicon from '$lib/assets/favicon.svg';
 	import Navbar from '$lib/components/navbar/Navbar.svelte';
 	import ChatbotPopup from '$lib/components/chatbot/ChatbotPopup.svelte';
 	import type { LayoutData } from './$types';
+	import type { AuthChangeEvent, Session } from '@supabase/supabase-js';
 
 	let { children, data } = $props<{ children: any; data: LayoutData }>();
+	let { supabase, session } = $derived(data);
 
 	// Check if we're on the Test Bay page to hide the popup
 	let isTestBayPage = $derived(page.url.pathname === '/test-bay');
 	// Check if we're on the home page for transparent navbar and JAJA icon
 	let isHomePage = $derived(page.url.pathname === '/');
 
+	let observer: IntersectionObserver;
+
+	function observeElements() {
+		if (!observer) return;
+		// Small delay to ensure DOM is updated
+		setTimeout(() => {
+			const animateElements = document.querySelectorAll(
+				'.animate-on-scroll, .animate-slide-left, .animate-slide-right, .animate-scale, .animate-fade'
+			);
+			animateElements.forEach((el) => observer.observe(el));
+		}, 100);
+	}
+
+	afterNavigate(() => {
+		observeElements();
+	});
+
 	onMount(() => {
+		const { data: { subscription } } = supabase.auth.onAuthStateChange((event: AuthChangeEvent, _session: Session | null) => {
+			if (_session?.expires_at !== session?.expires_at) {
+				invalidate('supabase:auth');
+			}
+		});
+
 		// Scroll-triggered animations
 		const observerOptions = {
 			threshold: 0.1,
 			rootMargin: '0px 0px -100px 0px'
 		};
 
-		const observer = new IntersectionObserver((entries) => {
+		observer = new IntersectionObserver((entries) => {
 			entries.forEach((entry) => {
 				if (entry.isIntersecting) {
 					entry.target.classList.add('visible');
@@ -29,13 +55,11 @@
 			});
 		}, observerOptions);
 
-		// Observe all elements with animate-on-scroll class
-		const animateElements = document.querySelectorAll(
-			'.animate-on-scroll, .animate-slide-left, .animate-slide-right, .animate-scale, .animate-fade'
-		);
-		animateElements.forEach((el) => observer.observe(el));
+		// Initial observation
+		observeElements();
 
 		return () => {
+			subscription.unsubscribe();
 			observer.disconnect();
 		};
 	});

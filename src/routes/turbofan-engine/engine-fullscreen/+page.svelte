@@ -5,41 +5,7 @@
 	import { turbofanPartDescriptions, turbofanComponentGroups } from '$lib/data/turbofanParts';
 	import { ttsService } from '$lib/utils/tts';
 
-	let showLabels = $state(true);
 	let modelLoaded = $state(false);
-
-	// Cloud Animation State
-	let skyCanvas: HTMLCanvasElement;
-	let farCloudsCanvas: HTMLCanvasElement;
-	let midCloudsCanvas: HTMLCanvasElement;
-	let nearCloudsCanvas: HTMLCanvasElement;
-	let mouseX = $state(0);
-	let mouseY = $state(0);
-	const BASE_DRIFT_SPEED = 0.61;
-
-	let farClouds = $state([
-		{ x: -200, y: 200, w: 350, h: 120, color: 'rgba(255, 255, 255, 0.5)' },
-		{ x: 400, y: 300, w: 400, h: 140, color: 'rgba(255, 255, 255, 0.45)' },
-		{ x: 1200, y: 250, w: 420, h: 150, color: 'rgba(255, 255, 255, 0.48)' },
-		{ x: 2000, y: 180, w: 380, h: 130, color: 'rgba(255, 255, 255, 0.47)' }
-	]);
-
-	let midClouds = $state([
-		{ x: -100, y: 400, w: 300, h: 100, color: 'rgba(255, 255, 255, 0.65)' },
-		{ x: 500, y: 500, w: 320, h: 110, color: 'rgba(255, 255, 255, 0.62)' },
-		{ x: 1200, y: 450, w: 340, h: 115, color: 'rgba(255, 255, 255, 0.64)' },
-		{ x: 1900, y: 480, w: 310, h: 105, color: 'rgba(255, 255, 255, 0.63)' },
-		{ x: 2600, y: 420, w: 330, h: 112, color: 'rgba(255, 255, 255, 0.62)' }
-	]);
-
-	let nearClouds = $state([
-		{ x: -150, y: 700, w: 250, h: 80, color: 'rgba(255, 255, 255, 0.8)' },
-		{ x: 400, y: 750, w: 270, h: 85, color: 'rgba(255, 255, 255, 0.78)' },
-		{ x: 950, y: 800, w: 260, h: 82, color: 'rgba(255, 255, 255, 0.79)' },
-		{ x: 1500, y: 720, w: 280, h: 87, color: 'rgba(255, 255, 255, 0.77)' },
-		{ x: 2100, y: 780, w: 265, h: 84, color: 'rgba(255, 255, 255, 0.78)' },
-		{ x: 2700, y: 740, w: 275, h: 86, color: 'rgba(255, 255, 255, 0.8)' }
-	]);
 
 	// Part descriptions for highlighting
 	// Based on actual 3D model mesh names and colors
@@ -55,224 +21,17 @@
 			}
 		};
 
-		// Mouse tracking for parallax
-		const handleMouseMove = (e: MouseEvent) => {
-			mouseX = e.clientX;
-			mouseY = e.clientY;
-		};
-
 		window.addEventListener('keydown', handleKeyPress);
-		window.addEventListener('mousemove', handleMouseMove);
-
-		// Initialize sky
-		initializeSkies();
-
-		// Start continuous animation loop
-		let animationId: number;
-		const animate = () => {
-			animateCloudLayers();
-			animationId = requestAnimationFrame(animate);
-		};
-		animate();
 
 		return () => {
 			window.removeEventListener('keydown', handleKeyPress);
-			window.removeEventListener('mousemove', handleMouseMove);
-			if (animationId) {
-				cancelAnimationFrame(animationId);
-			}
 		};
 	});
 
-	function initializeSkies() {
-		if (!skyCanvas) return;
 
-		const skyCtx = skyCanvas.getContext('2d');
-		if (skyCtx) {
-			// Evening sky colors (sunset/dusk)
-			const skyGradient = skyCtx.createLinearGradient(0, 0, 0, skyCanvas.height);
-			skyGradient.addColorStop(0, '#FF6B6B'); // Orange-red at top
-			skyGradient.addColorStop(0.3, '#FF8C42'); // Light orange
-			skyGradient.addColorStop(0.6, '#FFB347'); // Peach
-			skyGradient.addColorStop(1, '#FFD700'); // Gold at bottom
-			skyCtx.fillStyle = skyGradient;
-			skyCtx.fillRect(0, 0, skyCanvas.width, skyCanvas.height);
-
-			// Add sun in top left
-			const sunX = skyCanvas.width * 0.15; // Left side (15% from left)
-			const sunY = skyCanvas.height * 0.25; // Top area (25% from top)
-			const sunRadius = 70;
-
-			// Soft glow around sun
-			const sunGlow = skyCtx.createRadialGradient(
-				sunX,
-				sunY,
-				sunRadius * 0.3,
-				sunX,
-				sunY,
-				sunRadius * 2.5
-			);
-			sunGlow.addColorStop(0, 'rgba(255, 240, 180, 0.5)');
-			sunGlow.addColorStop(0.5, 'rgba(255, 230, 150, 0.2)');
-			sunGlow.addColorStop(1, 'rgba(255, 220, 130, 0)');
-			skyCtx.fillStyle = sunGlow;
-			skyCtx.fillRect(sunX - sunRadius * 2.5, sunY - sunRadius * 2.5, sunRadius * 5, sunRadius * 5);
-
-			// Main sun body with gradient
-			const sunGradient = skyCtx.createRadialGradient(sunX, sunY, 0, sunX, sunY, sunRadius);
-			sunGradient.addColorStop(0, '#FFFEF0'); // Bright cream center
-			sunGradient.addColorStop(0.4, '#FFF4C4'); // Light golden
-			sunGradient.addColorStop(0.8, '#FFE680'); // Golden yellow
-			sunGradient.addColorStop(1, '#FFD54F'); // Darker golden edge
-			skyCtx.fillStyle = sunGradient;
-			skyCtx.beginPath();
-			skyCtx.arc(sunX, sunY, sunRadius, 0, Math.PI * 2);
-			skyCtx.fill();
-		}
-	}
-
-	function animateCloudLayers() {
-		if (!farCloudsCanvas || !midCloudsCanvas || !nearCloudsCanvas) return;
-
-		const farCtx = farCloudsCanvas.getContext('2d');
-		const midCtx = midCloudsCanvas.getContext('2d');
-		const nearCtx = nearCloudsCanvas.getContext('2d');
-
-		if (!farCtx || !midCtx || !nearCtx) return;
-
-		const centerX = window.innerWidth / 2;
-		const centerY = window.innerHeight / 2;
-		const deltaX = mouseX - centerX;
-		const deltaY = mouseY - centerY;
-
-		// Far clouds
-		const farLayerSpeed = 0.3;
-		const farMouseMultiplier = 15;
-		const farCursorOffsetX = -(deltaX / centerX) * farMouseMultiplier;
-		const farCursorOffsetY = -(deltaY / centerY) * farMouseMultiplier * 0.5;
-
-		farCtx.clearRect(0, 0, farCloudsCanvas.width, farCloudsCanvas.height);
-
-		for (const cloud of farClouds) {
-			cloud.x += BASE_DRIFT_SPEED * farLayerSpeed;
-			if (cloud.x - cloud.w * 0.35 > farCloudsCanvas.width) {
-				cloud.x = -(cloud.w * 0.35);
-			}
-			drawEnhancedCloud(
-				farCtx,
-				cloud.x + farCursorOffsetX,
-				cloud.y + farCursorOffsetY,
-				cloud.w,
-				cloud.h,
-				cloud.color,
-				20
-			);
-		}
-
-		// Mid clouds
-		const midLayerSpeed = 0.7;
-		const midMouseMultiplier = 30;
-		const midCursorOffsetX = -(deltaX / centerX) * midMouseMultiplier;
-		const midCursorOffsetY = -(deltaY / centerY) * midMouseMultiplier * 0.5;
-
-		midCtx.clearRect(0, 0, midCloudsCanvas.width, midCloudsCanvas.height);
-
-		for (const cloud of midClouds) {
-			cloud.x += BASE_DRIFT_SPEED * midLayerSpeed;
-			if (cloud.x - cloud.w * 0.35 > midCloudsCanvas.width) {
-				cloud.x = -(cloud.w * 0.35);
-			}
-			drawEnhancedCloud(
-				midCtx,
-				cloud.x + midCursorOffsetX,
-				cloud.y + midCursorOffsetY,
-				cloud.w,
-				cloud.h,
-				cloud.color,
-				20
-			);
-		}
-
-		// Near clouds
-		const nearLayerSpeed = 1.2;
-		const nearMouseMultiplier = 50;
-		const nearCursorOffsetX = -(deltaX / centerX) * nearMouseMultiplier;
-		const nearCursorOffsetY = -(deltaY / centerY) * nearMouseMultiplier * 0.5;
-
-		nearCtx.clearRect(0, 0, nearCloudsCanvas.width, nearCloudsCanvas.height);
-
-		for (const cloud of nearClouds) {
-			cloud.x += BASE_DRIFT_SPEED * nearLayerSpeed;
-			if (cloud.x - cloud.w * 0.35 > nearCloudsCanvas.width) {
-				cloud.x = -(cloud.w * 0.35);
-			}
-			drawEnhancedCloud(
-				nearCtx,
-				cloud.x + nearCursorOffsetX,
-				cloud.y + nearCursorOffsetY,
-				cloud.w,
-				cloud.h,
-				cloud.color,
-				20
-			);
-		}
-	}
-
-	function drawEnhancedCloud(
-		ctx: CanvasRenderingContext2D,
-		x: number,
-		y: number,
-		width: number,
-		height: number,
-		color: string,
-		blur: number
-	) {
-		const rgbaMatch = color.match(/rgba?\((\d+),\s*(\d+),\s*(\d+),?\s*([\d.]+)?\)/);
-		if (!rgbaMatch) return;
-
-		const [, r, g, b, a = '1'] = rgbaMatch;
-		const baseAlpha = parseFloat(a);
-		const boostedAlpha = Math.min(baseAlpha * 1.2, 0.95);
-
-		const puffs = [
-			{ x: x, y: y, radiusX: width * 0.35, radiusY: height * 0.5 },
-			{ x: x - width * 0.25, y: y + height * 0.1, radiusX: width * 0.28, radiusY: height * 0.42 },
-			{ x: x + width * 0.25, y: y + height * 0.15, radiusX: width * 0.3, radiusY: height * 0.45 },
-			{ x: x - width * 0.1, y: y - height * 0.2, radiusX: width * 0.25, radiusY: height * 0.38 },
-			{ x: x + width * 0.15, y: y - height * 0.15, radiusX: width * 0.22, radiusY: height * 0.35 }
-		];
-
-		ctx.save();
-		ctx.filter = 'none';
-
-		puffs.forEach((puff) => {
-			const puffGradient = ctx.createRadialGradient(
-				puff.x - puff.radiusX * 0.2,
-				puff.y - puff.radiusY * 0.2,
-				0,
-				puff.x,
-				puff.y,
-				Math.max(puff.radiusX, puff.radiusY)
-			);
-			puffGradient.addColorStop(0, `rgba(${r}, ${g}, ${b}, ${boostedAlpha})`);
-			puffGradient.addColorStop(0.7, `rgba(${r}, ${g}, ${b}, ${boostedAlpha * 0.8})`);
-			puffGradient.addColorStop(1, `rgba(${r}, ${g}, ${b}, ${boostedAlpha * 0.3})`);
-
-			ctx.fillStyle = puffGradient;
-			ctx.beginPath();
-			ctx.ellipse(puff.x, puff.y, puff.radiusX, puff.radiusY, 0, 0, Math.PI * 2);
-			ctx.fill();
-		});
-
-		ctx.restore();
-	}
 
 	function handleBackClick() {
 		goto('/turbofan-engine');
-	}
-
-	function toggleLabels() {
-		showLabels = !showLabels;
 	}
 
 	function resetView() {
@@ -293,13 +52,7 @@
 	}
 </script>
 
-<!-- Evening Sky Background -->
-<div class="sky-background">
-	<canvas bind:this={skyCanvas} width="1920" height="1080" class="sky-canvas"></canvas>
-	<canvas bind:this={farCloudsCanvas} width="1920" height="1080" class="cloud-layer far"></canvas>
-	<canvas bind:this={midCloudsCanvas} width="1920" height="1080" class="cloud-layer mid"></canvas>
-	<canvas bind:this={nearCloudsCanvas} width="1920" height="1080" class="cloud-layer near"></canvas>
-</div>
+
 
 <div class="fullscreen-page">
 	<div class="header-controls">
@@ -342,34 +95,6 @@
 			</button>
 
 			<button
-				class="control-button {showLabels ? 'active' : ''}"
-				title="Toggle Labels"
-				onclick={toggleLabels}
-			>
-				<svg
-					xmlns="http://www.w3.org/2000/svg"
-					width="20"
-					height="20"
-					viewBox="0 0 24 24"
-					fill="none"
-					stroke="currentColor"
-					stroke-width="2"
-					stroke-linecap="round"
-					stroke-linejoin="round"
-				>
-					<line x1="12" y1="2" x2="12" y2="6"></line>
-					<line x1="12" y1="18" x2="12" y2="22"></line>
-					<line x1="4.93" y1="4.93" x2="7.76" y2="7.76"></line>
-					<line x1="16.24" y1="16.24" x2="19.07" y2="19.07"></line>
-					<line x1="2" y1="12" x2="6" y2="12"></line>
-					<line x1="18" y1="12" x2="22" y2="12"></line>
-					<line x1="4.93" y1="19.07" x2="7.76" y2="16.24"></line>
-					<line x1="16.24" y1="7.76" x2="19.07" y2="4.93"></line>
-				</svg>
-				Labels
-			</button>
-
-			<button
 				class="control-button exit-fullscreen"
 				onclick={handleBackClick}
 				title="Exit Fullscreen"
@@ -407,7 +132,7 @@
 				modelPath="/models/Turbofan (Caseless).glb"
 				canvasClass="fullscreen-canvas"
 				cameraPosition={{ alpha: Math.PI / 2, beta: Math.PI / 3, radius: 8 }}
-				enableHighlight={showLabels}
+				enableHighlight={true}
 				{partDescriptions}
 				onModelLoaded={handleModelLoaded}
 				enableTTS={true}
@@ -421,43 +146,7 @@
 </div>
 
 <style>
-	.sky-background {
-		position: fixed;
-		top: 0;
-		left: 0;
-		width: 100%;
-		height: 100%;
-		z-index: -1;
-		overflow: hidden;
-	}
 
-	.sky-canvas,
-	.cloud-layer {
-		position: absolute;
-		top: 0;
-		left: 0;
-		width: 100%;
-		height: 100%;
-		object-fit: cover;
-	}
-
-	.sky-canvas {
-		z-index: 0;
-	}
-
-	.cloud-layer.far {
-		z-index: 1;
-		opacity: 0.8;
-	}
-
-	.cloud-layer.mid {
-		z-index: 2;
-		opacity: 0.9;
-	}
-
-	.cloud-layer.near {
-		z-index: 3;
-	}
 
 	.fullscreen-page {
 		min-height: 100vh;
@@ -592,12 +281,6 @@
 		font-family: var(--font-heading);
 		font-size: 1.2rem;
 		font-weight: 600;
-	}
-
-	.control-button.active {
-		background: rgba(28, 62, 74, 1);
-		border-color: var(--ui-light-blue);
-		box-shadow: 0 0 20px rgba(135, 206, 235, 0.4);
 	}
 
 	.footer-info {

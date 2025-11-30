@@ -11,8 +11,6 @@
 	let midCloudsCanvas: HTMLCanvasElement;
 	let nearCloudsCanvas: HTMLCanvasElement;
 
-	let showComingSoonModal = $state(false);
-
 	// Base drift speed
 	const BASE_DRIFT_SPEED = 0.61; // Increased by 20% + 30% + 30% (total 103% faster)
 
@@ -63,18 +61,8 @@
 		};
 		animate();
 
-		// Keyboard handler
-		const handleKeydown = (e: KeyboardEvent) => {
-			if (e.key === 'Escape') {
-				showComingSoonModal = false;
-			}
-		};
-
-		window.addEventListener('keydown', handleKeydown);
-
 		return () => {
 			window.removeEventListener('mousemove', handleMouseMove);
-			window.removeEventListener('keydown', handleKeydown);
 			if (animationId) {
 				cancelAnimationFrame(animationId);
 			}
@@ -271,12 +259,8 @@
 		goto('/overhaul-station/preliminary-module');
 	}
 
-	function openComingSoonModal() {
-		showComingSoonModal = true;
-	}
-
-	function closeComingSoonModal() {
-		showComingSoonModal = false;
+	function openAssemblyModule() {
+		goto('/overhaul-station/assembly-disassembly');
 	}
 </script>
 
@@ -343,8 +327,8 @@
 			class="module-container clickable"
 			role="button"
 			tabindex="0"
-			onclick={openComingSoonModal}
-			onkeydown={(e) => e.key === 'Enter' && openComingSoonModal()}
+			onclick={openAssemblyModule}
+			onkeydown={(e) => e.key === 'Enter' && openAssemblyModule()}
 		>
 			<h2 class="container-title">Assembly and Disassembly Activity</h2>
 			<p class="container-description">
@@ -355,35 +339,7 @@
 	</div>
 </div>
 
-<!-- Coming Soon Modal -->
-{#if showComingSoonModal}
-	<div 
-		class="modal-overlay" 
-		role="button" 
-		tabindex="0"
-		onclick={closeComingSoonModal}
-		onkeydown={(e) => e.key === 'Enter' && closeComingSoonModal()}
-	>
-		<div 
-			class="modal-content coming-soon-modal" 
-			role="dialog"
-			aria-modal="true"
-			tabindex="-1"
-			onclick={(e) => e.stopPropagation()}
-			onkeydown={(e) => e.stopPropagation()}
-		>
-			<button class="close-button" onclick={closeComingSoonModal}>×</button>
-			<div class="coming-soon-content">
-				<div class="coming-soon-icon">🚧</div>
-				<h2 class="coming-soon-title">Coming Soon</h2>
-				<p class="coming-soon-text">
-					The Assembly and Disassembly Activity module is currently under development.
-					Stay tuned for an immersive hands-on experience with turbofan engine components!
-				</p>
-			</div>
-		</div>
-	</div>
-{/if}
+
 
 <style>
 	:global(body) {
@@ -463,7 +419,7 @@
 
 	.main-title {
 		font-family: var(--font-heading);
-		font-size: clamp(2.5rem, 5vw, 4rem);
+		font-size: clamp(3rem, 6vw, 5rem);
 		font-weight: 900;
 		text-align: center;
 		margin: 0 0 2rem 0;
@@ -488,18 +444,17 @@
 	.main-description {
 		font-family: var(--font-body);
 		font-size: clamp(1.1rem, 2vw, 1.3rem);
-		color: var(--font-secondary);
-		text-align: center;
+		color: var(--font-primary);
+		text-align: justify;
 		line-height: 1.8;
 		margin: 0 auto 4rem;
 		max-width: 900px;
-		text-shadow: 0 2px 8px rgba(0, 0, 0, 0.8);
-		background: rgba(10, 47, 53, 0.6);
-		backdrop-filter: blur(10px);
-		-webkit-backdrop-filter: blur(10px);
+		text-shadow: none;
+		background: #FFFFFF;
 		padding: 2rem;
 		border-radius: 1rem;
 		border: 1px solid rgba(135, 206, 235, 0.3);
+		box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
 	}
 
 	/* Containers Grid */
@@ -511,13 +466,11 @@
 	}
 
 	.module-container {
-		background: rgba(10, 47, 53, 0.6);
-		backdrop-filter: blur(20px) saturate(180%);
-		-webkit-backdrop-filter: blur(20px) saturate(180%);
+		background: #FFFFFF;
 		border-radius: 1.5rem;
 		padding: 3rem 2.5rem;
 		border: 2px solid rgba(135, 206, 235, 0.3);
-		box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+		box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
 		transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 		position: relative;
 		overflow: hidden;
@@ -553,18 +506,20 @@
 		font-family: var(--font-heading);
 		font-size: 1.8rem;
 		font-weight: 800;
-		color: var(--font-accent-yellow);
+		color: var(--bg-primary);
 		margin: 0 0 1.5rem 0;
-		text-shadow: 0 2px 8px rgba(0, 0, 0, 0.6);
+		text-shadow: none;
+		text-align: center;
 	}
 
 	.container-description {
 		font-family: var(--font-body);
 		font-size: 1.1rem;
 		line-height: 1.8;
-		color: var(--font-secondary);
+		color: var(--font-primary);
 		margin: 0 0 2rem 0;
-		text-shadow: 0 1px 4px rgba(0, 0, 0, 0.6);
+		text-shadow: none;
+		text-align: justify;
 	}
 
 	.click-hint {
@@ -580,129 +535,13 @@
 
 	.module-container:hover .click-hint {
 		opacity: 1;
-		color: var(--ui-yellow);
+		color: var(--bg-secondary);
 		transform: translateX(10px);
 	}
 
-	/* Modal Styles */
-	.modal-overlay {
-		position: fixed;
-		top: 0;
-		left: 0;
-		right: 0;
-		bottom: 0;
-		background: rgba(0, 0, 0, 0.85);
-		backdrop-filter: blur(10px);
-		-webkit-backdrop-filter: blur(10px);
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		z-index: 1000;
-		padding: 2rem;
-		animation: fadeIn 0.3s ease;
-	}
 
-	@keyframes fadeIn {
-		from { opacity: 0; }
-		to { opacity: 1; }
-	}
 
-	.modal-content {
-		background: rgba(255, 255, 255, 0.98);
-		backdrop-filter: blur(20px) saturate(180%);
-		-webkit-backdrop-filter: blur(20px) saturate(180%);
-		border-radius: 1.5rem;
-		border: 1px solid rgba(0, 0, 0, 0.1);
-		box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1), 0 2px 8px rgba(0, 0, 0, 0.05);
-		position: relative;
-		animation: slideUp 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-		max-width: 1400px;
-		max-height: 90vh;
-		overflow-y: auto;
-		padding: 3rem;
-	}
 
-	@keyframes slideUp {
-		from {
-			transform: translateY(50px);
-			opacity: 0;
-		}
-		to {
-			transform: translateY(0);
-			opacity: 1;
-		}
-	}
-
-	.close-button {
-		position: absolute;
-		top: 1rem;
-		right: 1rem;
-		width: 40px;
-		height: 40px;
-		border-radius: 50%;
-		background: rgba(255, 60, 60, 0.9);
-		border: 2px solid rgba(255, 255, 255, 0.3);
-		color: white;
-		font-size: 2rem;
-		font-weight: bold;
-		cursor: pointer;
-		transition: all 0.3s ease;
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		z-index: 10;
-		line-height: 1;
-		padding: 0;
-	}
-
-	.close-button:hover {
-		background: rgba(255, 30, 30, 1);
-		transform: rotate(90deg) scale(1.1);
-	}
-
-	/* Coming Soon Modal */
-	.coming-soon-modal {
-		width: 500px;
-		max-width: 90vw;
-		padding: 4rem 3rem;
-	}
-
-	.coming-soon-content {
-		text-align: center;
-	}
-
-	.coming-soon-icon {
-		font-size: 5rem;
-		margin-bottom: 2rem;
-		animation: pulse 2s ease-in-out infinite;
-	}
-
-	@keyframes pulse {
-		0%, 100% {
-			transform: scale(1);
-		}
-		50% {
-			transform: scale(1.1);
-		}
-	}
-
-	.coming-soon-title {
-		font-family: var(--font-heading);
-		font-size: 2.5rem;
-		font-weight: 900;
-		color: var(--font-accent-yellow);
-		margin: 0 0 1.5rem 0;
-		text-shadow: 0 2px 8px rgba(0, 0, 0, 0.8);
-	}
-
-	.coming-soon-text {
-		font-family: var(--font-body);
-		font-size: 1.2rem;
-		line-height: 1.8;
-		color: var(--font-secondary);
-		margin: 0;
-		text-shadow: 0 1px 4px rgba(0, 0, 0, 0.6);
-	}
 
 	/* Responsive Design */
 	@media (max-width: 968px) {
@@ -710,7 +549,6 @@
 			grid-template-columns: 1fr;
 			gap: 2rem;
 		}
-
 	}
 
 	@media (max-width: 768px) {
@@ -727,26 +565,6 @@
 		}
 
 		.container-title {
-			font-size: 1.5rem;
-		}
-
-		.coming-soon-modal {
-			padding: 3rem 2rem;
-		}
-
-		.coming-soon-title {
-			font-size: 2rem;
-		}
-
-		.coming-soon-text {
-			font-size: 1.1rem;
-		}
-	}
-
-	@media (max-width: 480px) {
-		.close-button {
-			width: 35px;
-			height: 35px;
 			font-size: 1.5rem;
 		}
 	}

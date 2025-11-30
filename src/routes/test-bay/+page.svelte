@@ -1,240 +1,9 @@
 <script lang="ts">
+	import SkyBackground from '$lib/components/SkyBackground.svelte';
+
 	import type { PageData } from './$types';
 	import { onMount } from 'svelte';
 	let { data } = $props<{ data: PageData }>();
-
-	let mounted = $state(false);
-	let mouseX = $state(0);
-	let mouseY = $state(0);
-
-	let skyCanvas: HTMLCanvasElement;
-	let farCloudsCanvas: HTMLCanvasElement;
-	let midCloudsCanvas: HTMLCanvasElement;
-	let nearCloudsCanvas: HTMLCanvasElement;
-
-	const BASE_DRIFT_SPEED = 0.61; // Increased by 20% + 30% + 30% (total 103% faster)
-
-	let farClouds = $state([
-		{ x: -200, y: 200, w: 350, h: 120, color: 'rgba(255, 255, 255, 0.5)' },
-		{ x: 400, y: 300, w: 400, h: 140, color: 'rgba(255, 255, 255, 0.45)' },
-		{ x: 1200, y: 250, w: 420, h: 150, color: 'rgba(255, 255, 255, 0.48)' },
-		{ x: 2000, y: 180, w: 380, h: 130, color: 'rgba(255, 255, 255, 0.47)' }
-	]);
-
-	let midClouds = $state([
-		{ x: -100, y: 400, w: 300, h: 100, color: 'rgba(255, 255, 255, 0.65)' },
-		{ x: 500, y: 500, w: 320, h: 110, color: 'rgba(255, 255, 255, 0.62)' },
-		{ x: 1200, y: 450, w: 340, h: 115, color: 'rgba(255, 255, 255, 0.64)' },
-		{ x: 1900, y: 480, w: 310, h: 105, color: 'rgba(255, 255, 255, 0.63)' },
-		{ x: 2600, y: 420, w: 330, h: 112, color: 'rgba(255, 255, 255, 0.62)' }
-	]);
-
-	let nearClouds = $state([
-		{ x: -150, y: 700, w: 250, h: 80, color: 'rgba(255, 255, 255, 0.8)' },
-		{ x: 400, y: 750, w: 270, h: 85, color: 'rgba(255, 255, 255, 0.78)' },
-		{ x: 950, y: 800, w: 260, h: 82, color: 'rgba(255, 255, 255, 0.79)' },
-		{ x: 1500, y: 720, w: 280, h: 87, color: 'rgba(255, 255, 255, 0.77)' },
-		{ x: 2100, y: 780, w: 265, h: 84, color: 'rgba(255, 255, 255, 0.78)' },
-		{ x: 2700, y: 740, w: 275, h: 86, color: 'rgba(255, 255, 255, 0.8)' }
-	]);
-
-	onMount(() => {
-		mounted = true;
-
-		// Mouse tracking
-		const handleMouseMove = (e: MouseEvent) => {
-			mouseX = e.clientX;
-			mouseY = e.clientY;
-		};
-
-		window.addEventListener('mousemove', handleMouseMove);
-
-		// Initialize sky and sun
-		initializeSkies();
-
-		// Start continuous animation loop
-		let animationId: number;
-		const animate = () => {
-			animateCloudLayers();
-			animationId = requestAnimationFrame(animate);
-		};
-		animate();
-
-		// Scroll-triggered animations
-		const observerOptions = {
-			threshold: 0.1,
-			rootMargin: '0px 0px -50px 0px'
-		};
-
-		const observer = new IntersectionObserver((entries) => {
-			entries.forEach(entry => {
-				if (entry.isIntersecting) {
-					entry.target.classList.add('visible');
-				}
-			});
-		}, observerOptions);
-
-		// Observe all elements with animate-on-scroll class
-		setTimeout(() => {
-			const animateElements = document.querySelectorAll('.animate-on-scroll');
-			animateElements.forEach(el => observer.observe(el));
-		}, 100);
-
-		return () => {
-			window.removeEventListener('mousemove', handleMouseMove);
-			observer.disconnect();
-			if (animationId) {
-				cancelAnimationFrame(animationId);
-			}
-		};
-	});
-
-	function initializeSkies() {
-		if (!skyCanvas) return;
-
-		const skyCtx = skyCanvas.getContext('2d');
-		if (skyCtx) {
-			const skyGradient = skyCtx.createLinearGradient(0, 0, 0, skyCanvas.height);
-			skyGradient.addColorStop(0, '#87CEEB');
-			skyGradient.addColorStop(0.5, '#B0E2FF');
-			skyGradient.addColorStop(1, '#E0F6FF');
-			skyCtx.fillStyle = skyGradient;
-			skyCtx.fillRect(0, 0, skyCanvas.width, skyCanvas.height);
-
-			// Simple sun on left side, positioned below navbar
-			const sunX = skyCanvas.width * 0.15; // Left side (15% from left)
-			const sunY = skyCanvas.height * 0.25; // Below navbar (25% from top)
-			const sunRadius = 70; // Good looking size
-
-			// Soft glow around sun
-			const sunGlow = skyCtx.createRadialGradient(sunX, sunY, sunRadius * 0.3, sunX, sunY, sunRadius * 2.5);
-			sunGlow.addColorStop(0, 'rgba(255, 240, 180, 0.5)');
-			sunGlow.addColorStop(0.5, 'rgba(255, 230, 150, 0.2)');
-			sunGlow.addColorStop(1, 'rgba(255, 220, 130, 0)');
-			skyCtx.fillStyle = sunGlow;
-			skyCtx.fillRect(sunX - sunRadius * 2.5, sunY - sunRadius * 2.5, sunRadius * 5, sunRadius * 5);
-
-			// Main sun body with gradient
-			const sunGradient = skyCtx.createRadialGradient(sunX, sunY, 0, sunX, sunY, sunRadius);
-			sunGradient.addColorStop(0, '#FFFEF0'); // Bright cream center
-			sunGradient.addColorStop(0.4, '#FFF4C4'); // Light golden
-			sunGradient.addColorStop(0.8, '#FFE680'); // Golden yellow
-			sunGradient.addColorStop(1, '#FFD54F'); // Darker golden edge
-			skyCtx.fillStyle = sunGradient;
-			skyCtx.beginPath();
-			skyCtx.arc(sunX, sunY, sunRadius, 0, Math.PI * 2);
-			skyCtx.fill();
-		}
-	}
-
-	function animateCloudLayers() {
-		if (!farCloudsCanvas || !midCloudsCanvas || !nearCloudsCanvas) return;
-
-		const farCtx = farCloudsCanvas.getContext('2d');
-		const midCtx = midCloudsCanvas.getContext('2d');
-		const nearCtx = nearCloudsCanvas.getContext('2d');
-
-		if (!farCtx || !midCtx || !nearCtx) return;
-
-		const centerX = window.innerWidth / 2;
-		const centerY = window.innerHeight / 2;
-		const deltaX = mouseX - centerX;
-		const deltaY = mouseY - centerY;
-
-		// Far clouds
-		const farLayerSpeed = 0.3;
-		const farMouseMultiplier = 15;
-		const farCursorOffsetX = -(deltaX / centerX) * farMouseMultiplier;
-		const farCursorOffsetY = -(deltaY / centerY) * farMouseMultiplier * 0.5;
-
-		farCtx.clearRect(0, 0, farCloudsCanvas.width, farCloudsCanvas.height);
-		for (const cloud of farClouds) {
-			cloud.x += BASE_DRIFT_SPEED * farLayerSpeed;
-			if (cloud.x - (cloud.w * 0.35) > farCloudsCanvas.width) {
-				cloud.x = -(cloud.w * 0.35);
-			}
-			drawEnhancedCloud(farCtx, cloud.x + farCursorOffsetX, cloud.y + farCursorOffsetY, cloud.w, cloud.h, cloud.color, 20);
-		}
-
-		// Mid clouds
-		const midLayerSpeed = 0.7;
-		const midMouseMultiplier = 30;
-		const midCursorOffsetX = -(deltaX / centerX) * midMouseMultiplier;
-		const midCursorOffsetY = -(deltaY / centerY) * midMouseMultiplier * 0.5;
-
-		midCtx.clearRect(0, 0, midCloudsCanvas.width, midCloudsCanvas.height);
-		for (const cloud of midClouds) {
-			cloud.x += BASE_DRIFT_SPEED * midLayerSpeed;
-			if (cloud.x - (cloud.w * 0.35) > midCloudsCanvas.width) {
-				cloud.x = -(cloud.w * 0.35);
-			}
-			drawEnhancedCloud(midCtx, cloud.x + midCursorOffsetX, cloud.y + midCursorOffsetY, cloud.w, cloud.h, cloud.color, 20);
-		}
-
-		// Near clouds
-		const nearLayerSpeed = 1.2;
-		const nearMouseMultiplier = 50;
-		const nearCursorOffsetX = -(deltaX / centerX) * nearMouseMultiplier;
-		const nearCursorOffsetY = -(deltaY / centerY) * nearMouseMultiplier * 0.5;
-
-		nearCtx.clearRect(0, 0, nearCloudsCanvas.width, nearCloudsCanvas.height);
-		for (const cloud of nearClouds) {
-			cloud.x += BASE_DRIFT_SPEED * nearLayerSpeed;
-			if (cloud.x - (cloud.w * 0.35) > nearCloudsCanvas.width) {
-				cloud.x = -(cloud.w * 0.35);
-			}
-			drawEnhancedCloud(nearCtx, cloud.x + nearCursorOffsetX, cloud.y + nearCursorOffsetY, cloud.w, cloud.h, cloud.color, 20);
-		}
-	}
-
-	function drawEnhancedCloud(
-		ctx: CanvasRenderingContext2D,
-		x: number,
-		y: number,
-		width: number,
-		height: number,
-		color: string,
-		blur: number
-	) {
-		const rgbaMatch = color.match(/rgba?\((\d+),\s*(\d+),\s*(\d+),?\s*([\d.]+)?\)/);
-		if (!rgbaMatch) return;
-
-		const [, r, g, b, a = '1'] = rgbaMatch;
-		const baseAlpha = parseFloat(a);
-		const boostedAlpha = Math.min(baseAlpha * 1.2, 0.95);
-
-		const puffs = [
-			{ x: x, y: y, radiusX: width * 0.35, radiusY: height * 0.5 },
-			{ x: x - width * 0.25, y: y + height * 0.1, radiusX: width * 0.28, radiusY: height * 0.42 },
-			{ x: x + width * 0.25, y: y + height * 0.15, radiusX: width * 0.3, radiusY: height * 0.45 },
-			{ x: x - width * 0.1, y: y - height * 0.2, radiusX: width * 0.25, radiusY: height * 0.38 },
-			{ x: x + width * 0.15, y: y - height * 0.15, radiusX: width * 0.22, radiusY: height * 0.35 }
-		];
-
-		ctx.save();
-		ctx.filter = 'none';
-
-		puffs.forEach(puff => {
-			const puffGradient = ctx.createRadialGradient(
-				puff.x - puff.radiusX * 0.2,
-				puff.y - puff.radiusY * 0.2,
-				0,
-				puff.x,
-				puff.y,
-				Math.max(puff.radiusX, puff.radiusY)
-			);
-			puffGradient.addColorStop(0, `rgba(${r}, ${g}, ${b}, ${boostedAlpha})`);
-			puffGradient.addColorStop(0.7, `rgba(${r}, ${g}, ${b}, ${boostedAlpha * 0.8})`);
-			puffGradient.addColorStop(1, `rgba(${r}, ${g}, ${b}, ${boostedAlpha * 0.3})`);
-
-			ctx.fillStyle = puffGradient;
-			ctx.beginPath();
-			ctx.ellipse(puff.x, puff.y, puff.radiusX, puff.radiusY, 0, 0, Math.PI * 2);
-			ctx.fill();
-		});
-
-		ctx.restore();
-	}
 
 	type Question = {
 		id: number;
@@ -251,312 +20,7 @@
 		questions: Question[];
 	};
 
-	// Module 1: History of Gas Turbine Engines
-	const module1: Module = {
-		id: 1,
-		title: 'History of Gas Turbine Engines',
-		description: 'Ready for takeoff? Test how well you understand the core principles and history that keep jets soaring through the skies.',
-		icon: '🚀',
-		questions: [
-			{
-				id: 1,
-				text: 'Which of the following best describes the principle of jet propulsion?',
-				options: [
-					'The conversion of fuel into mechanical energy by a reciprocating motion',
-					'The force is generated in the same direction as the exhaust gases',
-					'The force is produced opposite to the discharge of fluid under pressure',
-					'The suction of air to create a vacuum thrust'
-				],
-				correctAnswer: 2
-			},
-			{
-				id: 2,
-				text: "Jet propulsion operates according to which of Newton's Laws of Motion?",
-				options: ['First Law', 'Second Law', 'Third Law', 'Fourth Law'],
-				correctAnswer: 2
-			},
-			{
-				id: 3,
-				text: 'Who devised the aeolipile, an early steam-powered toy demonstrating jet propulsion?',
-				options: ['Isaac Newton', 'John Barber', 'Hero of Alexandria', 'Frank Whittle'],
-				correctAnswer: 2
-			},
-			{
-				id: 4,
-				text: 'Who was granted the first patent covering a gas turbine in 1791?',
-				options: ['Sanford Moss', 'John Barber', 'Hans von Ohain', 'Frank Whittle'],
-				correctAnswer: 1
-			},
-			{
-				id: 5,
-				text: 'What was Dr. Sanford Moss known for in the early 1900s?',
-				options: [
-					'Building the first supersonic jet',
-					'Developing the first successful turbojet',
-					'Creating the turbo-supercharger driven by exhaust gases',
-					'Designing the first commercial jetliner'
-				],
-				correctAnswer: 2
-			},
-			{
-				id: 6,
-				text: 'Frank Whittle developed the first successful turbojet engine and received his patent in what year?',
-				options: ['1925', '1930', '1936', '1941'],
-				correctAnswer: 1
-			},
-			{
-				id: 7,
-				text: 'The Heinkel He-178, recognized as the first jet-propelled aircraft, was designed by:',
-				options: ['Frank Whittle', 'Hans von Ohain', 'John Barber', 'Sanford Moss'],
-				correctAnswer: 1
-			},
-			{
-				id: 8,
-				text: 'Which type of jet engine has no moving parts and relies on forward motion to compress incoming air?',
-				options: ['Pulse Jet', 'Ramjet', 'Scramjet', 'Turbojet'],
-				correctAnswer: 1
-			},
-			{
-				id: 9,
-				text: 'In a scramjet engine, combustion occurs in:',
-				options: ['Subsonic airflow', 'Supersonic airflow', 'Static airflow', 'Rotating airflow'],
-				correctAnswer: 1
-			},
-			{
-				id: 10,
-				text: 'Which of the following jet engines does not rely on atmospheric air for propulsion?',
-				options: ['Gas turbine engine', 'Ramjet', 'Scramjet', 'Rocket engine'],
-				correctAnswer: 3
-			}
-		]
-	};
-
-	// Module 2: Types of Gas Turbine Engines
-	const module2: Module = {
-		id: 2,
-		title: 'Types of Gas Turbine Engines',
-		description: 'Think you know your engines? Explore the different types, layouts, and designs that power aircraft around the world.',
-		icon: '⚙️',
-		questions: [
-			{
-				id: 1,
-				text: 'Which of the following best describes a turbojet engine?',
-				options: [
-					'Converts almost all energy into shaft horsepower',
-					'Drives a propeller through reduction gears',
-					'Produces thrust by accelerating exhaust gases through a nozzle',
-					'Uses a free power turbine to drive a shaft'
-				],
-				correctAnswer: 2
-			},
-			{
-				id: 2,
-				text: 'The engine pressure ratio (EPR) in a turbojet engine is the ratio between:',
-				options: [
-					'Compressor inlet temperature and turbine inlet temperature',
-					'Turbine discharge pressure and inlet air pressure',
-					'Compressor discharge pressure and turbine inlet pressure',
-					'Exhaust pressure and compressor discharge pressure'
-				],
-				correctAnswer: 1
-			},
-			{
-				id: 3,
-				text: 'What is a "spool" in a turbojet engine?',
-				options: [
-					'A device that measures engine performance',
-					'A turbine and compressor mounted on the same shaft',
-					'The propeller gearbox unit',
-					'The exhaust nozzle assembly'
-				],
-				correctAnswer: 1
-			},
-			{
-				id: 4,
-				text: 'In a turboprop engine, the main power output is delivered to:',
-				options: [
-					'The jet nozzle',
-					'The propeller via a reduction gear system',
-					'The turbine only',
-					'The free power turbine'
-				],
-				correctAnswer: 1
-			},
-			{
-				id: 5,
-				text: 'Why is reduction gearing necessary in turboprop engines?',
-				options: [
-					'To increase thrust by accelerating exhaust gases',
-					'To allow the propeller to operate at slower, more efficient speeds',
-					'To improve fuel injection timing',
-					'To control air intake pressure'
-				],
-				correctAnswer: 1
-			},
-			{
-				id: 6,
-				text: 'The total output of a turboprop engine, combining shaft horsepower and residual jet thrust, is called:',
-				options: [
-					'Brake horsepower',
-					'Total engine power (TEP)',
-					'Equivalent Shaft Horsepower (ESHP)',
-					'Effective Thrust Power (ETP)'
-				],
-				correctAnswer: 2
-			},
-			{
-				id: 7,
-				text: 'A turboshaft engine differs from a turboprop mainly because it:',
-				options: [
-					'Produces thrust through a nozzle',
-					'Drives a helicopter rotor or other mechanical load via a shaft',
-					'Has no turbine stages',
-					'Uses a ducted fan instead of a propeller'
-				],
-				correctAnswer: 1
-			},
-			{
-				id: 8,
-				text: 'In a turboshaft engine, the free power turbine:',
-				options: [
-					'It is mechanically connected to the compressor',
-					'Converts remaining gas energy into mechanical shaft power',
-					'Increases air pressure before combustion',
-					'It is used only during startup'
-				],
-				correctAnswer: 1
-			},
-			{
-				id: 9,
-				text: 'The main difference between turboprop and turboshaft engines is that:',
-				options: [
-					'Turboshaft engines produce more exhaust thrust',
-					'Turboprop engines drive helicopter rotors',
-					'Turboprops may produce some thrust from exhaust, while turboshafts primarily produce shaft power',
-					'Turboshafts are designed for supersonic flight'
-				],
-				correctAnswer: 2
-			},
-			{
-				id: 10,
-				text: 'Ducted and unducted propfan engines are advanced designs that:',
-				options: [
-					'Operate at subsonic speeds only',
-					'Use composite materials for lighter, faster blades',
-					'Have lower fuel efficiency than turbofans',
-					'Cannot exceed Mach 0.7'
-				],
-				correctAnswer: 1
-			}
-		]
-	};
-
-	// Module 3: Sections of a Gas Turbine Engine
-	const module3: Module = {
-		id: 3,
-		title: 'Sections of a Gas Turbine Engine',
-		description: 'Time to get hands-on! Identify the key parts and their functions that make up a powerful jet engine.',
-		icon: '🔧',
-		questions: [
-			{
-				id: 1,
-				text: 'Which of the following components belong to the cold section of a gas turbine engine?',
-				options: [
-					'Turbine and Exhaust',
-					'Air Inlet and Compressor',
-					'Combustion and Turbine',
-					'Compressor and Exhaust'
-				],
-				correctAnswer: 1
-			},
-			{
-				id: 2,
-				text: 'The main function of the air inlet is to:',
-				options: [
-					'Increase the speed of exhaust gases',
-					'Convert pressure energy into velocity energy',
-					'Recover total pressure and deliver uniform airflow to the compressor',
-					'Supply fuel to the combustion chamber'
-				],
-				correctAnswer: 2
-			},
-			{
-				id: 3,
-				text: 'Which type of air inlet is specifically designed for stationary or slow-moving aircraft such as helicopters or test stands?',
-				options: [
-					'Supersonic inlet',
-					'Subsonic inlet',
-					'Bellmouth inlet',
-					'Variable geometry inlet'
-				],
-				correctAnswer: 2
-			},
-			{
-				id: 4,
-				text: 'The compressor pressure ratio is defined as:',
-				options: [
-					'Inlet pressure ÷ Outlet pressure',
-					'Outlet pressure ÷ Inlet pressure',
-					'Turbine pressure ÷ Compressor pressure',
-					'Air velocity ÷ Pressure energy'
-				],
-				correctAnswer: 1
-			},
-			{
-				id: 5,
-				text: 'What is the primary function of the compressor section?',
-				options: [
-					'Convert fuel into energy',
-					'Supply compressed air for combustion',
-					'Cool the turbine blades',
-					'Direct exhaust gases rearward'
-				],
-				correctAnswer: 1
-			},
-			{
-				id: 6,
-				text: 'Which of the following is an advantage of a centrifugal flow compressor?',
-				options: [
-					'Large frontal area',
-					'High manufacturing cost',
-					'Low weight and simplicity in design',
-					'Requires high starting power'
-				],
-				correctAnswer: 2
-			},
-			{
-				id: 7,
-				text: 'In an axial flow compressor, each pair of rotor and stator vanes is called a:',
-				options: ['Stage', 'Section', 'Spool', 'Passage'],
-				correctAnswer: 0
-			},
-			{
-				id: 8,
-				text: 'The combustion chamber mixes and burns the air-fuel mixture. What percentage of air is approximately used as primary air for combustion?',
-				options: ['10–20%', '25–35%', '45–55%', '65–75%'],
-				correctAnswer: 1
-			},
-			{
-				id: 9,
-				text: 'Which type of turbine blade produces turning force mainly by aerodynamic action and pressure drop across the blades?',
-				options: ['Impulse blade', 'Reaction blade', 'Impulse-reaction blade', 'Shrouded blade'],
-				correctAnswer: 1
-			},
-			{
-				id: 10,
-				text: 'The accessory section of a gas turbine engine provides power for:',
-				options: [
-					'Thrust production only',
-					'Fuel pumps, generators, and hydraulic systems',
-					'Compressor cooling only',
-					'Turbine speed regulation'
-				],
-				correctAnswer: 1
-			}
-		]
-	};
-
-	const modules: Module[] = [module1, module2, module3];
+	let modules = $derived(data.modules);
 
 	// State management
 	let viewState = $state<'selection' | 'quiz' | 'results'>('selection');
@@ -565,15 +29,52 @@
 	let userAnswers = $state<(number | null)[]>([]);
 	let score = $state(0);
 	let showReview = $state(false);
+	
+	type FeedbackItem = {
+		questionText: string;
+		explanation: string;
+		topicToReview: string;
+	};
+	
+	let aiFeedback = $state<FeedbackItem[] | null>(null);
+	let isLoadingFeedback = $state(false);
 
 	// Derived state for current question
 	let currentQuestion = $derived(
 		selectedModule?.questions?.[currentQuestionIndex]
 	);
 
+	function shuffleArray<T>(array: T[]): T[] {
+		const newArray = [...array];
+		for (let i = newArray.length - 1; i > 0; i--) {
+			const j = Math.floor(Math.random() * (i + 1));
+			[newArray[i], newArray[j]] = [newArray[j], newArray[i]];
+		}
+		return newArray;
+	}
+
 	function startModule(module: Module) {
-		selectedModule = module;
-		userAnswers = new Array(module.questions.length).fill(null);
+		// Clone the module to avoid mutating the original data
+		const moduleClone = { ...module, questions: [...module.questions] };
+		
+		// Shuffle questions
+		moduleClone.questions = shuffleArray(moduleClone.questions);
+
+		// Shuffle options for each question
+		moduleClone.questions = moduleClone.questions.map(q => {
+			const originalCorrectAnswer = q.options[q.correctAnswer];
+			const shuffledOptions = shuffleArray(q.options);
+			const newCorrectAnswerIndex = shuffledOptions.indexOf(originalCorrectAnswer);
+			
+			return {
+				...q,
+				options: shuffledOptions,
+				correctAnswer: newCorrectAnswerIndex
+			};
+		});
+
+		selectedModule = moduleClone;
+		userAnswers = new Array(moduleClone.questions.length).fill(null);
 		currentQuestionIndex = 0;
 		viewState = 'quiz';
 		showReview = false;
@@ -595,18 +96,75 @@
 		}
 	}
 
-	function submitTest() {
+	async function submitTest() {
 		if (!selectedModule) return;
 		
 		let correctCount = 0;
+		const questionsDetails: any[] = [];
+
 		selectedModule.questions.forEach((q, idx) => {
-			if (userAnswers[idx] === q.correctAnswer) {
+			const userAnswerIdx = userAnswers[idx];
+			if (userAnswerIdx === q.correctAnswer) {
 				correctCount++;
+			}
+			
+			if (userAnswerIdx !== null && userAnswerIdx !== undefined) {
+				questionsDetails.push({
+					questionText: q.text,
+					options: q.options,
+					correctAnswer: q.options[q.correctAnswer],
+					userAnswer: q.options[userAnswerIdx]
+				});
 			}
 		});
 		
 		score = Math.round((correctCount / selectedModule.questions.length) * 100);
 		viewState = 'results';
+		aiFeedback = null;
+
+		// Submit to backend
+		try {
+			const response = await fetch('/api/submit-test', {
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json'
+				},
+				body: JSON.stringify({
+					moduleNo: selectedModule.id,
+					moduleName: selectedModule.title,
+					totalQuestions: selectedModule.questions.length,
+					questionsCorrect: correctCount,
+					questionsIncorrect: selectedModule.questions.length - correctCount,
+					marks: score,
+					questions: questionsDetails
+				})
+			});
+			
+			if (!response.ok) {
+				console.error('Failed to submit test results');
+			}
+		} catch (e) {
+			console.error('Error submitting test:', e);
+		}
+
+		// Get AI Feedback for incorrect answers
+		const incorrectQuestions = questionsDetails.filter(q => q.userAnswer !== q.correctAnswer);
+		if (incorrectQuestions.length > 0) {
+			isLoadingFeedback = true;
+			try {
+				const res = await fetch('/api/ai-feedback', {
+					method: 'POST',
+					headers: { 'Content-Type': 'application/json' },
+					body: JSON.stringify({ questions: incorrectQuestions })
+				});
+				const data = await res.json();
+				aiFeedback = data.feedback;
+			} catch (e) {
+				console.error('Error getting AI feedback:', e);
+			} finally {
+				isLoadingFeedback = false;
+			}
+		}
 	}
 
 	function retakeTest() {
@@ -635,36 +193,7 @@
 	});
 </script>
 
-<!-- Morning Parallax Background -->
-<div class="parallax-background-system">
-	<canvas 
-		bind:this={skyCanvas}
-		class="parallax-layer sky-layer"
-		width="3200"
-		height="1800"
-	></canvas>
-
-	<canvas 
-		bind:this={farCloudsCanvas}
-		class="parallax-layer far-clouds-layer"
-		width="3200"
-		height="1800"
-	></canvas>
-
-	<canvas 
-		bind:this={midCloudsCanvas}
-		class="parallax-layer mid-clouds-layer"
-		width="3200"
-		height="1800"
-	></canvas>
-
-	<canvas 
-		bind:this={nearCloudsCanvas}
-		class="parallax-layer near-clouds-layer"
-		width="3200"
-		height="1800"
-	></canvas>
-</div>
+<SkyBackground day={true} />
 
 <div class="page-container">
 	{#if viewState === 'selection'}
@@ -833,6 +362,30 @@
 				</div>
 			</div>
 
+			{#if aiFeedback || isLoadingFeedback}
+				<div class="ai-feedback-section">
+					<h3>🤖 Feedback</h3>
+					{#if isLoadingFeedback}
+						<div class="loading-feedback">
+							<div class="spinner"></div>
+							<p>Analyzing your performance...</p>
+						</div>
+					{:else if aiFeedback}
+						<div class="feedback-grid">
+							{#each aiFeedback as item}
+								<div class="feedback-card">
+									<h4>{item.questionText}</h4>
+									<p class="explanation">{item.explanation}</p>
+									<div class="review-topic">
+										<span class="topic-label">💡 Review Topic:</span> {item.topicToReview}
+									</div>
+								</div>
+							{/each}
+						</div>
+					{/if}
+				</div>
+			{/if}
+
 			<div class="results-actions">
 				<button class="action-button primary" onclick={toggleReview}>
 					<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
@@ -912,7 +465,7 @@
 
 	.page-title {
 		font-family: var(--font-heading), 'Poppins', sans-serif;
-		font-size: clamp(3rem, 8vw, 6rem);
+		font-size: clamp(3rem, 6vw, 5rem);
 		font-weight: 900;
 		margin: 0 0 2rem 0;
 		text-align: center;
@@ -956,10 +509,8 @@
 		color: var(--font-primary);
 		max-width: 900px;
 		margin: 0 auto 2rem auto;
-		text-align: center;
-		background: rgba(255, 255, 255, 0.9);
-		backdrop-filter: blur(10px);
-		-webkit-backdrop-filter: blur(10px);
+		text-align: justify;
+		background: #FFFFFF;
 		padding: 2rem 3rem;
 		border-radius: 20px;
 		box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
@@ -967,9 +518,7 @@
 	}
 
 	.info-card {
-		background: rgba(255, 255, 255, 0.95);
-		backdrop-filter: blur(15px);
-		-webkit-backdrop-filter: blur(15px);
+		background: #FFFFFF;
 		border-radius: 25px;
 		padding: 2.5rem;
 		margin-bottom: 3rem;
@@ -1044,9 +593,7 @@
 	}
 
 	.test-card {
-		background: rgba(255, 255, 255, 0.95);
-		backdrop-filter: blur(15px);
-		-webkit-backdrop-filter: blur(15px);
+		background: #FFFFFF;
 		border: 3px solid;
 		border-radius: 25px;
 		padding: 2.5rem 2rem;
@@ -1130,6 +677,7 @@
 		line-height: 1.7;
 		flex-grow: 1;
 		opacity: 0.9;
+		text-align: justify;
 	}
 
 	.start-button {
@@ -1214,9 +762,7 @@
 	.quiz-container {
 		max-width: 900px;
 		margin: 0 auto;
-		background: rgba(255, 255, 255, 0.95);
-		backdrop-filter: blur(15px);
-		-webkit-backdrop-filter: blur(15px);
+		background: #FFFFFF;
 		border-radius: 25px;
 		padding: 2.5rem;
 		box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
@@ -1294,9 +840,7 @@
 	}
 
 	.question-card {
-		background: rgba(246, 247, 250, 0.8);
-		backdrop-filter: blur(10px);
-		-webkit-backdrop-filter: blur(10px);
+		background: #FFFFFF;
 		border-radius: 20px;
 		padding: 2.5rem;
 		margin-bottom: 2rem;
@@ -1311,6 +855,7 @@
 		line-height: 1.7;
 		margin: 0 0 2rem 0;
 		font-weight: 600;
+		text-align: justify;
 	}
 
 	.options-list {
@@ -1324,13 +869,11 @@
 		align-items: center;
 		gap: 1rem;
 		padding: 1.25rem 1.5rem;
-		background: rgba(255, 255, 255, 0.9);
+		background: #FFFFFF;
 		border: 2px solid rgba(224, 224, 224, 0.5);
 		border-radius: 15px;
 		cursor: pointer;
 		transition: all 0.3s ease;
-		backdrop-filter: blur(5px);
-		-webkit-backdrop-filter: blur(5px);
 	}
 
 	.option-item:hover {
@@ -1365,6 +908,7 @@
 		flex: 1;
 		line-height: 1.6;
 		font-size: 1rem;
+		text-align: justify;
 	}
 
 	.navigation-buttons {
@@ -1403,9 +947,7 @@
 	}
 
 	.nav-button.secondary {
-		background: rgba(224, 224, 224, 0.8);
-		backdrop-filter: blur(5px);
-		-webkit-backdrop-filter: blur(5px);
+		background: #F5F5F5;
 		color: var(--font-primary);
 		border: 2px solid rgba(135, 206, 235, 0.3);
 	}
@@ -1432,9 +974,7 @@
 	}
 
 	.question-nav {
-		background: rgba(246, 247, 250, 0.8);
-		backdrop-filter: blur(10px);
-		-webkit-backdrop-filter: blur(10px);
+		background: #FFFFFF;
 		padding: 1.5rem;
 		border-radius: 20px;
 		border: 1px solid rgba(255, 255, 255, 0.6);
@@ -1459,7 +999,7 @@
 		width: 42px;
 		height: 42px;
 		border-radius: 10px;
-		background: rgba(255, 255, 255, 0.9);
+		background: #FFFFFF;
 		border: 2px solid rgba(224, 224, 224, 0.5);
 		font-family: var(--font-heading), 'Poppins', sans-serif;
 		font-size: 0.9rem;
@@ -1495,9 +1035,7 @@
 	.results-container {
 		max-width: 900px;
 		margin: 0 auto;
-		background: rgba(255, 255, 255, 0.95);
-		backdrop-filter: blur(15px);
-		-webkit-backdrop-filter: blur(15px);
+		background: #FFFFFF;
 		border-radius: 25px;
 		padding: 3rem 2.5rem;
 		box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
@@ -1545,9 +1083,7 @@
 		align-items: center;
 		justify-content: center;
 		padding: 2.5rem;
-		background: rgba(246, 247, 250, 0.8);
-		backdrop-filter: blur(10px);
-		-webkit-backdrop-filter: blur(10px);
+		background: #FFFFFF;
 		border-radius: 20px;
 		margin-bottom: 2.5rem;
 		border: 1px solid rgba(255, 255, 255, 0.6);
@@ -1638,6 +1174,95 @@
 		color: #FF3C7E;
 	}
 
+	.ai-feedback-section {
+		background: #FFFFFF;
+		border-radius: 20px;
+		padding: 2rem;
+		margin-bottom: 2.5rem;
+		border: 2px solid var(--font-accent-cyan);
+		box-shadow: 0 4px 16px rgba(0, 206, 209, 0.15);
+	}
+
+	.ai-feedback-section h3 {
+		font-family: var(--font-heading), 'Poppins', sans-serif;
+		color: var(--font-primary);
+		font-size: 1.5rem;
+		font-weight: 900;
+		margin: 0 0 1.5rem 0;
+		display: flex;
+		align-items: center;
+		gap: 0.75rem;
+	}
+
+	.feedback-grid {
+		display: grid;
+		gap: 1.5rem;
+	}
+
+	.feedback-card {
+		background: #FFFFFF;
+		border-radius: 15px;
+		padding: 1.5rem;
+		border-left: 4px solid var(--font-accent-cyan);
+		box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+	}
+
+	.feedback-card h4 {
+		font-family: var(--font-body), 'Inter', sans-serif;
+		font-weight: 700;
+		color: var(--font-primary);
+		margin: 0 0 0.75rem 0;
+		font-size: 1.1rem;
+	}
+
+	.explanation {
+		font-family: var(--font-body), 'Inter', sans-serif;
+		color: var(--font-primary);
+		line-height: 1.6;
+		margin: 0 0 1rem 0;
+		font-size: 1rem;
+		opacity: 0.9;
+		text-align: justify;
+	}
+
+	.review-topic {
+		background: rgba(135, 206, 235, 0.15);
+		padding: 0.75rem 1rem;
+		border-radius: 10px;
+		font-family: var(--font-body), 'Inter', sans-serif;
+		font-size: 0.95rem;
+		color: #223A5E;
+		display: inline-block;
+	}
+
+	.topic-label {
+		font-weight: 700;
+		color: var(--font-accent-cyan);
+		margin-right: 0.5rem;
+	}
+
+	.loading-feedback {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: 1rem;
+		padding: 2rem;
+		color: #666;
+	}
+
+	.spinner {
+		width: 40px;
+		height: 40px;
+		border: 4px solid rgba(0, 0, 0, 0.1);
+		border-left-color: var(--font-accent-cyan);
+		border-radius: 50%;
+		animation: spin 1s linear infinite;
+	}
+
+	@keyframes spin {
+		to { transform: rotate(360deg); }
+	}
+
 	.results-actions {
 		display: flex;
 		gap: 1.5rem;
@@ -1706,9 +1331,7 @@
 	}
 
 	.review-question {
-		background: rgba(246, 247, 250, 0.8);
-		backdrop-filter: blur(10px);
-		-webkit-backdrop-filter: blur(10px);
+		background: #FFFFFF;
 		border-radius: 20px;
 		padding: 2rem;
 		margin-bottom: 1.5rem;
@@ -1768,6 +1391,7 @@
 		line-height: 1.7;
 		margin: 0 0 1.5rem 0;
 		font-size: 1.05rem;
+		text-align: justify;
 	}
 
 	.review-options {
@@ -1781,12 +1405,10 @@
 		align-items: center;
 		gap: 1rem;
 		padding: 1rem 1.25rem;
-		background: rgba(255, 255, 255, 0.9);
+		background: #FFFFFF;
 		border: 2px solid rgba(224, 224, 224, 0.5);
 		border-radius: 15px;
 		position: relative;
-		backdrop-filter: blur(5px);
-		-webkit-backdrop-filter: blur(5px);
 		transition: all 0.3s ease;
 	}
 

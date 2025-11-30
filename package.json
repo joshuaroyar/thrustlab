@@ -58,14 +58,14 @@
 		"@langchain/pinecone": "^1.0.1",
 		"@langchain/textsplitters": "^1.0.1",
 		"@pinecone-database/pinecone": "^5.0.2",
+		"@supabase/ssr": "^0.8.0",
+		"@supabase/supabase-js": "^2.86.0",
 		"@types/babylonjs": "^2.3.31",
-		"@types/three": "^0.181.0",
 		"ai": "^5.0.93",
 		"cookie": "^1.0.2",
 		"elevenlabs": "^1.59.0",
 		"esbuild": "^0.27.0",
 		"postgres": "^3.4.7",
-		"three": "^0.181.1",
 		"zod": "^3.25.76"
 	},
 	"overrides": {

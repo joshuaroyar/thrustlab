@@ -1,48 +1,47 @@
-import type { Handle } from '@sveltejs/kit';
-import * as auth from '$lib/server/auth';
+import { createServerClient } from '@supabase/ssr';
+import { type Handle, redirect } from '@sveltejs/kit';
+import { PUBLIC_SUPABASE_URL, PUBLIC_SUPABASE_ANON_KEY } from '$env/static/public';
 
-// Mock user for testing (bypasses database)
-const MOCK_USER = {
-	id: 'test-user-123',
-	username: 'testuser'
+export const handle: Handle = async ({ event, resolve }) => {
+	event.locals.supabase = createServerClient(PUBLIC_SUPABASE_URL, PUBLIC_SUPABASE_ANON_KEY, {
+		cookies: {
+			getAll: () => event.cookies.getAll(),
+			setAll: (cookiesToSet) => {
+				cookiesToSet.forEach(({ name, value, options }) => {
+					event.cookies.set(name, value, { ...options, path: '/' });
+				});
+			},
+		},
+	});
+
+	/**
+	 * safeGetSession is a helper to ensure we don't refresh the token
+	 * on every single load, but only when accessed.
+	 */
+	event.locals.safeGetSession = async () => {
+		const {
+			data: { session },
+		} = await event.locals.supabase.auth.getSession();
+
+		if (!session) {
+			return { session: null, user: null };
+		}
+
+		const {
+			data: { user },
+			error,
+		} = await event.locals.supabase.auth.getUser();
+
+		if (error) {
+			return { session: null, user: null };
+		}
+
+		return { session, user };
+	};
+
+	return resolve(event, {
+		filterSerializedResponseHeaders(name) {
+			return name === 'content-range';
+		},
+	});
 };
-
-const MOCK_SESSION = {
-	id: 'test-session-123',
-	userId: 'test-user-123',
-	expiresAt: new Date(Date.now() + 1000 * 60 * 60 * 24 * 30) // 30 days from now
-};
-
-const handleAuth: Handle = async ({ event, resolve }) => {
-	const sessionToken = event.cookies.get(auth.sessionCookieName);
-	
-	// Check for mock authentication cookie
-	const mockAuth = event.cookies.get('mock-auth');
-	
-	if (mockAuth === 'true') {
-		// Use mock user for testing
-		event.locals.user = MOCK_USER;
-		event.locals.session = MOCK_SESSION;
-		return resolve(event);
-	}
-
-	if (!sessionToken) {
-		event.locals.user = null;
-		event.locals.session = null;
-		return resolve(event);
-	}
-
-	const { session, user } = await auth.validateSessionToken(sessionToken);
-
-	if (session) {
-		auth.setSessionTokenCookie(event, sessionToken, session.expiresAt);
-	} else {
-		auth.deleteSessionTokenCookie(event);
-	}
-
-	event.locals.user = user;
-	event.locals.session = session;
-	return resolve(event);
-};
-
-export const handle: Handle = handleAuth;

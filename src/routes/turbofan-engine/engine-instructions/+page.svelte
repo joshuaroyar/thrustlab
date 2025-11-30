@@ -29,8 +29,7 @@
 	}
 </script>
 
-<!-- Evening Sky Background (static) -->
-<div class="sky-background"></div>
+
 
 <div class="instructions-page">
 	{#if showInstructions}
@@ -51,62 +50,67 @@
 				onkeydown={(e) => e.key === 'Enter' && handleContainerClick()}
 			>
 				<div class="instructions-content">
-					<h1 class="instructions-title">Welcome aboard! 🚀</h1>
+					<h1 class="instructions-title">Welcome aboard!</h1>
 					<p class="instructions-subtitle">Explore your 3D Turbofan Engine like a pro:</p>
 
 					<div class="instruction-list">
 						<div class="instruction-item">
-							<div class="instruction-icon">🔍</div>
+							<div class="instruction-icon">
+								<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line><line x1="11" y1="8" x2="11" y2="14"></line><line x1="8" y1="11" x2="14" y2="11"></line></svg>
+							</div>
 							<div class="instruction-text">
 								<strong>Zoom In & Out:</strong> Use your mouse scroll to get closer or step back for the full view.
 							</div>
 						</div>
 
 						<div class="instruction-item">
-							<div class="instruction-icon">🔄</div>
+							<div class="instruction-icon">
+								<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.2"/></svg>
+							</div>
 							<div class="instruction-text">
 								<strong>Rotate the Engine:</strong> Hold the left mouse button and move around to inspect every angle.
 							</div>
 						</div>
 
 						<div class="instruction-item">
-							<div class="instruction-icon">👆</div>
+							<div class="instruction-icon">
+								<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>
+							</div>
 							<div class="instruction-text">
 								<strong>Explore Components:</strong> Click any part to see its definition and hear a voice explanation.
 							</div>
 						</div>
 
 						<div class="instruction-item">
-							<div class="instruction-icon">⛶</div>
+							<div class="instruction-icon">
+								<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg>
+							</div>
 							<div class="instruction-text">
 								<strong>Enter Full Screen:</strong> Click the zoom magnifying glass to go full screen.
 							</div>
 						</div>
 
 						<div class="instruction-item">
-							<div class="instruction-icon">⛶</div>
+							<div class="instruction-icon">
+								<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3v3a2 2 0 0 1-2 2H3m18 0h-3a2 2 0 0 1-2-2V3m0 18v-3a2 2 0 0 1 2-2h3M3 16h3a2 2 0 0 1 2 2v3"/></svg>
+							</div>
 							<div class="instruction-text">
 								<strong>Exit Full Screen:</strong> Click the unzoom magnifying glass to return to normal view.
 							</div>
 						</div>
 
 						<div class="instruction-item">
-							<div class="instruction-icon">🔄</div>
+							<div class="instruction-icon">
+								<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
+							</div>
 							<div class="instruction-text">
 								<strong>Reset View:</strong> Press the Reset button to return the engine to its original position.
-							</div>
-						</div>
-
-						<div class="instruction-item">
-							<div class="instruction-icon">🏷️</div>
-							<div class="instruction-text">
-								<strong>Toggle Labels:</strong> Turn component labels on or off to reduce clutter or check details.
 							</div>
 						</div>
 					</div>
 
 					<div class="click-hint">
-						<p>👉 Click anywhere to continue to fullscreen view</p>
+						<p>Click anywhere to continue to fullscreen view</p>
 					</div>
 				</div>
 			</div>
@@ -115,15 +119,7 @@
 </div>
 
 <style>
-	.sky-background {
-		position: fixed;
-		top: 0;
-		left: 0;
-		width: 100%;
-		height: 100%;
-		background: linear-gradient(to bottom, #FF6B6B 0%, #FF8C42 30%, #FFB347 60%, #FFD700 100%);
-		z-index: -1;
-	}
+
 
 	.instructions-page {
 		min-height: 100vh;
@@ -136,7 +132,7 @@
 
 	.instructions-overlay {
 		width: 100%;
-		max-width: 1200px;
+		max-width: 800px;
 		position: relative;
 	}
 
@@ -178,7 +174,7 @@
 		backdrop-filter: blur(20px) saturate(180%);
 		-webkit-backdrop-filter: blur(20px) saturate(180%);
 		border-radius: 2rem;
-		padding: 4rem 3rem;
+		padding: 2.5rem 2rem;
 		border: 2px solid rgba(135, 206, 235, 0.4);
 		box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
 		cursor: pointer;
@@ -209,7 +205,7 @@
 
 	.instructions-title {
 		font-family: var(--font-heading);
-		font-size: clamp(2rem, 4vw, 3rem);
+		font-size: clamp(1.5rem, 3vw, 2.5rem);
 		font-weight: 900;
 		color: var(--font-accent-yellow);
 		text-align: center;
@@ -219,25 +215,25 @@
 
 	.instructions-subtitle {
 		font-family: var(--font-body);
-		font-size: clamp(1.2rem, 2vw, 1.5rem);
+		font-size: clamp(1rem, 1.5vw, 1.2rem);
 		color: var(--font-accent-cyan);
 		text-align: center;
-		margin: 0 0 3rem 0;
+		margin: 0 0 2rem 0;
 		text-shadow: 0 2px 8px rgba(0, 0, 0, 0.6);
 	}
 
 	.instruction-list {
 		display: flex;
 		flex-direction: column;
-		gap: 1.5rem;
-		margin-bottom: 3rem;
+		gap: 1rem;
+		margin-bottom: 2rem;
 	}
 
 	.instruction-item {
 		display: flex;
 		align-items: flex-start;
-		gap: 1.5rem;
-		padding: 1.5rem;
+		gap: 1rem;
+		padding: 1rem;
 		background: rgba(28, 62, 74, 0.5);
 		border-radius: 1rem;
 		border: 1px solid rgba(135, 206, 235, 0.2);

@@ -1,9 +1,9 @@
-import { pgTable, serial, integer, text, timestamp } from 'drizzle-orm/pg-core';
+import { pgTable, serial, integer, text, timestamp, jsonb } from 'drizzle-orm/pg-core';
 
 export const user = pgTable('user', {
 	id: text('id').primaryKey(),
 	username: text('username'),
-	age: integer('age')
+	fullName: text('full_name')
 });
 
 export const session = pgTable('session', {
@@ -14,6 +14,43 @@ export const session = pgTable('session', {
 	expiresAt: timestamp('expires_at', { withTimezone: true, mode: 'date' }).notNull()
 });
 
-export type Session = typeof session.$inferSelect;
+export const modules = pgTable('modules', {
+	moduleNo: serial('module_no').primaryKey(),
+	moduleName: text('module_name').notNull()
+});
 
+export const questions = pgTable('questions', {
+	questionId: serial('question_id').primaryKey(),
+	moduleNo: integer('module_no').references(() => modules.moduleNo),
+	questionText: text('question_text').notNull(),
+	options: jsonb('options').notNull(),
+	correctAnswer: text('correct_answer').notNull()
+});
+
+export const tests = pgTable('tests', {
+	testId: serial('test_id').primaryKey(),
+	userId: text('user_id').references(() => user.id),
+	testDate: timestamp('test_date').defaultNow().notNull(),
+	moduleNo: integer('module_no').notNull(),
+	moduleName: text('module_name').notNull(),
+	totalQuestions: integer('total_questions').notNull(),
+	questionsCorrect: integer('questions_correct').notNull(),
+	questionsIncorrect: integer('questions_incorrect').notNull(),
+	marks: integer('marks').notNull()
+});
+
+export const testQuestions = pgTable('test_questions', {
+	id: serial('id').primaryKey(),
+	testId: integer('test_id').references(() => tests.testId),
+	questionText: text('question_text').notNull(),
+	options: jsonb('options').notNull(),
+	correctAnswer: text('correct_answer').notNull(),
+	userAnswer: text('user_answer').notNull()
+});
+
+export type Session = typeof session.$inferSelect;
 export type User = typeof user.$inferSelect;
+export type Module = typeof modules.$inferSelect;
+export type Question = typeof questions.$inferSelect;
+export type Test = typeof tests.$inferSelect;
+export type TestQuestion = typeof testQuestions.$inferSelect;

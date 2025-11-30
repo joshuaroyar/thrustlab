@@ -376,13 +376,13 @@
 
 	@media (max-width: 768px) {
 		.navbar-logo {
-			height: 4rem;
+			height: 5.5rem;
 		}
 	}
 
 	@media (max-width: 480px) {
 		.navbar-logo {
-			height: 3rem;
+			height: 4.5rem;
 		}
 	}
 

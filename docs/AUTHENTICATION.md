@@ -1,4 +1,6 @@
-task 1: Implement the authentication system for this website. The frontend for sign-up and login pages is already done. You need to create the backend logic to handle user registration, login, and session management.
+Task: Implement the authentication system for this website. The frontend for sign-up and login pages is already done. You need to create the backend logic to handle user registration, login, and session management.
+
+Backend Used: Supabase
 
 # Authentication System Documentation
 

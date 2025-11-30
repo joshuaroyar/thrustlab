@@ -15,27 +15,29 @@
 	const BASE_DRIFT_SPEED = 0.61;
 
 	let farClouds = $state([
-		{ x: -200, y: 200, w: 350, h: 120, color: 'rgba(255, 255, 255, 0.5)' },
-		{ x: 400, y: 300, w: 400, h: 140, color: 'rgba(255, 255, 255, 0.45)' },
-		{ x: 1200, y: 250, w: 420, h: 150, color: 'rgba(255, 255, 255, 0.48)' },
-		{ x: 2000, y: 180, w: 380, h: 130, color: 'rgba(255, 255, 255, 0.47)' }
+		{ x: -200, y: 100, w: 350, h: 120, color: 'rgba(255, 255, 255, 0.5)' },
+		{ x: 800, y: 400, w: 400, h: 140, color: 'rgba(255, 255, 255, 0.45)' },
+		{ x: 1600, y: 700, w: 360, h: 125, color: 'rgba(255, 255, 255, 0.46)' },
+		{ x: 2400, y: 1000, w: 420, h: 150, color: 'rgba(255, 255, 255, 0.48)' },
+		{ x: 400, y: 1300, w: 390, h: 135, color: 'rgba(255, 255, 255, 0.44)' }
 	]);
 
 	let midClouds = $state([
-		{ x: -100, y: 400, w: 300, h: 100, color: 'rgba(255, 255, 255, 0.65)' },
-		{ x: 500, y: 500, w: 320, h: 110, color: 'rgba(255, 255, 255, 0.62)' },
-		{ x: 1200, y: 450, w: 340, h: 115, color: 'rgba(255, 255, 255, 0.64)' },
-		{ x: 1900, y: 480, w: 310, h: 105, color: 'rgba(255, 255, 255, 0.63)' },
-		{ x: 2600, y: 420, w: 330, h: 112, color: 'rgba(255, 255, 255, 0.62)' }
+		{ x: -100, y: 200, w: 300, h: 100, color: 'rgba(255, 255, 255, 0.65)' },
+		{ x: 600, y: 450, w: 310, h: 105, color: 'rgba(255, 255, 255, 0.63)' },
+		{ x: 1300, y: 700, w: 320, h: 110, color: 'rgba(255, 255, 255, 0.62)' },
+		{ x: 2000, y: 950, w: 330, h: 108, color: 'rgba(255, 255, 255, 0.64)' },
+		{ x: 2700, y: 1200, w: 340, h: 115, color: 'rgba(255, 255, 255, 0.64)' },
+		{ x: 300, y: 50, w: 315, h: 102, color: 'rgba(255, 255, 255, 0.61)' }
 	]);
 
 	let nearClouds = $state([
-		{ x: -150, y: 700, w: 250, h: 80, color: 'rgba(255, 255, 255, 0.8)' },
-		{ x: 400, y: 750, w: 270, h: 85, color: 'rgba(255, 255, 255, 0.78)' },
-		{ x: 950, y: 800, w: 260, h: 82, color: 'rgba(255, 255, 255, 0.79)' },
-		{ x: 1500, y: 720, w: 280, h: 87, color: 'rgba(255, 255, 255, 0.77)' },
-		{ x: 2100, y: 780, w: 265, h: 84, color: 'rgba(255, 255, 255, 0.78)' },
-		{ x: 2700, y: 740, w: 275, h: 86, color: 'rgba(255, 255, 255, 0.8)' }
+		{ x: -150, y: 150, w: 250, h: 80, color: 'rgba(255, 255, 255, 0.8)' },
+		{ x: 500, y: 350, w: 260, h: 82, color: 'rgba(255, 255, 255, 0.79)' },
+		{ x: 1100, y: 550, w: 270, h: 85, color: 'rgba(255, 255, 255, 0.78)' },
+		{ x: 1700, y: 750, w: 255, h: 78, color: 'rgba(255, 255, 255, 0.81)' },
+		{ x: 2300, y: 950, w: 260, h: 82, color: 'rgba(255, 255, 255, 0.79)' },
+		{ x: 2900, y: 1150, w: 275, h: 88, color: 'rgba(255, 255, 255, 0.76)' }
 	]);
 
 	// Day/Night Cycle State
@@ -268,6 +270,9 @@
 		const deltaX = mouseX - centerX;
 		const deltaY = mouseY - centerY;
 
+		const scrollY = window.scrollY;
+		const virtualHeight = window.innerHeight + 300; // Height for wrapping clouds
+
 		// Far clouds
 		const farLayerSpeed = 0.3;
 		const farMouseMultiplier = 15;
@@ -281,10 +286,15 @@
 			if (cloud.x - cloud.w * 0.35 > farCloudsCanvas.width) {
 				cloud.x = -(cloud.w * 0.35);
 			}
+
+			let renderY = cloud.y - scrollY * 0.8; // 0.8 parallax for depth
+			while (renderY < -cloud.h) renderY += virtualHeight;
+			while (renderY > virtualHeight) renderY -= virtualHeight;
+
 			drawEnhancedCloud(
 				farCtx,
 				cloud.x + farCursorOffsetX,
-				cloud.y + farCursorOffsetY,
+				renderY + farCursorOffsetY,
 				cloud.w,
 				cloud.h,
 				cloud.color,
@@ -305,10 +315,15 @@
 			if (cloud.x - cloud.w * 0.35 > midCloudsCanvas.width) {
 				cloud.x = -(cloud.w * 0.35);
 			}
+
+			let renderY = cloud.y - scrollY * 0.9; // 0.9 parallax
+			while (renderY < -cloud.h) renderY += virtualHeight;
+			while (renderY > virtualHeight) renderY -= virtualHeight;
+
 			drawEnhancedCloud(
 				midCtx,
 				cloud.x + midCursorOffsetX,
-				cloud.y + midCursorOffsetY,
+				renderY + midCursorOffsetY,
 				cloud.w,
 				cloud.h,
 				cloud.color,
@@ -329,10 +344,15 @@
 			if (cloud.x - cloud.w * 0.35 > nearCloudsCanvas.width) {
 				cloud.x = -(cloud.w * 0.35);
 			}
+
+			let renderY = cloud.y - scrollY; // 1.0 speed (stuck to page)
+			while (renderY < -cloud.h) renderY += virtualHeight;
+			while (renderY > virtualHeight) renderY -= virtualHeight;
+
 			drawEnhancedCloud(
 				nearCtx,
 				cloud.x + nearCursorOffsetX,
-				cloud.y + nearCursorOffsetY,
+				renderY + nearCursorOffsetY,
 				cloud.w,
 				cloud.h,
 				cloud.color,
@@ -1302,13 +1322,10 @@
 	/* CTA Section */
 	/* Researchers Section */
 	.researchers-section {
-		padding: 10rem 2rem 8rem;
+		padding: 6rem 2rem 4rem;
 		background: transparent;
 		position: relative;
 		z-index: 1;
-		min-height: 100vh;
-		display: flex;
-		align-items: center;
 		/* Performance: Use CSS containment to isolate rendering work */
 		contain: layout style paint;
 		content-visibility: auto; /* Only render when visible in viewport */
@@ -1613,24 +1630,28 @@
 
 	.info-label {
 		font-family: var(--font-body);
-		font-size: 0.85rem;
-		color: var(--ui-light-blue);
+		font-size: 1.2rem;
+		color: #2c3e50; /* Fallback */
+		background: linear-gradient(180deg, #434343 0%, #000000 100%);
+		-webkit-background-clip: text;
+		-webkit-text-fill-color: transparent;
+		background-clip: text;
 		text-transform: uppercase;
-		letter-spacing: 1px;
-		font-weight: 600;
+		letter-spacing: 1.5px;
+		font-weight: 800;
+		text-shadow: 0px 1px 1px rgba(255, 255, 255, 0.3);
 	}
 
 	.info-value {
 		font-family: var(--font-heading);
-		font-size: 1.1rem;
-		font-weight: 700;
-		background: linear-gradient(90deg, #ffffff 0%, var(--font-accent-cyan) 50%, #ffffff 100%);
-		background-size: 200% 100%;
+		font-size: 1.5rem;
+		font-weight: 900;
+		color: #1a1a1a; /* Fallback */
+		background: linear-gradient(180deg, #2c3e50 0%, #000000 100%);
 		-webkit-background-clip: text;
 		-webkit-text-fill-color: transparent;
 		background-clip: text;
-		animation: gradient-flash 3.5s ease-in-out infinite;
-		filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.8));
+		filter: drop-shadow(0 2px 4px rgba(255, 255, 255, 0.2));
 	}
 
 	.info-divider {

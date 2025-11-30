@@ -1,498 +1,402 @@
 <script lang="ts">
-	import type { PageData } from '../dashboard/$types';
-	import { onMount } from 'svelte';
+	import type { PageData, ActionData } from './$types';
+	import { enhance } from '$app/forms';
+	import SkyBackground from '$lib/components/SkyBackground.svelte';
+	import { fade, fly, scale } from 'svelte/transition';
 
-	let { data } = $props<{ data: PageData }>();
-	
-	let mounted = $state(false);
-	let mouseX = $state(0);
-	let mouseY = $state(0);
-
-	const BASE_DRIFT_SPEED = 0.61;
-
-	let farClouds = $state([
-		{ x: -200, y: 200, w: 350, h: 120, color: 'rgba(255, 255, 255, 0.5)' },
-		{ x: 1000, y: 300, w: 400, h: 140, color: 'rgba(255, 255, 255, 0.45)' },
-		{ x: 1800, y: 250, w: 420, h: 150, color: 'rgba(255, 255, 255, 0.48)' },
-		{ x: 2500, y: 180, w: 380, h: 130, color: 'rgba(255, 255, 255, 0.47)' }
-	]);
-
-	let midClouds = $state([
-		{ x: -100, y: 400, w: 300, h: 100, color: 'rgba(255, 255, 255, 0.65)' },
-		{ x: 800, y: 500, w: 320, h: 110, color: 'rgba(255, 255, 255, 0.62)' },
-		{ x: 1500, y: 450, w: 340, h: 115, color: 'rgba(255, 255, 255, 0.64)' },
-		{ x: 2200, y: 480, w: 310, h: 105, color: 'rgba(255, 255, 255, 0.63)' },
-		{ x: 2900, y: 420, w: 330, h: 112, color: 'rgba(255, 255, 255, 0.62)' }
-	]);
-
-	let nearClouds = $state([
-		{ x: -150, y: 700, w: 250, h: 80, color: 'rgba(255, 255, 255, 0.8)' },
-		{ x: 600, y: 750, w: 270, h: 85, color: 'rgba(255, 255, 255, 0.78)' },
-		{ x: 1200, y: 800, w: 260, h: 82, color: 'rgba(255, 255, 255, 0.79)' },
-		{ x: 1800, y: 720, w: 280, h: 87, color: 'rgba(255, 255, 255, 0.77)' },
-		{ x: 2400, y: 780, w: 265, h: 84, color: 'rgba(255, 255, 255, 0.78)' },
-		{ x: 3000, y: 740, w: 275, h: 86, color: 'rgba(255, 255, 255, 0.8)' }
-	]);
-
-	let skyCanvas: HTMLCanvasElement;
-	let farCloudsCanvas: HTMLCanvasElement;
-	let midCloudsCanvas: HTMLCanvasElement;
-	let nearCloudsCanvas: HTMLCanvasElement;
-
-	onMount(() => {
-		mounted = true;
-
-		// Mouse tracking
-		const handleMouseMove = (e: MouseEvent) => {
-			mouseX = e.clientX;
-			mouseY = e.clientY;
-		};
-
-		window.addEventListener('mousemove', handleMouseMove);
-
-		// Initialize canvases
-		initializeSkies();
-
-		// Drift animation
-		let animationId: number;
-		const animate = () => {
-			animateCloudLayers();
-			animationId = requestAnimationFrame(animate);
-		};
-		animate();
-
-		return () => {
-			window.removeEventListener('mousemove', handleMouseMove);
-			if (animationId) {
-				cancelAnimationFrame(animationId);
-			}
-		};
-	});
-
-	function initializeSkies() {
-		if (!skyCanvas) return;
-
-		const skyCtx = skyCanvas.getContext('2d');
-		if (skyCtx) {
-			const skyGradient = skyCtx.createLinearGradient(0, 0, 0, skyCanvas.height);
-			skyGradient.addColorStop(0, '#87CEEB');
-			skyGradient.addColorStop(0.5, '#B0E2FF');
-			skyGradient.addColorStop(1, '#E0F6FF');
-			skyCtx.fillStyle = skyGradient;
-			skyCtx.fillRect(0, 0, skyCanvas.width, skyCanvas.height);
-
-			// Simple sun on left side, positioned below navbar
-			const sunX = skyCanvas.width * 0.15;
-			const sunY = skyCanvas.height * 0.25;
-			const sunRadius = 70;
-
-			// Soft glow around sun
-			const sunGlow = skyCtx.createRadialGradient(sunX, sunY, sunRadius * 0.3, sunX, sunY, sunRadius * 2.5);
-			sunGlow.addColorStop(0, 'rgba(255, 240, 180, 0.5)');
-			sunGlow.addColorStop(0.5, 'rgba(255, 230, 150, 0.2)');
-			sunGlow.addColorStop(1, 'rgba(255, 220, 130, 0)');
-			skyCtx.fillStyle = sunGlow;
-			skyCtx.fillRect(sunX - sunRadius * 2.5, sunY - sunRadius * 2.5, sunRadius * 5, sunRadius * 5);
-
-			// Main sun body with gradient
-			const sunGradient = skyCtx.createRadialGradient(sunX, sunY, 0, sunX, sunY, sunRadius);
-			sunGradient.addColorStop(0, '#FFFEF0');
-			sunGradient.addColorStop(0.4, '#FFF4C4');
-			sunGradient.addColorStop(0.8, '#FFE680');
-			sunGradient.addColorStop(1, '#FFD54F');
-			skyCtx.fillStyle = sunGradient;
-			skyCtx.beginPath();
-			skyCtx.arc(sunX, sunY, sunRadius, 0, Math.PI * 2);
-			skyCtx.fill();
-		}
-	}
-
-	function animateCloudLayers() {
-		if (!farCloudsCanvas || !midCloudsCanvas || !nearCloudsCanvas) return;
-
-		const farCtx = farCloudsCanvas.getContext('2d');
-		const midCtx = midCloudsCanvas.getContext('2d');
-		const nearCtx = nearCloudsCanvas.getContext('2d');
-
-		if (!farCtx || !midCtx || !nearCtx) return;
-
-		const centerX = window.innerWidth / 2;
-		const centerY = window.innerHeight / 2;
-		const deltaX = mouseX - centerX;
-		const deltaY = mouseY - centerY;
-
-		// Far clouds
-		const farLayerSpeed = 0.3;
-		const farMouseMultiplier = 15;
-		const farCursorOffsetX = -(deltaX / centerX) * farMouseMultiplier;
-		const farCursorOffsetY = -(deltaY / centerY) * farMouseMultiplier * 0.5;
-
-		farCtx.clearRect(0, 0, farCloudsCanvas.width, farCloudsCanvas.height);
-		for (const cloud of farClouds) {
-			cloud.x += BASE_DRIFT_SPEED * farLayerSpeed;
-			if (cloud.x - (cloud.w * 0.35) > farCloudsCanvas.width) {
-				cloud.x = -(cloud.w * 0.35);
-			}
-			drawEnhancedCloud(farCtx, cloud.x + farCursorOffsetX, cloud.y + farCursorOffsetY, cloud.w, cloud.h, cloud.color, 20);
-		}
-
-		// Mid clouds
-		const midLayerSpeed = 0.7;
-		const midMouseMultiplier = 30;
-		const midCursorOffsetX = -(deltaX / centerX) * midMouseMultiplier;
-		const midCursorOffsetY = -(deltaY / centerY) * midMouseMultiplier * 0.5;
-
-		midCtx.clearRect(0, 0, midCloudsCanvas.width, midCloudsCanvas.height);
-		for (const cloud of midClouds) {
-			cloud.x += BASE_DRIFT_SPEED * midLayerSpeed;
-			if (cloud.x - (cloud.w * 0.35) > midCloudsCanvas.width) {
-				cloud.x = -(cloud.w * 0.35);
-			}
-			drawEnhancedCloud(midCtx, cloud.x + midCursorOffsetX, cloud.y + midCursorOffsetY, cloud.w, cloud.h, cloud.color, 20);
-		}
-
-		// Near clouds
-		const nearLayerSpeed = 1.2;
-		const nearMouseMultiplier = 50;
-		const nearCursorOffsetX = -(deltaX / centerX) * nearMouseMultiplier;
-		const nearCursorOffsetY = -(deltaY / centerY) * nearMouseMultiplier * 0.5;
-
-		nearCtx.clearRect(0, 0, nearCloudsCanvas.width, nearCloudsCanvas.height);
-		for (const cloud of nearClouds) {
-			cloud.x += BASE_DRIFT_SPEED * nearLayerSpeed;
-			if (cloud.x - (cloud.w * 0.35) > nearCloudsCanvas.width) {
-				cloud.x = -(cloud.w * 0.35);
-			}
-			drawEnhancedCloud(nearCtx, cloud.x + nearCursorOffsetX, cloud.y + nearCursorOffsetY, cloud.w, cloud.h, cloud.color, 20);
-		}
-	}
-
-	function drawEnhancedCloud(
-		ctx: CanvasRenderingContext2D,
-		x: number,
-		y: number,
-		width: number,
-		height: number,
-		color: string,
-		blur: number
-	) {
-		const rgbaMatch = color.match(/rgba?\((\d+),\s*(\d+),\s*(\d+),?\s*([\d.]+)?\)/);
-		if (!rgbaMatch) return;
-
-		const [, r, g, b, a = '1'] = rgbaMatch;
-		const baseAlpha = parseFloat(a);
-		const boostedAlpha = Math.min(baseAlpha * 1.2, 0.95);
-
-		const puffs = [
-			{ x: x, y: y, radiusX: width * 0.35, radiusY: height * 0.5 },
-			{ x: x - width * 0.25, y: y + height * 0.1, radiusX: width * 0.28, radiusY: height * 0.42 },
-			{ x: x + width * 0.25, y: y + height * 0.15, radiusX: width * 0.3, radiusY: height * 0.45 },
-			{ x: x - width * 0.1, y: y - height * 0.2, radiusX: width * 0.25, radiusY: height * 0.38 },
-			{ x: x + width * 0.15, y: y - height * 0.15, radiusX: width * 0.22, radiusY: height * 0.35 }
-		];
-
-		ctx.save();
-		ctx.filter = 'none';
-
-		puffs.forEach(puff => {
-			const puffGradient = ctx.createRadialGradient(
-				puff.x - puff.radiusX * 0.2,
-				puff.y - puff.radiusY * 0.2,
-				0,
-				puff.x,
-				puff.y,
-				Math.max(puff.radiusX, puff.radiusY)
-			);
-			puffGradient.addColorStop(0, `rgba(${r}, ${g}, ${b}, ${boostedAlpha})`);
-			puffGradient.addColorStop(0.7, `rgba(${r}, ${g}, ${b}, ${boostedAlpha * 0.8})`);
-			puffGradient.addColorStop(1, `rgba(${r}, ${g}, ${b}, ${boostedAlpha * 0.3})`);
-
-			ctx.fillStyle = puffGradient;
-			ctx.beginPath();
-			ctx.ellipse(puff.x, puff.y, puff.radiusX, puff.radiusY, 0, 0, Math.PI * 2);
-			ctx.fill();
-		});
-
-		ctx.restore();
-	}
+	let { data, form } = $props<{ data: PageData, form: ActionData }>();
 </script>
 
-<!-- Parallax Background -->
-<div class="parallax-background-system">
-	<canvas 
-		bind:this={skyCanvas}
-		class="parallax-layer sky-layer"
-		width="3200"
-		height="1800"
-	></canvas>
+<SkyBackground useRealTime={true} />
 
-	<canvas 
-		bind:this={farCloudsCanvas}
-		class="parallax-layer far-clouds-layer"
-		width="3200"
-		height="1800"
-	></canvas>
+<div class="dashboard-container">
+	<header class="dashboard-header" in:fly={{ y: -20, duration: 800, delay: 200 }}>
+		<div class="welcome-text">
+			<h1>Profile Settings</h1>
+			<p>Manage your account details and security preferences.</p>
+		</div>
+	</header>
 
-	<canvas 
-		bind:this={midCloudsCanvas}
-		class="parallax-layer mid-clouds-layer"
-		width="3200"
-		height="1800"
-	></canvas>
+	{#if form?.message}
+		<div class="alert success glass-panel" in:fly={{ y: 20, duration: 400 }}>
+			{form.message}
+		</div>
+	{/if}
+	{#if form?.error}
+		<div class="alert error glass-panel" in:fly={{ y: 20, duration: 400 }}>
+			{form.error}
+		</div>
+	{/if}
 
-	<canvas 
-		bind:this={nearCloudsCanvas}
-		class="parallax-layer near-clouds-layer"
-		width="3200"
-		height="1800"
-	></canvas>
-</div>
+	<div class="main-content-grid">
+		<!-- Left Column: Profile Card & Activity -->
+		<div class="left-column">
+			<section class="profile-card glass-panel" in:scale={{ duration: 500, delay: 300, start: 0.9 }}>
+				<div class="avatar-container">
+					<div class="avatar">
+						<span class="avatar-text">{data.profile?.username?.charAt(0).toUpperCase() || data.user?.email?.charAt(0).toUpperCase() || 'T'}</span>
+					</div>
+				</div>
+				<div class="profile-info">
+					<h2>{data.profile?.fullName || data.user?.user_metadata?.full_name || 'Pilot'}</h2>
+					<p class="username-display">@{data.profile?.username || data.user?.user_metadata?.username || 'username'}</p>
+				</div>
+			</section>
 
-<div class="page-container">
-	<div class="content-card animate-on-scroll">
-		<h1>Profile</h1>
-		<p class="subtitle">Manage your ThrustLab account</p>
-
-		<div class="profile-section animate-slide-left">
-			<div class="avatar">
-				<span class="avatar-text">{data.user?.username?.charAt(0).toUpperCase() || 'T'}</span>
-			</div>
-			
-			<div class="profile-info">
-				<h2>{data.user?.username || 'Test User'}</h2>
-				<p class="user-id">ID: {data.user?.id || 'N/A'}</p>
-			</div>
+			<section class="activity-section glass-panel" in:fly={{ y: 20, duration: 600, delay: 400 }}>
+				<h3>Recent Activity</h3>
+				<div class="activity-list">
+					<div class="activity-item">
+						<span class="activity-icon">🔐</span>
+						<div class="activity-content">
+							<p class="activity-title">Logged In</p>
+							<p class="activity-time">Just now</p>
+						</div>
+					</div>
+					<div class="activity-item">
+						<span class="activity-icon">🚀</span>
+						<div class="activity-content">
+							<p class="activity-title">Visited Dashboard</p>
+							<p class="activity-time">2 minutes ago</p>
+						</div>
+					</div>
+					<div class="activity-item">
+						<span class="activity-icon">📝</span>
+						<div class="activity-content">
+							<p class="activity-title">Updated Profile</p>
+							<p class="activity-time">1 hour ago</p>
+						</div>
+					</div>
+				</div>
+			</section>
 		</div>
 
-		<div class="details-section animate-slide-right">
-			<h3>Account Details</h3>
-			<div class="detail-item">
-				<span class="label">Username:</span>
-				<span class="value">{data.user?.username || 'N/A'}</span>
-			</div>
-			<div class="detail-item">
-				<span class="label">User ID:</span>
-				<span class="value">{data.user?.id || 'N/A'}</span>
-			</div>
-			<div class="detail-item">
-				<span class="label">Account Type:</span>
-				<span class="value badge">Test Account</span>
-			</div>
+		<!-- Right Column: Forms -->
+		<div class="right-column">
+			<section class="form-section glass-panel" in:fly={{ x: 20, duration: 600, delay: 500 }}>
+				<h3>Edit Profile</h3>
+				<form method="POST" action="?/updateProfile" use:enhance class="profile-form">
+					<div class="form-group">
+						<label for="fullName">Full Name</label>
+						<input type="text" id="fullName" name="fullName" value={data.profile?.fullName || data.user?.user_metadata?.full_name || ''} placeholder="Enter full name" />
+					</div>
+					<div class="form-group">
+						<label for="username">Username</label>
+						<input type="text" id="username" name="username" value={data.profile?.username || data.user?.user_metadata?.username || ''} placeholder="Enter username" />
+					</div>
+					<button type="submit" class="btn-primary">Update Profile</button>
+				</form>
+			</section>
+
+			<section class="form-section glass-panel" in:fly={{ x: 20, duration: 600, delay: 600 }}>
+				<h3>Security</h3>
+				<form method="POST" action="?/changePassword" use:enhance class="profile-form">
+					<div class="form-group">
+						<label for="password">New Password</label>
+						<input type="password" id="password" name="password" placeholder="New password" required />
+					</div>
+					<div class="form-group">
+						<label for="confirmPassword">Confirm Password</label>
+						<input type="password" id="confirmPassword" name="confirmPassword" placeholder="Confirm new password" required />
+					</div>
+					<button type="submit" class="btn-secondary">Change Password</button>
+				</form>
+			</section>
+
+			<section class="danger-zone glass-panel" in:fly={{ x: 20, duration: 600, delay: 700 }}>
+				<h3>Danger Zone</h3>
+				<p>Once you delete your account, there is no going back. Please be certain.</p>
+				<form method="POST" action="?/deleteAccount" use:enhance>
+					<button type="submit" class="btn-danger" onclick={(e) => { if (!confirm('Are you sure you want to delete your account? This action cannot be undone.')) e.preventDefault(); }}>Delete Account</button>
+				</form>
+			</section>
 		</div>
 	</div>
 </div>
 
 <style>
-	.page-container {
+	:global(body) {
+		overflow-x: hidden;
+	}
+
+	.dashboard-container {
 		position: relative;
-		z-index: 5;
-		min-height: calc(100vh - 64px);
-		padding: 8rem 2rem 4rem;
-		background: transparent;
-	}
-
-	.content-card {
-		max-width: 800px;
+		z-index: 10;
+		max-width: 1200px;
 		margin: 0 auto;
-		background: rgba(255, 255, 255, 0.5);
-		backdrop-filter: blur(15px);
-		-webkit-backdrop-filter: blur(15px);
-		border-radius: 1.5rem;
-		padding: 2.5rem;
-		box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-		border: 2px solid rgba(255, 255, 255, 0.5);
+		padding: 6rem 2rem 2rem;
+		min-height: 100vh;
+		color: var(--font-primary);
 	}
 
-	@keyframes gradient-flash {
-		0%, 100% {
-			background-position: 0% 50%;
-		}
-		25% {
-			background-position: 50% 50%;
-		}
-		50% {
-			background-position: 100% 50%;
-		}
-		75% {
-			background-position: 50% 50%;
-		}
-	}
-
-	h1 {
-		font-family: var(--font-heading), 'Montserrat', sans-serif;
-		font-size: 2.5rem;
-		font-weight: 900;
-		margin: 0 0 1rem 0;
-		background: linear-gradient(
-			90deg,
-			var(--ui-yellow) 0%,
-			var(--font-accent-cyan) 20%,
-			var(--ui-light-blue) 40%,
-			var(--font-accent-yellow) 60%,
-			var(--ui-yellow) 80%,
-			var(--font-accent-cyan) 100%
-		);
-		background-size: 300% 100%;
-		-webkit-background-clip: text;
-		-webkit-text-fill-color: transparent;
-		background-clip: text;
-		animation: gradient-flash 4s ease-in-out infinite;
-		filter: drop-shadow(0 4px 20px rgba(0, 0, 0, 0.3));
-		letter-spacing: -1px;
-	}
-
-	.subtitle {
-		font-family: 'Roboto', sans-serif;
-		color: #666;
-		margin-bottom: 2rem;
-	}
-
-	/* Profile Styles */
-	.profile-section {
-		display: flex;
-		align-items: center;
-		gap: 2rem;
+	.glass-panel {
+		background: rgba(255, 255, 255, 0.65);
+		backdrop-filter: blur(20px);
+		-webkit-backdrop-filter: blur(20px);
+		border: 1px solid rgba(255, 255, 255, 0.5);
+		border-radius: 24px;
+		box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.1);
+		transition: transform 0.3s ease, box-shadow 0.3s ease;
 		padding: 2rem;
-		background: linear-gradient(135deg, #223A5E 0%, #38C172 100%);
-		border-radius: 0.75rem;
-		margin-bottom: 2rem;
-		color: white;
-		transition: all 0.4s ease;
 	}
 
-	.profile-section:hover {
-		transform: translateX(5px);
-		box-shadow: 0 8px 20px rgba(34, 58, 94, 0.3);
+	.glass-panel:hover {
+		transform: translateY(-5px);
+		box-shadow: 0 12px 40px 0 rgba(31, 38, 135, 0.15);
+	}
+
+	/* Header */
+	.dashboard-header {
+		margin-bottom: 3rem;
+	}
+
+	.welcome-text h1 {
+		font-size: 2.5rem;
+		margin: 0 0 0.5rem 0;
+		color: #ffffff;
+		text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+	}
+
+	.welcome-text p {
+		font-size: 1.1rem;
+		color: #f1f5f9;
+		margin: 0;
+		text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+	}
+
+	/* Layout */
+	.main-content-grid {
+		display: grid;
+		grid-template-columns: 1fr 2fr;
+		gap: 2rem;
+	}
+
+	.left-column, .right-column {
+		display: flex;
+		flex-direction: column;
+		gap: 2rem;
+	}
+
+	@media (max-width: 900px) {
+		.main-content-grid {
+			grid-template-columns: 1fr;
+		}
+	}
+
+	@media (max-width: 768px) {
+		.dashboard-container {
+			padding: 5rem 1rem 1rem;
+		}
+
+		.welcome-text h1 {
+			font-size: 2rem;
+		}
+
+		.glass-panel {
+			padding: 1.5rem;
+		}
+	}
+
+	/* Profile Card */
+	.profile-card {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		text-align: center;
+		background: linear-gradient(135deg, rgba(255,255,255,0.8) 0%, rgba(255,255,255,0.6) 100%);
+	}
+
+	.avatar-container {
+		margin-bottom: 1.5rem;
 	}
 
 	.avatar {
-		width: 100px;
-		height: 100px;
-		background: white;
+		width: 120px;
+		height: 120px;
+		background: linear-gradient(135deg, #223A5E 0%, #38C172 100%);
 		border-radius: 50%;
 		display: flex;
 		align-items: center;
 		justify-content: center;
-		flex-shrink: 0;
+		box-shadow: 0 8px 20px rgba(34, 58, 94, 0.2);
+		border: 4px solid white;
 	}
 
 	.avatar-text {
-		font-family: 'Montserrat', sans-serif;
-		font-size: 3rem;
+		font-size: 3.5rem;
 		font-weight: 700;
-		color: #223A5E;
+		color: white;
 	}
 
 	.profile-info h2 {
-		font-family: 'Montserrat', sans-serif;
-		font-size: 2rem;
+		font-size: 1.8rem;
+		color: #223a5e;
+		margin: 0 0 0.25rem 0;
+	}
+
+	.username-display {
+		color: #4facfe;
+		font-weight: 600;
+		font-size: 1rem;
 		margin: 0 0 0.5rem 0;
 	}
 
-	.user-id {
-		font-family: 'Roboto', sans-serif;
-		opacity: 0.9;
-		font-size: 0.95rem;
-	}
-
-	.details-section {
-		padding: 1.5rem;
-		background: #F6F7FA;
-		border-radius: 0.75rem;
-	}
-
-	.details-section h3 {
-		font-family: 'Montserrat', sans-serif;
-		color: #223A5E;
-		font-size: 1.5rem;
+	/* Activity Section */
+	.activity-section h3 {
+		font-size: 1.2rem;
+		color: #223a5e;
 		margin: 0 0 1.5rem 0;
 	}
 
-	.detail-item {
+	.activity-list {
 		display: flex;
-		justify-content: space-between;
+		flex-direction: column;
+		gap: 1rem;
+	}
+
+	.activity-item {
+		display: flex;
 		align-items: center;
-		padding: 1rem 0;
-		border-bottom: 1px solid #ddd;
+		gap: 1rem;
+		padding: 0.75rem;
+		background: rgba(255, 255, 255, 0.5);
+		border-radius: 12px;
+		border: 1px solid rgba(255, 255, 255, 0.3);
 	}
 
-	.detail-item:last-child {
-		border-bottom: none;
+	.activity-icon {
+		font-size: 1.2rem;
 	}
 
-	.label {
-		font-family: 'Roboto', sans-serif;
+	.activity-title {
 		font-weight: 600;
-		color: #222831;
+		color: #223a5e;
+		margin: 0;
+		font-size: 0.95rem;
 	}
 
-	.value {
-		font-family: 'Roboto', sans-serif;
+	.activity-time {
+		font-size: 0.8rem;
 		color: #666;
+		margin: 0;
 	}
 
-	.badge {
-		background: #38C172;
-		color: white;
-		padding: 0.25rem 0.75rem;
-		border-radius: 1rem;
+	/* Forms */
+	.form-section h3 {
+		font-size: 1.5rem;
+		color: #223a5e;
+		margin: 0 0 1.5rem 0;
+	}
+
+	.profile-form {
+		display: flex;
+		flex-direction: column;
+		gap: 1.5rem;
+	}
+
+	.form-group {
+		display: flex;
+		flex-direction: column;
+		gap: 0.5rem;
+	}
+
+	label {
+		font-weight: 600;
+		color: #223a5e;
 		font-size: 0.9rem;
 	}
 
-	/* Responsive Design */
-	@media (max-width: 768px) {
-		.page-container {
-			padding: 6rem 1rem 2rem;
-		}
-
-		.content-card {
-			padding: 1.5rem;
-		}
-
-		.profile-section {
-			flex-direction: column;
-			text-align: center;
-		}
-
-		h1 {
-			font-size: 2rem;
-		}
+	input {
+		padding: 0.8rem 1rem;
+		border: 1px solid rgba(0, 0, 0, 0.1);
+		border-radius: 12px;
+		background: rgba(255, 255, 255, 0.8);
+		font-size: 1rem;
+		transition: all 0.2s;
 	}
 
-	/* Parallax Background Styles */
-	.parallax-background-system {
-		position: fixed;
-		top: 0;
-		left: 0;
-		width: 100%;
-		height: 100vh;
-		z-index: 0;
-		overflow: hidden;
-		background: #87CEEB;
+	input:focus {
+		outline: none;
+		border-color: #4facfe;
+		background: white;
+		box-shadow: 0 0 0 3px rgba(79, 172, 254, 0.2);
 	}
 
-	.parallax-layer {
-		position: absolute;
-		top: 0;
-		left: 0;
-		width: 100%;
-		height: 100%;
-		will-change: transform;
+	button {
+		padding: 0.8rem 1.5rem;
+		border: none;
+		border-radius: 12px;
+		font-weight: 600;
+		cursor: pointer;
+		transition: all 0.2s;
+		font-size: 1rem;
 	}
 
-	.sky-layer {
-		z-index: 1;
+	.btn-primary {
+		background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+		color: white;
+		box-shadow: 0 4px 15px rgba(79, 172, 254, 0.4);
 	}
 
-	.far-clouds-layer {
-		z-index: 2;
+	.btn-primary:hover {
+		transform: translateY(-2px);
+		box-shadow: 0 6px 20px rgba(79, 172, 254, 0.6);
 	}
 
-	.mid-clouds-layer {
-		z-index: 3;
+	.btn-secondary {
+		background: #223a5e;
+		color: white;
+		box-shadow: 0 4px 15px rgba(34, 58, 94, 0.3);
 	}
 
-	.near-clouds-layer {
-		z-index: 4;
+	.btn-secondary:hover {
+		background: #1a2e4b;
+		transform: translateY(-2px);
+	}
+
+	/* Danger Zone */
+	.danger-zone {
+		border-color: rgba(255, 60, 126, 0.3);
+		background: rgba(255, 255, 255, 0.7);
+	}
+
+	.danger-zone h3 {
+		color: #ff3c7e;
+		margin: 0 0 0.5rem 0;
+	}
+
+	.danger-zone p {
+		color: #666;
+		margin-bottom: 1.5rem;
+	}
+
+	.btn-danger {
+		background: #ff3c7e;
+		color: white;
+		box-shadow: 0 4px 15px rgba(255, 60, 126, 0.3);
+	}
+
+	.btn-danger:hover {
+		background: #e62e6b;
+		transform: translateY(-2px);
+	}
+
+	/* Alerts */
+	.alert {
+		padding: 1rem 1.5rem;
+		margin-bottom: 2rem;
+		font-weight: 500;
+	}
+
+	.alert.success {
+		background: rgba(220, 252, 231, 0.9);
+		border-color: #86efac;
+		color: #166534;
+	}
+
+	.alert.error {
+		background: rgba(254, 226, 226, 0.9);
+		border-color: #fca5a5;
+		color: #991b1b;
 	}
 </style>

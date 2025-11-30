@@ -1,294 +1,66 @@
 <script lang="ts">
-	import { onMount } from 'svelte';
+	import { enhance } from '$app/forms';
+	import type { PageData, ActionData } from './$types';
+	import SkyBackground from '$lib/components/SkyBackground.svelte';
 
-	let skyCanvas: HTMLCanvasElement;
-	let farCloudsCanvas: HTMLCanvasElement;
-	let midCloudsCanvas: HTMLCanvasElement;
-	let nearCloudsCanvas: HTMLCanvasElement;
+	let { data, form } = $props<{ data: PageData, form?: ActionData }>();
 
-	let mounted = $state(false);
-	let mouseX = $state(0);
-	let mouseY = $state(0);
 
-	const BASE_DRIFT_SPEED = 0.61;
 
-	let farClouds = $state([
-		{ x: -200, y: 200, w: 350, h: 120, color: 'rgba(255, 255, 255, 0.5)' },
-		{ x: 400, y: 300, w: 400, h: 140, color: 'rgba(255, 255, 255, 0.45)' },
-		{ x: 1200, y: 250, w: 420, h: 150, color: 'rgba(255, 255, 255, 0.48)' },
-		{ x: 2000, y: 180, w: 380, h: 130, color: 'rgba(255, 255, 255, 0.47)' }
-	]);
 
-	let midClouds = $state([
-		{ x: -100, y: 400, w: 300, h: 100, color: 'rgba(255, 255, 255, 0.65)' },
-		{ x: 500, y: 500, w: 320, h: 110, color: 'rgba(255, 255, 255, 0.62)' },
-		{ x: 1200, y: 450, w: 340, h: 115, color: 'rgba(255, 255, 255, 0.64)' },
-		{ x: 1900, y: 480, w: 310, h: 105, color: 'rgba(255, 255, 255, 0.63)' },
-		{ x: 2600, y: 420, w: 330, h: 112, color: 'rgba(255, 255, 255, 0.62)' }
-	]);
 
-	let nearClouds = $state([
-		{ x: -150, y: 700, w: 250, h: 80, color: 'rgba(255, 255, 255, 0.8)' },
-		{ x: 400, y: 750, w: 270, h: 85, color: 'rgba(255, 255, 255, 0.78)' },
-		{ x: 950, y: 800, w: 260, h: 82, color: 'rgba(255, 255, 255, 0.79)' },
-		{ x: 1500, y: 720, w: 280, h: 87, color: 'rgba(255, 255, 255, 0.77)' },
-		{ x: 2100, y: 780, w: 265, h: 84, color: 'rgba(255, 255, 255, 0.78)' },
-		{ x: 2700, y: 740, w: 275, h: 86, color: 'rgba(255, 255, 255, 0.8)' }
-	]);
 
-	onMount(() => {
-		mounted = true;
 
-		// Mouse tracking
-		const handleMouseMove = (e: MouseEvent) => {
-			mouseX = e.clientX;
-			mouseY = e.clientY;
-		};
-
-		window.addEventListener('mousemove', handleMouseMove);
-
-		// Initialize sky
-		initializeSkies();
-
-		// Start continuous animation loop
-		let animationId: number;
-		const animate = () => {
-			animateCloudLayers();
-			animationId = requestAnimationFrame(animate);
-		};
-		animate();
-
-		return () => {
-			window.removeEventListener('mousemove', handleMouseMove);
-			if (animationId) {
-				cancelAnimationFrame(animationId);
+	const signInWithGoogle = async () => {
+		const { error } = await data.supabase.auth.signInWithOAuth({
+			provider: 'google',
+			options: {
+				redirectTo: `${window.location.origin}/auth/callback`
 			}
-		};
-	});
-
-	function initializeSkies() {
-		if (!skyCanvas) return;
-
-		const skyCtx = skyCanvas.getContext('2d');
-		if (skyCtx) {
-			// Evening sky colors (sunset/dusk)
-			const skyGradient = skyCtx.createLinearGradient(0, 0, 0, skyCanvas.height);
-			skyGradient.addColorStop(0, '#FF6B6B');      // Orange-red at top
-			skyGradient.addColorStop(0.3, '#FF8C42');    // Light orange
-			skyGradient.addColorStop(0.6, '#FFB347');    // Peach
-			skyGradient.addColorStop(1, '#FFD700');      // Gold at bottom
-			skyCtx.fillStyle = skyGradient;
-			skyCtx.fillRect(0, 0, skyCanvas.width, skyCanvas.height);
-
-			// Add sun in top left
-			const sunX = skyCanvas.width * 0.15; // Left side (15% from left)
-			const sunY = skyCanvas.height * 0.25; // Top area (25% from top)
-			const sunRadius = 70;
-
-			// Soft glow around sun
-			const sunGlow = skyCtx.createRadialGradient(sunX, sunY, sunRadius * 0.3, sunX, sunY, sunRadius * 2.5);
-			sunGlow.addColorStop(0, 'rgba(255, 240, 180, 0.5)');
-			sunGlow.addColorStop(0.5, 'rgba(255, 230, 150, 0.2)');
-			sunGlow.addColorStop(1, 'rgba(255, 220, 130, 0)');
-			skyCtx.fillStyle = sunGlow;
-			skyCtx.fillRect(sunX - sunRadius * 2.5, sunY - sunRadius * 2.5, sunRadius * 5, sunRadius * 5);
-
-			// Main sun body with gradient
-			const sunGradient = skyCtx.createRadialGradient(sunX, sunY, 0, sunX, sunY, sunRadius);
-			sunGradient.addColorStop(0, '#FFFEF0'); // Bright cream center
-			sunGradient.addColorStop(0.4, '#FFF4C4'); // Light golden
-			sunGradient.addColorStop(0.8, '#FFE680'); // Golden yellow
-			sunGradient.addColorStop(1, '#FFD54F'); // Darker golden edge
-			skyCtx.fillStyle = sunGradient;
-			skyCtx.beginPath();
-			skyCtx.arc(sunX, sunY, sunRadius, 0, Math.PI * 2);
-			skyCtx.fill();
-		}
-	}
-
-	function animateCloudLayers() {
-		if (!farCloudsCanvas || !midCloudsCanvas || !nearCloudsCanvas) return;
-
-		const farCtx = farCloudsCanvas.getContext('2d');
-		const midCtx = midCloudsCanvas.getContext('2d');
-		const nearCtx = nearCloudsCanvas.getContext('2d');
-
-		if (!farCtx || !midCtx || !nearCtx) return;
-
-		const centerX = window.innerWidth / 2;
-		const centerY = window.innerHeight / 2;
-		const deltaX = mouseX - centerX;
-		const deltaY = mouseY - centerY;
-
-		// Far clouds
-		const farLayerSpeed = 0.3;
-		const farMouseMultiplier = 15;
-		const farCursorOffsetX = -(deltaX / centerX) * farMouseMultiplier;
-		const farCursorOffsetY = -(deltaY / centerY) * farMouseMultiplier * 0.5;
-
-		farCtx.clearRect(0, 0, farCloudsCanvas.width, farCloudsCanvas.height);
-		
-		for (const cloud of farClouds) {
-			cloud.x += BASE_DRIFT_SPEED * farLayerSpeed;
-			if (cloud.x - (cloud.w * 0.35) > farCloudsCanvas.width) {
-				cloud.x = -(cloud.w * 0.35);
-			}
-			drawEnhancedCloud(farCtx, cloud.x + farCursorOffsetX, cloud.y + farCursorOffsetY, cloud.w, cloud.h, cloud.color, 20);
-		}
-
-		// Mid clouds
-		const midLayerSpeed = 0.7;
-		const midMouseMultiplier = 30;
-		const midCursorOffsetX = -(deltaX / centerX) * midMouseMultiplier;
-		const midCursorOffsetY = -(deltaY / centerY) * midMouseMultiplier * 0.5;
-
-		midCtx.clearRect(0, 0, midCloudsCanvas.width, midCloudsCanvas.height);
-		
-		for (const cloud of midClouds) {
-			cloud.x += BASE_DRIFT_SPEED * midLayerSpeed;
-			if (cloud.x - (cloud.w * 0.35) > midCloudsCanvas.width) {
-				cloud.x = -(cloud.w * 0.35);
-			}
-			drawEnhancedCloud(midCtx, cloud.x + midCursorOffsetX, cloud.y + midCursorOffsetY, cloud.w, cloud.h, cloud.color, 20);
-		}
-
-		// Near clouds
-		const nearLayerSpeed = 1.2;
-		const nearMouseMultiplier = 50;
-		const nearCursorOffsetX = -(deltaX / centerX) * nearMouseMultiplier;
-		const nearCursorOffsetY = -(deltaY / centerY) * nearMouseMultiplier * 0.5;
-
-		nearCtx.clearRect(0, 0, nearCloudsCanvas.width, nearCloudsCanvas.height);
-		
-		for (const cloud of nearClouds) {
-			cloud.x += BASE_DRIFT_SPEED * nearLayerSpeed;
-			if (cloud.x - (cloud.w * 0.35) > nearCloudsCanvas.width) {
-				cloud.x = -(cloud.w * 0.35);
-			}
-			drawEnhancedCloud(nearCtx, cloud.x + nearCursorOffsetX, cloud.y + nearCursorOffsetY, cloud.w, cloud.h, cloud.color, 20);
-		}
-	}
-
-	function drawEnhancedCloud(
-		ctx: CanvasRenderingContext2D,
-		x: number,
-		y: number,
-		width: number,
-		height: number,
-		color: string,
-		blur: number
-	) {
-		const rgbaMatch = color.match(/rgba?\((\d+),\s*(\d+),\s*(\d+),?\s*([\d.]+)?\)/);
-		if (!rgbaMatch) return;
-
-		const [, r, g, b, a = '1'] = rgbaMatch;
-		const baseAlpha = parseFloat(a);
-		const boostedAlpha = Math.min(baseAlpha * 1.2, 0.95);
-
-		const puffs = [
-			{ x: x, y: y, radiusX: width * 0.35, radiusY: height * 0.5 },
-			{ x: x - width * 0.25, y: y + height * 0.1, radiusX: width * 0.28, radiusY: height * 0.42 },
-			{ x: x + width * 0.25, y: y + height * 0.15, radiusX: width * 0.3, radiusY: height * 0.45 },
-			{ x: x - width * 0.1, y: y - height * 0.2, radiusX: width * 0.25, radiusY: height * 0.38 },
-			{ x: x + width * 0.15, y: y - height * 0.15, radiusX: width * 0.22, radiusY: height * 0.35 }
-		];
-
-		ctx.save();
-		ctx.filter = 'none';
-		
-		puffs.forEach(puff => {
-			const puffGradient = ctx.createRadialGradient(
-				puff.x - puff.radiusX * 0.2,
-				puff.y - puff.radiusY * 0.2,
-				0,
-				puff.x,
-				puff.y,
-				Math.max(puff.radiusX, puff.radiusY)
-			);
-			puffGradient.addColorStop(0, `rgba(${r}, ${g}, ${b}, ${boostedAlpha})`);
-			puffGradient.addColorStop(0.7, `rgba(${r}, ${g}, ${b}, ${boostedAlpha * 0.8})`);
-			puffGradient.addColorStop(1, `rgba(${r}, ${g}, ${b}, ${boostedAlpha * 0.3})`);
-			
-			ctx.fillStyle = puffGradient;
-			ctx.beginPath();
-			ctx.ellipse(puff.x, puff.y, puff.radiusX, puff.radiusY, 0, 0, Math.PI * 2);
-			ctx.fill();
 		});
-
-		ctx.restore();
-
-		// Add highlights
-		ctx.save();
-		ctx.filter = 'none';
-		ctx.globalAlpha = 0.4;
-		
-		const highlightGradient = ctx.createRadialGradient(
-			x - width * 0.12, y - height * 0.18, 0,
-			x - width * 0.12, y - height * 0.18, width * 0.3
-		);
-		highlightGradient.addColorStop(0, 'rgba(255, 255, 255, 0.8)');
-		highlightGradient.addColorStop(0.5, 'rgba(255, 255, 255, 0.4)');
-		highlightGradient.addColorStop(1, 'rgba(255, 255, 255, 0)');
-		
-		ctx.fillStyle = highlightGradient;
-		ctx.beginPath();
-		ctx.ellipse(x - width * 0.12, y - height * 0.18, width * 0.3, height * 0.25, 0, 0, Math.PI * 2);
-		ctx.fill();
-		
-		ctx.restore();
-	}
+		if (error) {
+			console.error(error);
+		}
+	};
 </script>
 
-<!-- Evening Parallax Background -->
-<div class="parallax-background-system">
-	<canvas 
-		bind:this={skyCanvas}
-		class="parallax-layer sky-layer"
-		width="3200"
-		height="1800"
-	></canvas>
-
-	<canvas 
-		bind:this={farCloudsCanvas}
-		class="parallax-layer far-clouds-layer"
-		width="3200"
-		height="1800"
-	></canvas>
-
-	<canvas 
-		bind:this={midCloudsCanvas}
-		class="parallax-layer mid-clouds-layer"
-		width="3200"
-		height="1800"
-	></canvas>
-
-	<canvas 
-		bind:this={nearCloudsCanvas}
-		class="parallax-layer near-clouds-layer"
-		width="3200"
-		height="1800"
-	></canvas>
-</div>
+<SkyBackground evening={true} />
 
 <div class="signup-container">
 	<div class="signup-card animate-scale">
 		<h1>Join ThrustLab</h1>
 		<p class="subtitle">Start your journey in aerospace engineering education</p>
 
-		<form class="signup-form animate-on-scroll">
+		<form class="signup-form animate-on-scroll" method="POST" use:enhance>
+			{#if form?.error}
+				<div class="alert error">
+					{form.error}
+				</div>
+			{/if}
+			{#if form?.success}
+				<div class="alert success">
+					{form.message}
+				</div>
+			{/if}
+
+			<div class="form-group">
+				<label for="fullName">Full Name</label>
+				<input type="text" id="fullName" name="fullName" placeholder="Enter your full name" value={form?.fullName ?? ''} required />
+			</div>
+
 			<div class="form-group">
 				<label for="username">Username</label>
-				<input type="text" id="username" placeholder="Choose a username" />
+				<input type="text" id="username" name="username" placeholder="Choose a username" value={form?.username ?? ''} required />
 			</div>
 
 			<div class="form-group">
 				<label for="email">Email</label>
-				<input type="email" id="email" placeholder="your@email.com" />
+				<input type="email" id="email" name="email" placeholder="your@email.com" value={form?.email ?? ''} required />
 			</div>
 
 			<div class="form-group">
 				<label for="password">Password</label>
-				<input type="password" id="password" placeholder="Create a secure password" />
+				<input type="password" id="password" name="password" placeholder="Create a secure password" required />
 			</div>
 
 			<button type="submit" class="signup-button">
@@ -299,6 +71,16 @@
 		<div class="divider">
 			<span>or</span>
 		</div>
+
+		<button type="button" class="google-button" onclick={signInWithGoogle}>
+			<svg class="google-icon" viewBox="0 0 24 24">
+				<path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
+				<path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+				<path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
+				<path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
+			</svg>
+			Sign up with Google
+		</button>
 
 		<p class="login-link">
 			Already have an account? <a href="/login">Log in</a>
@@ -318,50 +100,15 @@
 </div>
 
 <style>
-	/* Parallax Background System */
-	.parallax-background-system {
-		position: fixed;
-		top: 0;
-		left: 0;
-		width: 100%;
-		height: 100%;
-		overflow: hidden;
-		pointer-events: none;
-		z-index: -1;
-	}
-
-	.parallax-layer {
-		position: absolute;
-		top: 0;
-		left: 0;
-		width: 100%;
-		height: 100%;
-		object-fit: cover;
-		will-change: transform;
-		pointer-events: none;
-		transform-origin: center center;
-	}
-
-	.sky-layer {
-		z-index: 1;
-	}
-
-	.far-clouds-layer {
-		z-index: 2;
-		transition: transform 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-		opacity: 0.95;
-	}
-
-	.mid-clouds-layer {
-		z-index: 3;
-		transition: transform 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-		opacity: 0.95;
-	}
-
-	.near-clouds-layer {
-		z-index: 4;
-		transition: transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-		opacity: 0.95;
+	/* Shared Gradient Animation */
+	@keyframes gradient-flash {
+		0%,
+		100% {
+			background-position: 0% 50%;
+		}
+		50% {
+			background-position: 100% 50%;
+		}
 	}
 
 	.signup-container {
@@ -375,41 +122,56 @@
 	}
 
 	.signup-card {
-		background: rgba(255, 255, 255, 0.95);
-		backdrop-filter: blur(15px);
-		-webkit-backdrop-filter: blur(15px);
+		background: rgba(10, 47, 53, 0.6); /* Dark Teal Glass */
+		backdrop-filter: blur(20px) saturate(180%);
+		-webkit-backdrop-filter: blur(20px) saturate(180%);
 		border-radius: 1.5rem;
 		padding: 3rem;
 		max-width: 500px;
 		width: 100%;
-		box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-		border: 2px solid rgba(255, 255, 255, 0.5);
+		box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5);
+		border: 1px solid rgba(135, 206, 235, 0.3);
 		transition: all 0.4s ease;
 	}
 
 	.signup-card:hover {
 		transform: translateY(-5px);
-		box-shadow: 0 15px 40px rgba(0, 0, 0, 0.15);
+		box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6);
+		border-color: var(--font-accent-cyan);
 	}
 
 	h1 {
 		font-family: var(--font-heading);
-		font-size: 2.25rem;
+		font-size: 2.5rem;
 		font-weight: 900;
-		color: var(--font-primary);
 		margin: 0 0 0.5rem 0;
 		text-align: center;
+		background: linear-gradient(
+			90deg,
+			var(--ui-yellow) 0%,
+			var(--font-accent-cyan) 50%,
+			var(--ui-yellow) 100%
+		);
+		background-size: 200% 100%;
+		-webkit-background-clip: text;
+		-webkit-text-fill-color: transparent;
+		background-clip: text;
+		animation: gradient-flash 3.5s ease-in-out infinite;
+		filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.5));
 	}
 
 	.subtitle {
 		font-family: var(--font-body);
-		color: var(--font-primary);
-		opacity: 0.8;
+		color: var(--font-secondary);
+		opacity: 0.9;
 		text-align: center;
 		margin: 0 0 2rem 0;
-		font-size: 1rem;
+		font-size: 1.1rem;
 		line-height: 1.5;
-	}	.signup-form {
+		text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+	}
+
+	.signup-form {
 		display: flex;
 		flex-direction: column;
 		gap: 1.5rem;
@@ -425,46 +187,49 @@
 	label {
 		font-family: var(--font-body);
 		font-weight: 600;
-		color: var(--font-primary);
+		color: var(--ui-light-blue);
 		font-size: 0.95rem;
+		letter-spacing: 0.5px;
 	}
 
 	input {
 		padding: 1rem 1.25rem;
-		border: 2px solid rgba(135, 206, 235, 0.3);
+		border: 1px solid rgba(135, 206, 235, 0.3);
 		border-radius: 0.75rem;
 		font-family: var(--font-body);
 		font-size: 1rem;
 		transition: all 0.3s ease;
-		background: rgba(255, 255, 255, 0.5);
-		color: var(--font-primary);
+		background: rgba(0, 0, 0, 0.3);
+		color: white;
 	}
 
 	input::placeholder {
-		color: rgba(0, 0, 0, 0.4);
+		color: rgba(255, 255, 255, 0.4);
 	}
 
 	input:focus {
 		outline: none;
 		border-color: var(--ui-yellow);
 		box-shadow: 0 0 0 3px rgba(255, 217, 102, 0.2);
-		background: rgba(28, 46, 58, 0.6);
+		background: rgba(0, 0, 0, 0.5);
 	}
 
 	.signup-button {
 		position: relative;
-		background: var(--ui-yellow);
+		background: linear-gradient(135deg, var(--ui-yellow) 0%, #ffe66d 100%);
 		color: #000000;
 		border: none;
 		padding: 1.25rem 2rem;
 		border-radius: 50px;
 		font-family: var(--font-body);
 		font-size: 1.1rem;
-		font-weight: 600;
+		font-weight: 700;
 		cursor: pointer;
 		transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 		box-shadow: 0 6px 20px rgba(255, 217, 102, 0.5);
 		overflow: hidden;
+		text-transform: uppercase;
+		letter-spacing: 1px;
 	}
 
 	.signup-button::before {
@@ -475,7 +240,7 @@
 		width: 0;
 		height: 0;
 		border-radius: 50%;
-		background: rgba(255, 255, 255, 0.3);
+		background: rgba(255, 255, 255, 0.4);
 		transform: translate(-50%, -50%);
 		transition: width 0.6s ease, height 0.6s ease;
 	}
@@ -486,9 +251,8 @@
 	}
 
 	.signup-button:hover {
-		background: #FFE66D;
 		transform: translateY(-3px);
-		box-shadow: 0 10px 30px rgba(255, 217, 102, 0.6), 0 0 40px rgba(255, 217, 102, 0.3);
+		box-shadow: 0 10px 30px rgba(255, 217, 102, 0.6);
 	}
 
 	.divider {
@@ -504,23 +268,24 @@
 		top: 50%;
 		width: 100%;
 		height: 1px;
-		background: rgba(135, 206, 235, 0.3);
+		background: rgba(135, 206, 235, 0.2);
 	}
 
 	.divider span {
-		background: rgba(255, 255, 255, 0.95);
+		background: rgba(10, 47, 53, 0.8);
 		padding: 0 1rem;
 		position: relative;
-		color: var(--font-primary);
-		opacity: 0.7;
+		color: var(--font-secondary);
+		opacity: 0.8;
 		font-family: var(--font-body);
 		font-size: 0.9rem;
+		border-radius: 10px;
 	}
 
 	.login-link {
 		text-align: center;
 		font-family: var(--font-body);
-		color: var(--font-primary);
+		color: var(--font-secondary);
 		opacity: 0.9;
 		margin: 0 0 2rem 0;
 	}
@@ -529,27 +294,64 @@
 		color: var(--ui-yellow);
 		text-decoration: none;
 		font-weight: 600;
-		transition: color 0.3s ease;
+		transition: all 0.3s ease;
 	}
 
 	.login-link a:hover {
-		color: var(--font-accent-yellow);
-		text-decoration: underline;
+		color: #fff;
+		text-shadow: 0 0 10px var(--ui-yellow);
+	}
+
+	.google-button {
+		width: 100%;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		gap: 0.75rem;
+		background: white;
+		color: #3c4043;
+		border: none;
+		padding: 0.8rem;
+		border-radius: 50px;
+		font-family: var(--font-body);
+		font-size: 1rem;
+		font-weight: 600;
+		cursor: pointer;
+		transition: all 0.2s ease;
+		margin-bottom: 1.5rem;
+		box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+	}
+
+	.google-button:hover {
+		background: #f8f9fa;
+		transform: translateY(-2px);
+		box-shadow: 0 6px 15px rgba(0,0,0,0.3);
+	}
+
+	.google-button:active {
+		transform: translateY(0);
+	}
+
+	.google-icon {
+		width: 18px;
+		height: 18px;
 	}
 
 	.features-list {
-		background: rgba(135, 206, 235, 0.1);
+		background: rgba(0, 0, 0, 0.2);
 		padding: 1.5rem;
 		border-radius: 1rem;
-		border: 2px solid rgba(135, 206, 235, 0.3);
+		border: 1px solid rgba(135, 206, 235, 0.2);
 	}
 
 	.features-list h3 {
 		font-family: var(--font-heading);
-		color: var(--font-primary);
+		color: var(--ui-yellow);
 		margin: 0 0 1rem 0;
 		font-size: 1.2rem;
-		font-weight: 900;
+		font-weight: 800;
+		text-transform: uppercase;
+		letter-spacing: 0.5px;
 	}
 
 	.features-list ul {
@@ -560,15 +362,46 @@
 
 	.features-list li {
 		font-family: var(--font-body);
-		color: var(--font-primary);
+		color: var(--font-secondary);
 		opacity: 0.9;
 		padding: 0.5rem 0;
 		font-size: 0.95rem;
+		display: flex;
+		align-items: center;
+		gap: 0.5rem;
+	}
+
+	.alert {
+		padding: 1rem;
+		border-radius: 0.5rem;
+		margin-bottom: 1rem;
+		font-family: var(--font-body);
+		font-size: 0.9rem;
+	}
+
+	.alert.error {
+		background: rgba(255, 107, 107, 0.2);
+		border: 1px solid #ff6b6b;
+		color: #ffc9c9;
+	}
+
+	.alert.success {
+		background: rgba(81, 207, 102, 0.2);
+		border: 1px solid #51cf66;
+		color: #b2f2bb;
 	}
 
 	@media (max-width: 768px) {
+		.signup-container {
+			padding: 6rem 1rem 2rem;
+		}
+
 		.signup-card {
-			padding: 2rem;
+			padding: 2rem 1.5rem;
+		}
+
+		h1 {
+			font-size: 2rem;
 		}
 	}
 </style>
