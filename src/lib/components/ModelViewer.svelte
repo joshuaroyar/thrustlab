@@ -15,6 +15,7 @@
 		Mesh
 	} from '@babylonjs/core';
 	import '@babylonjs/loaders';
+	import { ttsService } from '$lib/utils/tts';
 
 	interface ModelViewerProps {
 		modelPath: string;
@@ -23,6 +24,7 @@
 		enableHighlight?: boolean;
 		partDescriptions?: Record<string, { name: string; description: string }>;
 		onModelLoaded?: () => void;
+		enableTTS?: boolean; // Enable text-to-speech for component descriptions
 	}
 
 	let {
@@ -31,7 +33,8 @@
 		cameraPosition = { alpha: Math.PI / 2, beta: Math.PI / 3, radius: 5 },
 		enableHighlight = true,
 		partDescriptions = {},
-		onModelLoaded
+		onModelLoaded,
+		enableTTS = true
 	}: ModelViewerProps = $props();
 
 	let canvas: HTMLCanvasElement;
@@ -42,36 +45,94 @@
 	let highlightLayer: HighlightLayer | null = null;
 	let observer: IntersectionObserver | null = null;
 	let isVisible = false;
-	let hasLoaded = false;
+	let hasLoaded = $state(false);
 	let isLoading = $state(false);
 
 	// Tooltip state
 	let tooltipVisible = $state(false);
 	let tooltipContent = $state({ name: '', description: '' });
 
+	// TTS state
+	let isPlayingAudio = $state(false);
+	let audioError = $state<string | null>(null);
+
+	const sanitizeValue = (value?: string | null) =>
+		(value || '')
+			.toLowerCase()
+			.replace(/[^a-z0-9]+/g, ' ')
+			.trim()
+			.replace(/\s+/g, ' ');
+
+	const buildSearchable = (value?: string | null) => {
+		const sanitized = sanitizeValue(value);
+		return sanitized ? ` ${sanitized} ` : '';
+	};
+
 	// Helper to find description by mesh name or material name
 	function findPartDescription(mesh: AbstractMesh) {
 		if (!partDescriptions) return null;
 
-		// 1. Exact match
-		if (partDescriptions[mesh.name]) return partDescriptions[mesh.name];
+		// Log mesh names for debugging
+		console.log('Clicked mesh:', {
+			name: mesh.name,
+			material: mesh.material?.name,
+			id: mesh.id,
+			parent: mesh.parent?.name
+		});
 
-		// 2. Partial match (keys in partDescriptions are substrings of mesh.name)
+		const meshNameLower = mesh.name.toLowerCase();
+		const materialNameLower = mesh.material?.name?.toLowerCase() || '';
+		const meshIdLower = mesh.id?.toLowerCase() || '';
+		const meshNameSearch = buildSearchable(mesh.name);
+		const materialNameSearch = buildSearchable(mesh.material?.name);
+		const meshIdSearch = buildSearchable(mesh.id);
+		
+		let bestMatchKey = null;
+		let bestMatchLength = -1;
+
 		for (const key in partDescriptions) {
-			if (mesh.name.toLowerCase().includes(key.toLowerCase())) {
+			const keyLower = key.toLowerCase();
+			const keySearch = buildSearchable(key);
+			const keySearchLen = keySearch.trim().length;
+
+			// 1. Check Mesh Name (exact match first)
+			if (meshNameLower === keyLower) {
+				console.log('Exact mesh name match:', key);
 				return partDescriptions[key];
 			}
-		}
 
-		// 3. Material name match
-		if (mesh.material && mesh.material.name) {
-			for (const key in partDescriptions) {
-				if (mesh.material.name.toLowerCase().includes(key.toLowerCase())) {
-					return partDescriptions[key];
+			// 2. Check Material Name (exact match)
+			if (materialNameLower === keyLower) {
+				console.log('Exact material name match:', key);
+				return partDescriptions[key];
+			}
+
+			// 3. Check Mesh ID (exact match)
+			if (meshIdLower === keyLower) {
+				console.log('Exact mesh ID match:', key);
+				return partDescriptions[key];
+			}
+
+			// 4. Check partial matches in mesh name
+			if (
+				keySearch &&
+				((meshNameSearch && meshNameSearch.includes(keySearch)) ||
+					(materialNameSearch && materialNameSearch.includes(keySearch)) ||
+					(meshIdSearch && meshIdSearch.includes(keySearch)))
+			) {
+				if (keySearchLen > bestMatchLength) {
+					bestMatchLength = keySearchLen;
+					bestMatchKey = key;
 				}
 			}
 		}
 
+		if (bestMatchKey) {
+			console.log('Best partial match found:', bestMatchKey);
+			return partDescriptions[bestMatchKey];
+		}
+
+		console.log('No match found for mesh');
 		return null;
 	}
 
@@ -101,15 +162,10 @@
 
 		// 3. Setup Intersection Observer for Performance & Lazy Loading
 		// Only render when the canvas is actually visible in the viewport
-		// And only load the model when it first comes into view
 		observer = new IntersectionObserver(
 			(entries) => {
 				entries.forEach((entry) => {
 					isVisible = entry.isIntersecting;
-
-					if (isVisible && !hasLoaded && !isLoading) {
-						loadModel();
-					}
 				});
 			},
 			{ threshold: 0 }
@@ -141,6 +197,18 @@
 				hasLoaded = true;
 				isLoading = false;
 
+				// Log all meshes for debugging
+				console.log('=== LOADED MODEL MESHES ===');
+				loadedScene.meshes.forEach((mesh, index) => {
+					console.log(`Mesh ${index}:`, {
+						name: mesh.name,
+						id: mesh.id,
+						material: mesh.material?.name,
+						parent: mesh.parent?.name
+					});
+				});
+				console.log('=== END MESHES ===');
+
 				// Post-Load Setup (The "Magic Helper")
 				loadedScene.createDefaultCameraOrLight(true, true, true);
 
@@ -153,11 +221,40 @@
 					// Enable framing behavior for auto-sizing
 					activeCam.useFramingBehavior = true;
 
-					// Adjust sensitivity (Lower values = faster for precision)
-					// Default is usually around 3 for wheel, 12 for pinch.
-					activeCam.wheelPrecision = 3;
-					activeCam.pinchPrecision = 12;
-					activeCam.panningSensibility = 1000;
+					// --- Smoothness with Control (Low Inertia) ---
+					// Reducing inertia significantly to prevent excessive spinning
+					// Lower inertia = stops faster when you release the mouse
+					activeCam.inertia = 0.85;
+
+					// --- Industry Standard Sensitivity ---
+					
+					// Rotate Speed: Fast & Even across all angles
+					// Lower value = Faster rotation.
+					// Setting both X and Y to same value (400) for consistent speed everywhere
+					activeCam.angularSensibilityX = 400;
+					activeCam.angularSensibilityY = 400;
+
+					// Zoom Speed: 1.2 (Faster than default)
+					// Babylon default wheelPrecision is 3. Lower = Faster.
+					activeCam.wheelPrecision = 2.5;
+					activeCam.pinchPrecision = 10; // Adjusted for touch as well
+
+					// Pan Speed: 0.5 (Slower than default)
+					// Babylon default panningSensibility is 1000. Higher = Slower.
+					activeCam.panningSensibility = 2000;
+
+					// --- 360-Degree Orbit ---
+					// Allow full horizontal rotation (Alpha)
+					activeCam.lowerAlphaLimit = null;
+					activeCam.upperAlphaLimit = null;
+
+					// Restrict vertical rotation (Beta) to prevent gimbal lock/flipping at poles
+					// This prevents the disorienting "fast flip" when going over the top/bottom
+					activeCam.lowerBetaLimit = 0.1; // ~5.7 degrees from top
+					activeCam.upperBetaLimit = Math.PI - 0.1; // ~5.7 degrees from bottom
+
+					// Prevent auto-rotation compensation that can cause speed inconsistencies
+					activeCam.checkCollisions = false;
 
 					// Add WASD controls
 					// Clear existing keys first to avoid conflicts
@@ -214,6 +311,8 @@
 		if (observer) {
 			observer.disconnect();
 		}
+		// Stop any playing audio
+		ttsService.stop();
 		engine?.dispose();
 	});
 
@@ -221,10 +320,29 @@
 		engine?.resize();
 	};
 
+	/**
+	 * Play audio description for component using text-to-speech
+	 */
+	async function playComponentDescription(description: { name: string; description: string }) {
+		audioError = null;
+		isPlayingAudio = true;
+
+		try {
+			// Combine name and description for audio
+			const textToSpeak = `${description.name}. ${description.description}`;
+			await ttsService.speak(textToSpeak);
+			isPlayingAudio = false;
+		} catch (error) {
+			console.error('Failed to play audio:', error);
+			audioError = 'Failed to play audio';
+			isPlayingAudio = false;
+		}
+	}
+
 	function setupHighlighting(scene: Scene) {
 		highlightLayer = new HighlightLayer('highlightLayer', scene);
-		highlightLayer.blurHorizontalSize = 0.5;
-		highlightLayer.blurVerticalSize = 0.5;
+		highlightLayer.blurHorizontalSize = 0.8;
+		highlightLayer.blurVerticalSize = 0.8;
 
 		scene.onPointerObservable.add((pointerInfo) => {
 			// Handle hover for highlighting only
@@ -241,6 +359,7 @@
 							if (highlightedMesh && highlightedMesh !== selectedMesh) {
 								highlightLayer?.removeMesh(highlightedMesh as Mesh);
 							}
+							// Use cyan for hover
 							highlightLayer?.addMesh(mesh as Mesh, new Color3(0, 1, 1));
 							highlightedMesh = mesh;
 						}
@@ -270,32 +389,69 @@
 
 					if (description) {
 						// Deselect previous
-						if (selectedMesh) {
+						if (selectedMesh && selectedMesh !== mesh) {
 							highlightLayer?.removeMesh(selectedMesh as Mesh);
 						}
 
-						// Select new
-						selectedMesh = mesh;
-						highlightLayer?.addMesh(selectedMesh as Mesh, Color3.Teal()); // Different color for selection
+						// If clicking the same mesh, deselect it
+						if (selectedMesh === mesh) {
+							highlightLayer?.removeMesh(selectedMesh as Mesh);
+							selectedMesh = null;
+							tooltipVisible = false;
+							// Stop audio when deselecting
+							if (enableTTS) {
+								ttsService.stop();
+								isPlayingAudio = false;
+								audioError = null;
+							}
+						} else {
+							// Select new mesh
+							selectedMesh = mesh;
+							// Use yellow/gold for selected mesh
+							highlightLayer?.addMesh(selectedMesh as Mesh, new Color3(1, 0.84, 0));
 
-						// Show tooltip
-						tooltipContent = description;
-						tooltipVisible = true;
+							// Show tooltip above the model
+							tooltipContent = description;
+							tooltipVisible = true;
+
+							// Play text-to-speech if enabled
+							if (enableTTS) {
+								playComponentDescription(description);
+							}
+						}
+
+						// Remove hover highlight if it exists
+						if (highlightedMesh) {
+							highlightLayer?.removeMesh(highlightedMesh as Mesh);
+							highlightedMesh = null;
+						}
 					} else {
-						// Clicked on non-interactive part
+						// Clicked on non-interactive part - deselect
 						if (selectedMesh) {
 							highlightLayer?.removeMesh(selectedMesh as Mesh);
 							selectedMesh = null;
 						}
 						tooltipVisible = false;
+						// Stop audio when clicking away
+						if (enableTTS) {
+							ttsService.stop();
+							isPlayingAudio = false;
+							audioError = null;
+						}
 					}
 				} else {
-					// Clicked on background
+					// Clicked on background - deselect
 					if (selectedMesh) {
 						highlightLayer?.removeMesh(selectedMesh as Mesh);
 						selectedMesh = null;
 					}
 					tooltipVisible = false;
+					// Stop audio when clicking away
+					if (enableTTS) {
+						ttsService.stop();
+						isPlayingAudio = false;
+						audioError = null;
+					}
 				}
 			}
 		});
@@ -304,6 +460,13 @@
 
 <div class="model-viewer-container">
 	<canvas bind:this={canvas} class={canvasClass} tabindex="0"></canvas>
+
+	{#if !hasLoaded && !isLoading}
+		<button class="load-overlay" onclick={loadModel} aria-label="Load 3D Model">
+			<div class="spinner-static"></div>
+			<p>Click to Load 3D Model</p>
+		</button>
+	{/if}
 
 	{#if isLoading}
 		<div class="loading-overlay">
@@ -314,12 +477,50 @@
 
 	{#if tooltipVisible}
 		<div class="model-tooltip fixed-top">
+			<button class="tooltip-close" onclick={() => { 
+				tooltipVisible = false; 
+				if (selectedMesh) { 
+					highlightLayer?.removeMesh(selectedMesh as Mesh); 
+					selectedMesh = null; 
+				}
+				if (enableTTS) {
+					ttsService.stop();
+					isPlayingAudio = false;
+					audioError = null;
+				}
+			}} aria-label="Close tooltip">
+				<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+					<line x1="18" y1="6" x2="6" y2="18"></line>
+					<line x1="6" y1="6" x2="18" y2="18"></line>
+				</svg>
+			</button>
+			
+			{#if enableTTS && isPlayingAudio}
+				<div class="audio-indicator">
+					<div class="audio-wave">
+						<span></span>
+						<span></span>
+						<span></span>
+					</div>
+					<span class="audio-text">Playing audio...</span>
+				</div>
+			{/if}
+			
+			{#if audioError}
+				<div class="audio-error">
+					⚠️ {audioError}
+				</div>
+			{/if}
+			
 			<h4>{tooltipContent.name}</h4>
 			<p>{tooltipContent.description}</p>
 		</div>
 	{/if}
 
 	<div class="controls-info">
+		<div class="control-item highlight">
+			<strong>Click</strong> on any colored component to learn more
+		</div>
 		<div class="control-item">
 			<strong>Mouse:</strong> Left-click + drag to rotate
 		</div>
@@ -353,15 +554,28 @@
 
 	.model-tooltip {
 		position: absolute;
-		background: rgba(0, 0, 0, 0.9);
+		background: rgba(10, 25, 47, 0.95);
 		color: white;
-		padding: 12px 16px;
-		border-radius: 8px;
-		pointer-events: none;
+		padding: 20px 24px;
+		border-radius: 12px;
+		pointer-events: auto;
 		z-index: 1000;
 		max-width: 300px;
-		box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-		border: 1px solid rgba(255, 255, 255, 0.1);
+		box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5), 0 0 0 2px rgba(0, 212, 255, 0.3);
+		border: 2px solid rgba(0, 212, 255, 0.5);
+		backdrop-filter: blur(10px);
+		animation: tooltipSlideIn 0.3s ease-out;
+	}
+
+	@keyframes tooltipSlideIn {
+		from {
+			opacity: 0;
+			transform: translateX(-50%) translateY(-10px);
+		}
+		to {
+			opacity: 1;
+			transform: translateX(-50%) translateY(0);
+		}
 	}
 
 	.model-tooltip.fixed-top {
@@ -369,22 +583,113 @@
 		left: 50%;
 		transform: translateX(-50%);
 		text-align: center;
-		width: 80%;
-		max-width: 400px;
+		width: 85%;
+		max-width: 500px;
+	}
+
+	.tooltip-close {
+		position: absolute;
+		top: 10px;
+		right: 10px;
+		background: rgba(255, 255, 255, 0.1);
+		border: 1px solid rgba(255, 255, 255, 0.2);
+		border-radius: 50%;
+		width: 28px;
+		height: 28px;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		cursor: pointer;
+		transition: all 0.2s ease;
+		color: rgba(255, 255, 255, 0.7);
+		padding: 0;
+	}
+
+	.tooltip-close:hover {
+		background: rgba(255, 255, 255, 0.2);
+		border-color: rgba(255, 255, 255, 0.4);
+		color: white;
+		transform: scale(1.1);
 	}
 
 	.model-tooltip h4 {
-		margin: 0 0 8px 0;
-		font-size: 16px;
-		font-weight: 600;
+		margin: 0 0 12px 0;
+		font-size: 18px;
+		font-weight: 700;
 		color: #00d4ff;
+		text-shadow: 0 0 10px rgba(0, 212, 255, 0.5);
+		letter-spacing: 0.5px;
 	}
 
 	.model-tooltip p {
 		margin: 0;
 		font-size: 14px;
-		line-height: 1.4;
-		color: rgba(255, 255, 255, 0.9);
+		line-height: 1.6;
+		color: rgba(255, 255, 255, 0.95);
+	}
+
+	.audio-indicator {
+		display: flex;
+		align-items: center;
+		gap: 8px;
+		margin-bottom: 12px;
+		padding: 8px 12px;
+		background: rgba(0, 212, 255, 0.1);
+		border-radius: 6px;
+		border-left: 3px solid #00d4ff;
+	}
+
+	.audio-wave {
+		display: flex;
+		align-items: center;
+		gap: 3px;
+		height: 16px;
+	}
+
+	.audio-wave span {
+		display: inline-block;
+		width: 3px;
+		height: 100%;
+		background: #00d4ff;
+		border-radius: 2px;
+		animation: audioWave 1s ease-in-out infinite;
+	}
+
+	.audio-wave span:nth-child(1) {
+		animation-delay: 0s;
+	}
+
+	.audio-wave span:nth-child(2) {
+		animation-delay: 0.2s;
+	}
+
+	.audio-wave span:nth-child(3) {
+		animation-delay: 0.4s;
+	}
+
+	@keyframes audioWave {
+		0%, 100% {
+			transform: scaleY(0.3);
+		}
+		50% {
+			transform: scaleY(1);
+		}
+	}
+
+	.audio-text {
+		font-size: 12px;
+		color: #00d4ff;
+		font-weight: 500;
+	}
+
+	.audio-error {
+		margin-bottom: 12px;
+		padding: 8px 12px;
+		background: rgba(255, 0, 0, 0.1);
+		border-radius: 6px;
+		border-left: 3px solid #ff4444;
+		color: #ffaaaa;
+		font-size: 12px;
 	}
 
 	.controls-info {
@@ -414,7 +719,27 @@
 		margin-right: 4px;
 	}
 
-	.loading-overlay {
+	.control-item.highlight {
+		background: rgba(0, 212, 255, 0.15);
+		padding: 8px 10px;
+		border-radius: 6px;
+		border-left: 3px solid #00d4ff;
+		margin-bottom: 10px;
+		font-weight: 600;
+		animation: pulse 2s ease-in-out infinite;
+	}
+
+	@keyframes pulse {
+		0%, 100% {
+			box-shadow: 0 0 5px rgba(0, 212, 255, 0.3);
+		}
+		50% {
+			box-shadow: 0 0 15px rgba(0, 212, 255, 0.6);
+		}
+	}
+
+	.loading-overlay,
+	.load-overlay {
 		position: absolute;
 		top: 0;
 		left: 0;
@@ -428,6 +753,20 @@
 		color: white;
 		z-index: 10;
 		backdrop-filter: blur(5px);
+		border: none;
+		cursor: pointer;
+		transition: background 0.3s ease;
+	}
+
+	.load-overlay:hover {
+		background: rgba(0, 0, 0, 0.5);
+	}
+
+	.load-overlay p {
+		font-size: 1.2rem;
+		font-weight: 600;
+		margin-top: 1rem;
+		color: #00d4ff;
 	}
 
 	.spinner {
@@ -437,6 +776,15 @@
 		border-top: 4px solid #00d4ff;
 		border-radius: 50%;
 		animation: spin 1s linear infinite;
+		margin-bottom: 12px;
+	}
+
+	.spinner-static {
+		width: 60px;
+		height: 60px;
+		border: 4px solid rgba(255, 255, 255, 0.3);
+		border-top: 4px solid #00d4ff;
+		border-radius: 50%;
 		margin-bottom: 12px;
 	}
 

@@ -1,6 +1,8 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 
+	let { children } = $props<{ children: any }>();
+
 	let mounted = $state(false);
 	let mouseX = $state(0);
 	let mouseY = $state(0);
@@ -244,7 +246,7 @@
 	></canvas>
 </div>
 
-<slot />
+{@render children()}
 
 <style>
 	.parallax-background-system {

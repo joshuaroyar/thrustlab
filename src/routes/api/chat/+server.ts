@@ -1,65 +1,112 @@
-import { createOpenAI } from '@ai-sdk/openai';
-import { streamText } from 'ai';
+import { createGroq } from '@ai-sdk/groq';
+import {
+  streamText,
+  convertToModelMessages,
+  createUIMessageStream,
+  createUIMessageStreamResponse,
+  type UIMessage
+} from 'ai';
+import { Pinecone } from '@pinecone-database/pinecone';
+import { HuggingFaceInferenceEmbeddings } from '@langchain/community/embeddings/hf';
+import { PineconeStore } from '@langchain/pinecone';
 import type { RequestHandler } from './$types';
-import { OPENAI_API_KEY } from '$env/static/private';
+import { env } from '$env/dynamic/private';
 
-const openai = createOpenAI({
-  apiKey: OPENAI_API_KEY,
+const groq = createGroq({
+  apiKey: env.GROQ_API_KEY,
 });
 
+const getTextFromMessage = (message?: UIMessage) => {
+  if (!message) return '';
+  return message.parts
+    .map((part) => (part.type === 'text' ? part.text : ''))
+    .join('\n')
+    .trim();
+};
+
 export const POST: RequestHandler = async ({ request }) => {
-  const body = await request.json();
-  console.log('Received body:', body);
-  console.log('OPENAI_API_KEY is set:', !!OPENAI_API_KEY);
+  const { messages } = (await request.json()) as { messages: UIMessage[] };
+  const lastMessage = messages[messages.length - 1];
+  const lastMessageText = getTextFromMessage(lastMessage);
 
-  // Convert the incoming format to OpenAI message format
-  const messages = body.history?.map((msg: any) => ({
-    role: msg.type === 'user' ? 'user' : 'assistant',
-    content: msg.content
-  })) || [];
+  // Check if the message is a greeting
+  const greetingPattern = /^(hi|hello|hey|greetings|good morning|good afternoon|good evening)\b/i;
+  const isGreeting = greetingPattern.test(lastMessageText.trim());
 
-  // Add the current message
-  messages.push({
-    role: 'user',
-    content: body.message
+  let contextBlock = '';
+  let citations: Array<{ source: string; preview: string }> = [];
+
+  // Only perform RAG retrieval for non-greeting queries
+  if (!isGreeting && lastMessageText.trim().length > 0) {
+    const pinecone = new Pinecone({ apiKey: env.PINECONE_API_KEY });
+    const pineconeIndex = pinecone.Index(env.PINECONE_INDEX || 'thrustlab-rag');
+    
+    const vectorStore = await PineconeStore.fromExistingIndex(
+      new HuggingFaceInferenceEmbeddings({
+          apiKey: env.HUGGINGFACE_API_KEY,
+          model: 'BAAI/bge-large-en-v1.5',
+      }),
+      { pineconeIndex }
+    );
+
+    const retrievalResults = await vectorStore.similaritySearch(lastMessageText, 4);
+
+    contextBlock = retrievalResults
+      .map((doc, index) => `Context Chunk ${index + 1}:\n${doc.pageContent}`)
+      .join('\n\n');
+    
+    citations = retrievalResults.map((doc) => ({
+      source: doc.metadata.source,
+      preview: doc.pageContent.substring(0, 60) + "..."
+    }));
+  }
+
+  const systemPrompt = isGreeting
+    ? `You are JaJa, an avionics engineering copilot for the ThrustLab training environment.
+
+The student is greeting you. Respond warmly and briefly (1-2 sentences). Welcome them to ThrustLab and invite them to ask questions about turbofan engines, gas turbines, or aviation propulsion systems.`
+    : `You are JaJa, an avionics engineering copilot for the ThrustLab training environment.
+
+Response requirements:
+- Answer the student's question directly and concisely using the context below.
+- Synthesize the information in your own words; NEVER mention filenames, "context", "document", or "chunk" in your response.
+- If defining a technical term, start with a clear definition, then add 1-2 key details from the context.
+- If the context doesn't answer the question, say so briefly and ask for clarification.
+- Keep your response to 2-3 short paragraphs or use a brief bullet list for clarity.
+
+Context:
+${contextBlock || 'No relevant context was retrieved.'}
+`;
+
+  const stream = createUIMessageStream({
+    originalMessages: messages,
+    execute: ({ writer }) => {
+      // Only send citations for non-greeting queries that have results
+      if (!isGreeting && citations.length > 0) {
+        writer.write({
+          type: 'data-citations',
+          data: citations,
+        });
+      }
+
+      try {
+        const result = streamText({
+          model: groq('llama-3.1-8b-instant'),
+          messages: convertToModelMessages(messages),
+          system: systemPrompt,
+        });
+
+        writer.merge(result.toUIMessageStream());
+      } catch (error) {
+        console.error('Error in streamText:', error);
+        writer.write({
+          type: 'text-delta',
+          delta: '\n\nSorry, I encountered an error while generating the response.',
+          id: 'error-recovery',
+        });
+      }
+    },
   });
 
-  console.log('Converted messages:', messages);
-
-  const result = streamText({
-    model: openai('gpt-4o'), // or 'gpt-4o-mini' for cheaper/faster
-    system: `
-    You are JAJA, an expert AI co-engineer bot for ThrustLab, an interactive educational platform focused on gas turbine engines and turbofan engines.
-
-    Your primary role is to help Aeronautical Engineering students learn about:
-    - Gas turbine engine fundamentals and history (Module 1)
-    - Types of gas turbine engines: turbojets, turboprops, turboshafts, turbofans, ramjets, scramjets, propfans (Module 2)
-    - Turbofan engine components and sections including cold section (air inlet, compressor) and hot section (combustion chamber, turbine, exhaust) (Module 3)
-    - Engine assembly and disassembly procedures
-    - Engine specifications, bypass ratios, and performance parameters
-
-    Key turbofan concepts to emphasize:
-    - Bypass ratio classifications (low 1:1, medium 2:1-3:1, high 4:1+)
-    - Fan pressure ratio and thrust ratio
-    - Cold section components: air inlet ducts, centrifugal and axial compressors
-    - Hot section components: combustion chambers, turbine stages, exhaust systems
-    - Modern turbofan advantages: fuel efficiency, reduced noise, environmental performance
-
-    Guidelines:
-    - Provide clear, educational explanations suitable for engineering students
-    - Use technical accuracy while remaining accessible
-    - Reference specific engine components and their functions when relevant
-    - Support self-paced learning with detailed but concise answers
-    - When discussing engine types, explain their specific applications and characteristics
-    - Relate concepts to real-world aviation applications
-    - Encourage hands-on learning through the platform's 3D models and interactive features
-
-    Your tagline: "Fuel your curiosity, ask me anything!"
-
-    Answer questions about turbofan engines, gas turbine principles, engine components, assembly procedures, and related aviation engineering topics. Keep responses focused, technically accurate, and educationally valuable.
-    `,
-    messages,
-  });
-
-  return result.toTextStreamResponse();
+  return createUIMessageStreamResponse({ stream });
 };

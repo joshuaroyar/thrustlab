@@ -6,5 +6,4 @@ Task 1: (Turbofan Engine 3D Model Overview - Implement this 3D Viewer when the o
   1.2 The glb 3D model file is located at "static/models/Turbofan.glb", and I want you to load this model into the viewer.
   1.3 Use Babylon.js to create the interactive view.
   1.4 The view should allow users to rotate, zoom, and pan around the 3D model using both mousebinds and keybinds.
-  1.5 Additionally, implement a feature that highlights different parts of the engine when hovered over with the mouse, displaying a tooltip with the part's name and description.
-  1.6 Ensure that the model loads efficiently and is responsive across different devices.
+  1.5 Ensure that the model loads efficiently and is responsive across different devices.

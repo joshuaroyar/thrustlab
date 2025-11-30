@@ -2,6 +2,7 @@
 	import { onMount } from 'svelte';
 	import { goto } from '$app/navigation';
 	import ModelViewer from '$lib/components/ModelViewer.svelte';
+	import { turbofanPartDescriptions } from '$lib/data/turbofanParts';
 
 	let skyCanvas: HTMLCanvasElement;
 	let farCloudsCanvas: HTMLCanvasElement;
@@ -79,43 +80,7 @@
 		}
 	];
 
-	const turbofanParts = {
-		Inlet: {
-			name: 'Air Inlet (Light Blue)',
-			description:
-				'The air inlet is the first rotor in the compressor. Its primary task is to accelerate a large mass flow of air in the bypass flow and thus provide the main thrust.'
-		},
-		Fan: {
-			name: 'Air Inlet (Light Blue)',
-			description:
-				'The air inlet is the first rotor in the compressor. Its primary task is to accelerate a large mass flow of air in the bypass flow and thus provide the main thrust.'
-		},
-		Compressor: {
-			name: 'Compressor (Green)',
-			description:
-				'The task of the compressors is to ingest air and compress it before it is fed into the combustor. The low-pressure compressor is responsible for precompressing the air, while the high-pressure compressor handles main compression. What sets an advanced turbofan engine apart is that the blades and disk are manufactured as a single part—known as a “blisk.”'
-		},
-		Combustor: {
-			name: 'Combustor (Gold)',
-			description:
-				'Inside the combustor, the compressed air flowing into the chamber is mixed with fuel, where it burns at a temperature of about 1,700 degrees Celsius.'
-		},
-		Turbine: {
-			name: 'Turbine (Metallic Grey)',
-			description:
-				'In a turbine, the energy contained in the gas flow emerging at high pressure and temperature from the combustor is converted into mechanical energy. The high-pressure turbine, comprising multiple blades, drives the high-pressure compressor. The low-pressure turbine drives the low-pressure compressor and the fan, which in turn generates the bulk of the thrust. The GTF’s low-pressure turbine rotates much faster than that of a conventional turbofan engine.'
-		},
-		Exhaust: {
-			name: 'Exhaust (Dark Blue)',
-			description:
-				'The exhaust nozzle accelerates the exhaust gases exiting the engine, converting thermal energy into kinetic energy to produce thrust. This component is crucial for maximizing engine efficiency and performance.'
-		},
-		Nozzle: {
-			name: 'Exhaust (Dark Blue)',
-			description:
-				'The exhaust nozzle accelerates the exhaust gases exiting the engine, converting thermal energy into kinetic energy to produce thrust. This component is crucial for maximizing engine efficiency and performance.'
-		}
-	};
+	const turbofanParts = turbofanPartDescriptions;
 
 	function scrollToMoreInfo() {
 		const moreInfoElement = document.getElementById('more-info-section');
@@ -2037,14 +2002,7 @@
 		border-color: var(--ui-light-blue);
 	}
 
-	.content-box.clickable {
-		cursor: pointer;
-	}
 
-	.content-box.clickable:hover {
-		border-color: var(--ui-yellow);
-		box-shadow: 0 12px 40px rgba(255, 217, 102, 0.5);
-	}
 
 	.engine-box {
 		min-height: 500px;
@@ -2381,11 +2339,6 @@
 
 	.placeholder-content.small {
 		min-height: 200px;
-	}
-
-	.placeholder-icon {
-		font-size: 5rem;
-		animation: float 3s ease-in-out infinite;
 	}
 
 	@keyframes float {

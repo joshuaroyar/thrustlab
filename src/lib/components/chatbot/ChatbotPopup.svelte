@@ -1,13 +1,68 @@
 <script lang="ts">
+	import { Chat } from '@ai-sdk/svelte';
+	import type { UIMessage } from 'ai';
+	import { fly, fade } from 'svelte/transition';
+
+	type Citation = { source: string; preview: string };
+	type JajaMessage = UIMessage<unknown, { citations: Citation[] }>;
+	type CitationPart = Extract<JajaMessage['parts'][number], { type: 'data-citations' }>;
+
 	let isOpen = $state(false);
 	let isMinimized = $state(false);
-	let messages = $state<Array<{type: 'assistant' | 'user', content: string}>>([
+	let chatContainer = $state<HTMLElement | null>(null);
+	let inputValue = $state('');
+
+	const initialMessages: JajaMessage[] = [
 		{
-			type: 'assistant',
-			content: 'Hi! I\'m JAJA - your AI co-engineer bot for learning inside ThrustLab!'
+			id: 'welcome',
+			role: 'assistant',
+			parts: [
+				{
+					type: 'text',
+					text: "Hi! I'm JAJA - your AI co-engineer bot for learning inside ThrustLab! Fuel your curiosity, ask me anything!"
+				}
+			]
 		}
-	]);
-	let inputMessage = $state('');
+	];
+
+	const chat = new Chat<JajaMessage>({
+		messages: initialMessages
+	});
+
+	const isCitationPart = (part: JajaMessage['parts'][number]): part is CitationPart => part.type === 'data-citations';
+
+	const getCitations = (message: JajaMessage) =>
+		message.parts.filter(isCitationPart).flatMap((part) => part.data ?? []);
+
+	const extractTextFromPart = (part: JajaMessage['parts'][number]) => {
+		// console.log('part', part);
+		if ('text' in part && typeof part.text === 'string' && part.text.trim().length > 0) {
+			return part.text;
+		}
+		const fallbackFields = ['delta', 'textDelta', 'content'] as const;
+		for (const field of fallbackFields) {
+			const value = (part as Record<string, unknown>)[field];
+			if (typeof value === 'string' && value.trim().length > 0) {
+				return value;
+			}
+		}
+		return '';
+	};
+
+	async function handleSubmit(event: SubmitEvent) {
+		event.preventDefault();
+		const trimmedInput = inputValue.trim();
+		if (!trimmedInput || chat.status === 'streaming') {
+			return;
+		}
+
+		try {
+			await chat.sendMessage({ text: trimmedInput });
+			inputValue = '';
+		} catch (error) {
+			console.error('Failed to send message', error);
+		}
+	}
 
 	function toggleChat() {
 		isOpen = !isOpen;
@@ -20,86 +75,12 @@
 		isMinimized = !isMinimized;
 	}
 
-	async function sendMessage() {
-		if (!inputMessage.trim()) return;
-				
-		const userMessage = inputMessage.trim();
-		messages.push({ type: 'user', content: userMessage });
-		inputMessage = '';
-
-		// Add placeholder for AI response
-		const aiMessageIndex = messages.length;
-		messages.push({ type: 'assistant', content: '' });
-
-		try {
-			const response = await fetch('/api/chat', {
-				method: 'POST',
-				headers: {
-					'Content-Type': 'application/json'
-				},
-				body: JSON.stringify({
-					message: userMessage,
-					history: messages.slice(0, -2) // Exclude the user message we just added and the placeholder
-				})
-			});
-
-			if (!response.ok) {
-				throw new Error('Failed to get response');
-			}
-
-			// Handle streaming response
-			const reader = response.body?.getReader();
-			const decoder = new TextDecoder();
-
-			if (reader) {
-				let accumulatedText = '';
-				let buffer = '';
-				
-				while (true) {
-					const { done, value } = await reader.read();
-					if (done) break;
-					
-					buffer += decoder.decode(value, { stream: true });
-					const lines = buffer.split('\n');
-					
-					// Keep the last incomplete line in the buffer
-					buffer = lines.pop() || '';
-					
-					for (const line of lines) {
-						if (line.trim()) {
-							console.log('Received line:', line);
-							// Parse the stream data format
-							if (line.startsWith('0:')) {
-								const jsonStr = line.substring(2);
-								try {
-									const text = JSON.parse(jsonStr);
-									accumulatedText += text;
-									messages[aiMessageIndex] = { ...messages[aiMessageIndex], content: accumulatedText };
-									console.log('Accumulated text:', accumulatedText);
-								} catch (e) {
-									console.error('Parse error:', e, 'Line:', line);
-								}
-							}
-						}
-					}
-				}
-				
-				if (!accumulatedText) {
-					messages[aiMessageIndex].content = 'I received your message but couldn\'t generate a response. Please try again.';
-				}
-			}
-		} catch (error) {
-			console.error('Error sending message:', error);
-			messages[aiMessageIndex].content = 'Sorry, I encountered an error. Please try again.';
+	$effect(() => {
+		const currentMessages = chat.messages;
+		if (chatContainer && currentMessages.length > 0) {
+			chatContainer.scrollTop = chatContainer.scrollHeight;
 		}
-	}
-
-	function handleKeyPress(event: KeyboardEvent) {
-		if (event.key === 'Enter' && !event.shiftKey) {
-			event.preventDefault();
-			sendMessage();
-		}
-	}
+	});
 </script>
 
 {#if !isOpen}
@@ -139,44 +120,81 @@
 
 		{#if !isMinimized}
 			<div class="chat-body">
-				<div class="chat-messages">
-					{#each messages as message}
-						<div class="message {message.type}-message">
-							{#if message.type === 'assistant'}
+				<div class="chat-messages" bind:this={chatContainer}>
+					{#each chat.messages as message (message.id)}
+						<div class="message {message.role === 'user' ? 'user-message' : 'ai-message'}" in:fly={{ y: 10, duration: 300 }}>
+							{#if message.role === 'assistant'}
 								<div class="message-avatar">
 									<img src="/icons/jaja.png" alt="JAJA Avatar" class="avatar-img" />
 								</div>
 							{/if}
-							<div class="message-bubble {message.type}-bubble">
-								<p>{message.content}</p>
+							<div class="message-bubble {message.role === 'user' ? 'user-bubble' : 'ai-bubble'}">
+								{#each message.parts as part}
+									{@const partText = extractTextFromPart(part)}
+									{#if partText}
+										<p>{partText}</p>
+									{/if}
+								{/each}
 							</div>
-							{#if message.type === 'user'}
+							{#if message.role === 'user'}
 								<div class="message-avatar user-avatar">👤</div>
 							{/if}
 						</div>
 					{/each}
+					
+					{#if chat.status === 'streaming'}
+						<div class="typing-indicator">Thinking...</div>
+					{/if}
 				</div>
 
-				<div class="chat-input-wrapper">
+				<form class="chat-input-wrapper" onsubmit={handleSubmit}>
 					<input 
-						type="text" 
-						bind:value={inputMessage}
-						onkeypress={handleKeyPress}
-						placeholder="Fuel your curiosity, ask me anything!" 
 						class="chat-input" 
+						bind:value={inputValue} 
+						placeholder="Fuel your curiosity, ask me anything!"
+						disabled={chat.status === 'streaming'}
 					/>
-					<button class="send-button" onclick={sendMessage} aria-label="Send message">
+					<button class="send-button" type="submit" disabled={chat.status === 'streaming' || !inputValue} aria-label="Send message">
 						<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor">
 							<path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
 						</svg>
 					</button>
-				</div>
+				</form>
 			</div>
 		{/if}
 	</div>
 {/if}
 
 <style>
+	.citations-block {
+		margin-top: 8px;
+		padding-top: 8px;
+		border-top: 1px dashed rgba(0, 0, 0, 0.1);
+		font-size: 0.8rem;
+	}
+	.citation-label {
+		font-weight: 600;
+		color: #666;
+		display: block;
+		margin-bottom: 4px;
+	}
+	.citation-tag {
+		display: inline-block;
+		background: rgba(0, 0, 0, 0.05);
+		padding: 2px 6px;
+		border-radius: 4px;
+		margin-right: 4px;
+		margin-bottom: 4px;
+		font-size: 0.75rem;
+		cursor: help;
+	}
+	.typing-indicator {
+		padding: 10px 20px;
+		font-size: 0.8rem;
+		color: #666;
+		font-style: italic;
+	}
+	
 	@keyframes gradient-flash {
 		0%, 100% {
 			background-position: 0% 50%;
@@ -232,20 +250,10 @@
 		}
 	}
 
-	.fab-icon {
-		font-size: 1.5rem;
-		animation: wave 1.5s ease-in-out infinite;
-	}
-
 	@keyframes wave {
 		0%, 100% { transform: rotate(0deg); }
 		25% { transform: rotate(15deg); }
 		75% { transform: rotate(-15deg); }
-	}
-
-	.fab-text {
-		font-size: 1rem;
-		font-weight: 700;
 	}
 
 	.chatbot-popup {
@@ -471,6 +479,7 @@
 		font-size: 0.95rem;
 		margin: 0;
 		line-height: 1.5;
+		white-space: pre-wrap;
 	}
 
 	.ai-bubble p {
