@@ -1,6 +1,7 @@
 import { json, type RequestHandler } from '@sveltejs/kit';
 import { ElevenLabsClient } from 'elevenlabs';
 import { env } from '$env/dynamic/private';
+import { Buffer } from 'node:buffer';
 
 export const POST: RequestHandler = async ({ request }) => {
 	try {
@@ -11,6 +12,7 @@ export const POST: RequestHandler = async ({ request }) => {
 		}
 
 		if (!env.ELEVENLABS_API_KEY) {
+			console.error('TTS Error: ELEVENLABS_API_KEY is missing');
 			return json({ error: 'ElevenLabs API key not configured' }, { status: 500 });
 		}
 
@@ -18,6 +20,8 @@ export const POST: RequestHandler = async ({ request }) => {
 		const elevenlabs = new ElevenLabsClient({
 			apiKey: env.ELEVENLABS_API_KEY
 		});
+
+		console.log(`Generating TTS for: "${text.substring(0, 30)}..."`);
 
 		// Generate audio using ElevenLabs
 		// Using Rachel voice (a female voice) - you can change this to any voice ID

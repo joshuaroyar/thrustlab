@@ -34,8 +34,9 @@
 		enableHighlight = true,
 		partDescriptions = {},
 		onModelLoaded,
-		enableTTS = true
-	}: ModelViewerProps = $props();
+		enableTTS = true,
+		autoLoad = false
+	}: ModelViewerProps & { autoLoad?: boolean } = $props();
 
 	let canvas: HTMLCanvasElement;
 	let engine: Engine | null = null;
@@ -182,6 +183,10 @@
 
 		// 5. Handle Window Resize
 		window.addEventListener('resize', handleResize);
+
+		if (autoLoad) {
+			loadModel();
+		}
 	});
 
 	function loadModel() {
@@ -332,9 +337,9 @@
 			const textToSpeak = `${description.name}. ${description.description}`;
 			await ttsService.speak(textToSpeak);
 			isPlayingAudio = false;
-		} catch (error) {
+		} catch (error: any) {
 			console.error('Failed to play audio:', error);
-			audioError = 'Failed to play audio';
+			audioError = error.message || 'Failed to play audio';
 			isPlayingAudio = false;
 		}
 	}

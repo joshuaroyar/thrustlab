@@ -7,11 +7,12 @@ class TTSService {
 	private audioCache: Map<string, string> = new Map();
 	private currentAudio: HTMLAudioElement | null = null;
 	private isPlaying: boolean = false;
+	private currentResolve: (() => void) | null = null;
 
 	/**
 	 * Convert text to speech and play it
 	 * @param text - The text to convert to speech
-	 * @returns Promise that resolves when audio starts playing
+	 * @returns Promise that resolves when audio FINISHES playing
 	 */
 	async speak(text: string): Promise<void> {
 		if (!text || text.trim() === '') {
@@ -37,7 +38,9 @@ class TTSService {
 				});
 
 				if (!response.ok) {
-					throw new Error(`TTS API error: ${response.status}`);
+					const errorData = await response.json().catch(() => ({}));
+					console.warn('ElevenLabs API failed, falling back to browser TTS:', errorData.error || response.status);
+					return this.speakFallback(text);
 				}
 
 				// Convert response to blob
@@ -48,27 +51,87 @@ class TTSService {
 				this.audioCache.set(text, audioUrl);
 			}
 
-			// Create and play audio
+			// Create audio element
 			this.currentAudio = new Audio(audioUrl);
 			this.isPlaying = true;
 
-			// Set up event listeners
-			this.currentAudio.onended = () => {
-				this.isPlaying = false;
-			};
+			return new Promise((resolve, reject) => {
+				this.currentResolve = resolve;
 
-			this.currentAudio.onerror = (error) => {
-				console.error('Audio playback error:', error);
-				this.isPlaying = false;
-			};
+				if (!this.currentAudio) return resolve();
 
-			// Play the audio
-			await this.currentAudio.play();
+				this.currentAudio.onended = () => {
+					this.isPlaying = false;
+					this.currentResolve = null;
+					resolve();
+				};
+
+				this.currentAudio.onerror = (error) => {
+					console.error('Audio playback error:', error);
+					this.isPlaying = false;
+					this.currentResolve = null;
+					// Try fallback if audio element fails
+					this.speakFallback(text).then(resolve).catch(reject);
+				};
+
+				// Play the audio
+				this.currentAudio.play().catch((err) => {
+					console.error('Play error:', err);
+					this.isPlaying = false;
+					this.currentResolve = null;
+					// Try fallback if play fails
+					this.speakFallback(text).then(resolve).catch(reject);
+				});
+			});
 		} catch (error) {
-			console.error('TTS Error:', error);
-			this.isPlaying = false;
-			throw error;
+			console.error('TTS Error, attempting fallback:', error);
+			return this.speakFallback(text);
 		}
+	}
+
+	/**
+	 * Fallback to browser's native SpeechSynthesis
+	 */
+	private async speakFallback(text: string): Promise<void> {
+		if (!('speechSynthesis' in window)) {
+			console.error('Browser does not support speech synthesis');
+			return;
+		}
+
+		this.isPlaying = true;
+
+		return new Promise((resolve, reject) => {
+			this.currentResolve = resolve;
+
+			const utterance = new SpeechSynthesisUtterance(text);
+			utterance.rate = 1.0;
+			utterance.pitch = 1.0;
+			utterance.volume = 1.0;
+
+			// Try to select a female voice if available
+			const voices = window.speechSynthesis.getVoices();
+			const femaleVoice = voices.find(v => v.name.includes('Female') || v.name.includes('Samantha') || v.name.includes('Google US English'));
+			if (femaleVoice) {
+				utterance.voice = femaleVoice;
+			}
+
+			utterance.onend = () => {
+				this.isPlaying = false;
+				this.currentResolve = null;
+				resolve();
+			};
+
+			utterance.onerror = (event) => {
+				console.error('Speech synthesis error:', event);
+				this.isPlaying = false;
+				this.currentResolve = null;
+				// Don't reject, just finish
+				resolve();
+			};
+
+			window.speechSynthesis.cancel(); // Cancel any previous
+			window.speechSynthesis.speak(utterance);
+		});
 	}
 
 	/**
@@ -80,7 +143,17 @@ class TTSService {
 			this.currentAudio.currentTime = 0;
 			this.currentAudio = null;
 		}
+
+		if ('speechSynthesis' in window) {
+			window.speechSynthesis.cancel();
+		}
+
 		this.isPlaying = false;
+
+		if (this.currentResolve) {
+			this.currentResolve();
+			this.currentResolve = null;
+		}
 	}
 
 	/**

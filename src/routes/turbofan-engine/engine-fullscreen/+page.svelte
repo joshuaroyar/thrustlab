@@ -136,6 +136,7 @@
 				{partDescriptions}
 				onModelLoaded={handleModelLoaded}
 				enableTTS={true}
+				autoLoad={true}
 			/>
 		{/key}
 	</div>
