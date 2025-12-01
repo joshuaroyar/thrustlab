@@ -6,7 +6,7 @@
 	const errorMessage = page.error?.message || 'Page not found';
 </script>
 
-<SkyBackground />
+<SkyBackground day={true} />
 
 <div class="error-page">
 
