@@ -9,6 +9,30 @@
 	import type { LayoutData } from './$types';
 	import type { AuthChangeEvent, Session } from '@supabase/supabase-js';
 
+	const TITLE_MAP: Record<string, string> = {
+		'/': 'ThrustLab | Home',
+		'/dashboard': 'ThrustLab | Mission Dashboard',
+		'/login': 'ThrustLab | Login',
+		'/sign-up': 'ThrustLab | Join ThrustLab',
+		'/profile': 'ThrustLab | Pilot Profile',
+		'/hangar-zone': 'ThrustLab | Hangar Zone',
+		'/overhaul-station': 'ThrustLab | Overhaul Station',
+		'/overhaul-station/assembly-disassembly': 'ThrustLab | Assembly & Disassembly',
+		'/overhaul-station/preliminary-module': 'ThrustLab | Preliminary Module',
+		'/test-bay': 'ThrustLab | Test Bay',
+		'/turbofan-engine': 'ThrustLab | 3D Turbofan'
+	};
+	const DEFAULT_TITLE = 'ThrustLab | Turbofan Training Hub';
+
+	function formatPathToTitle(pathname: string) {
+		if (!pathname || pathname === '/') return TITLE_MAP['/'];
+		const segment = pathname.split('/').filter(Boolean).pop() ?? '';
+		const words = segment
+			.replace(/-/g, ' ')
+			.replace(/\b\w/g, (char) => char.toUpperCase());
+		return `ThrustLab | ${words || 'Explorer'}`;
+	}
+
 	let { children, data } = $props<{ children: any; data: LayoutData }>();
 	let { supabase, session } = $derived(data);
 
@@ -18,6 +42,7 @@
 	let isHomePage = $derived(page.url.pathname === '/');
 
 	let observer: IntersectionObserver;
+	let pageTitle = $derived(TITLE_MAP[page.url.pathname] ?? formatPathToTitle(page.url.pathname) ?? DEFAULT_TITLE);
 
 	function observeElements() {
 		if (!observer) return;
@@ -66,6 +91,7 @@
 </script>
 
 <svelte:head>
+	<title>{pageTitle}</title>
 	<link rel="icon" href={favicon} />
 	<link rel="preconnect" href="https://fonts.googleapis.com" />
 	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous" />

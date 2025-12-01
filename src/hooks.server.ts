@@ -27,16 +27,10 @@ export const handle: Handle = async ({ event, resolve }) => {
 			return { session: null, user: null };
 		}
 
-		const {
-			data: { user },
-			error,
-		} = await event.locals.supabase.auth.getUser();
-
-		if (error) {
-			return { session: null, user: null };
-		}
-
-		return { session, user };
+		// Optimization: Rely on session.user to avoid a blocking network call to getUser() on every request.
+		// This significantly improves page load speeds.
+		// Security Note: Revoked tokens will remain valid until expiry (usually 1 hour).
+		return { session, user: session.user };
 	};
 
 	return resolve(event, {

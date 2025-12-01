@@ -1,525 +1,907 @@
 <script lang="ts">
 	import { onMount, onDestroy } from 'svelte';
-	import * as BABYLON from '@babylonjs/core';
-	import '@babylonjs/loaders/glTF';
-    import SkyBackground from '$lib/components/SkyBackground.svelte';
+	import { browser } from '$app/environment';
+	import { saveActivityScore, getActivityScores } from '$lib/utils/activityScore';
+	
+	let Engine: any, Scene: any, ArcRotateCamera: any, Vector3: any;
+	let HemisphericLight: any, SceneLoader: any, Color4: any, Color3: any;
+	let AbstractMesh: any, MeshBuilder: any, GizmoManager: any;
+	let PointerEventTypes: any, UtilityLayerRenderer: any;
 
-	let canvas: HTMLCanvasElement;
-	let engine: BABYLON.Engine;
-	let scene: BABYLON.Scene;
-	let highlightLayer: BABYLON.HighlightLayer;
-	let score = 0;
-	let message = 'Drag and drop each component of the turbofan engine to its correct position inside the casing. Pay attention to the order and orientation — each part has its special place in the engine!';
-	let placedComponents = new Set<string>();
-	let totalComponents = 5;
+	interface Component {
+		id: string;
+		name: string;
+		modelPath: string;
+		correctOrder: number;
+	}
 
-	const components = [
-		{ name: 'Intake Section', fileName: 'Intake Section (Gray).glb' },
-		{ name: 'Compressor Section', fileName: 'Compression Section (Gray).glb' },
-		{ name: 'Combustion Section', fileName: 'Combustion Section (Gray).glb' },
-		{ name: 'Turbine Section', fileName: 'Turbine Section (Gray).glb' },
-		{ name: 'Exhaust Section', fileName: 'Exhaust Section (Gray).glb' }
+	const COMPONENTS: Component[] = [
+		{
+			id: 'intake',
+			name: 'Intake Section',
+			modelPath: '/models/assembly-disassembly/Intake Section (Gray).glb',
+			correctOrder: 0
+		},
+		{
+			id: 'compressor',
+			name: 'Compression Section',
+			modelPath: '/models/assembly-disassembly/Compression Section (Gray).glb',
+			correctOrder: 1
+		},
+		{
+			id: 'combustion',
+			name: 'Combustion Section',
+			modelPath: '/models/assembly-disassembly/Combustion Section (Gray).glb',
+			correctOrder: 2
+		},
+		{
+			id: 'turbine',
+			name: 'Turbine Section',
+			modelPath: '/models/assembly-disassembly/Turbine Section (Gray).glb',
+			correctOrder: 3
+		},
+		{
+			id: 'exhaust',
+			name: 'Exhaust Section',
+			modelPath: '/models/assembly-disassembly/Exhaust Section (Gray).glb',
+			correctOrder: 4
+		}
 	];
 
-	// Randomize initial positions for the "tray"
-	let initialPositions: { [key: string]: BABYLON.Vector3 } = {};
-    let componentMeshes: { [key: string]: BABYLON.AbstractMesh } = {};
+	let canvas: HTMLCanvasElement;
+	let engine: any = null;
+	let scene: any = null;
+	let gizmoManager: any = null;
+	let ground: any = null;
+	let casingMesh: any = null;
+	let placedMeshes: any[] = [];
+	let componentPreviews = new Map<string, HTMLCanvasElement>();
+	let previewScenes = new Map<string, { engine: any; scene: any }>();
+	let score = $state(0);
+	let selectedMeshName = $state<string | null>(null);
+	let showInstructions = $state(true);
+	let highScore = $state(0);
+	let isSavingScore = $state(false);
+	let saveMessage = $state<{ type: 'success' | 'error'; text: string } | null>(null);
+
+	// Helper to find root mesh
+	function findRootMesh(mesh: any): any {
+		let parent = mesh;
+		while (parent.parent && parent.parent.getClassName() !== 'Scene') {
+			parent = parent.parent;
+		}
+		return parent;
+	}
+
+	// Drag and drop handler for canvas
+	function onCanvasDragOver(e: DragEvent) {
+		e.preventDefault();
+	}
+
+	async function onCanvasDrop(e: DragEvent) {
+		e.preventDefault();
+		
+		if (!scene) return;
+
+		const componentId = e.dataTransfer?.getData('componentId');
+		if (!componentId) return;
+
+		const component = COMPONENTS.find(c => c.id === componentId);
+		if (!component) return;
+
+		// Calculate 3D position from mouse coordinates
+		const pickResult = scene.pick(scene.pointerX, scene.pointerY);
+		const dropPosition = pickResult?.hit && pickResult.pickedPoint 
+			? pickResult.pickedPoint 
+			: Vector3.Zero();
+
+		try {
+			const result = await SceneLoader.ImportMeshAsync("", component.modelPath, "", scene);
+			
+			if (result.meshes.length > 0) {
+				const rootMesh = result.meshes[0];
+				rootMesh.position = dropPosition.clone();
+				rootMesh.metadata = { componentId: component.id, componentName: component.name };
+				
+				placedMeshes.push(rootMesh);
+				
+				// Auto-select the newly placed mesh
+				if (gizmoManager) {
+					gizmoManager.attachToMesh(rootMesh);
+					selectedMeshName = component.name;
+				}
+
+				score += 5; // Points for placing
+			}
+		} catch (error) {
+			console.error('Error loading component:', error);
+		}
+	}
+
+	// Create preview for component
+	async function createComponentPreview(component: Component, previewCanvas: HTMLCanvasElement) {
+		if (!browser) return;
+
+		const babylon = await import('@babylonjs/core');
+		await import('@babylonjs/loaders');
+
+		const previewEngine = new babylon.Engine(previewCanvas, true, {
+			preserveDrawingBuffer: true,
+			stencil: true
+		});
+
+		const previewScene = new babylon.Scene(previewEngine);
+		previewScene.clearColor = new babylon.Color4(0.05, 0.05, 0.05, 1);
+
+		const camera = new babylon.ArcRotateCamera(
+			'previewCamera',
+			-Math.PI / 4,
+			Math.PI / 3,
+			3,
+			babylon.Vector3.Zero(),
+			previewScene
+		);
+
+		const light = new babylon.HemisphericLight('previewLight', new babylon.Vector3(1, 1, 0), previewScene);
+		light.intensity = 1.2;
+
+		try {
+			const result = await babylon.SceneLoader.ImportMeshAsync("", component.modelPath, "", previewScene);
+			
+			if (result.meshes.length > 0) {
+				const rootMesh = result.meshes[0];
+				const bounds = rootMesh.getHierarchyBoundingVectors();
+				const center = bounds.max.add(bounds.min).scale(0.5);
+				const size = bounds.max.subtract(bounds.min);
+				const maxDim = Math.max(size.x, size.y, size.z);
+				
+				camera.target = center;
+				camera.radius = maxDim * 2;
+				
+				// Auto-rotate
+				previewScene.registerBeforeRender(() => {
+					rootMesh.rotation.y += 0.01;
+				});
+			}
+		} catch (error) {
+			console.error('Error loading preview:', error);
+		}
+
+		previewEngine.runRenderLoop(() => {
+			previewScene.render();
+		});
+
+		previewScenes.set(component.id, { engine: previewEngine, scene: previewScene });
+	}
+
+	function resetScene() {
+		if (!scene) return;
+
+		// Remove all placed meshes
+		placedMeshes.forEach(mesh => {
+			mesh.dispose();
+		});
+		placedMeshes = [];
+		
+		if (gizmoManager) {
+			gizmoManager.attachToMesh(null);
+		}
+		
+		selectedMeshName = null;
+		score = 0;
+		saveMessage = null;
+	}
+
+	async function saveScore() {
+		if (score <= 0) {
+			saveMessage = { type: 'error', text: 'Score must be greater than 0' };
+			setTimeout(() => saveMessage = null, 3000);
+			return;
+		}
+
+		isSavingScore = true;
+		saveMessage = null;
+
+		const result = await saveActivityScore({
+			activityType: 'assembly-disassembly',
+			score,
+			metadata: {
+				componentsPlaced: placedMeshes.length,
+				timestamp: new Date().toISOString()
+			}
+		});
+
+		isSavingScore = false;
+
+		if (result.success) {
+			saveMessage = { type: 'success', text: 'Score saved successfully!' };
+			// Refresh high score
+			await loadHighScore();
+		} else {
+			saveMessage = { type: 'error', text: result.error || 'Failed to save score' };
+		}
+
+		setTimeout(() => saveMessage = null, 3000);
+	}
+
+	async function loadHighScore() {
+		const result = await getActivityScores('assembly-disassembly', 1);
+		if (result.success && result.highScore !== undefined) {
+			highScore = result.highScore;
+		}
+	}
 
 	onMount(async () => {
-		if (!canvas) return;
+		if (!browser || !canvas) return;
 
-		engine = new BABYLON.Engine(canvas, true, { preserveDrawingBuffer: true, stencil: true });
-		scene = new BABYLON.Scene(engine);
-		scene.clearColor = new BABYLON.Color4(0, 0, 0, 0); // Transparent background
-		
-		highlightLayer = new BABYLON.HighlightLayer("hl1", scene);
+		// Dynamically import Babylon.js only on client side
+		const babylon = await import('@babylonjs/core');
+		await import('@babylonjs/loaders');
 
-		// Camera
-		const camera = new BABYLON.ArcRotateCamera(
+		Engine = babylon.Engine;
+		Scene = babylon.Scene;
+		ArcRotateCamera = babylon.ArcRotateCamera;
+		Vector3 = babylon.Vector3;
+		HemisphericLight = babylon.HemisphericLight;
+		SceneLoader = babylon.SceneLoader;
+		Color4 = babylon.Color4;
+		Color3 = babylon.Color3;
+		AbstractMesh = babylon.AbstractMesh;
+		MeshBuilder = babylon.MeshBuilder;
+		GizmoManager = babylon.GizmoManager;
+		PointerEventTypes = babylon.PointerEventTypes;
+		UtilityLayerRenderer = babylon.UtilityLayerRenderer;
+
+		// Initialize Babylon.js
+		engine = new Engine(canvas, true, {
+			preserveDrawingBuffer: true,
+			stencil: true
+		});
+
+		scene = new Scene(engine);
+		scene.clearColor = new Color4(0.02, 0.02, 0.05, 1);
+
+		// Camera setup
+		const camera = new ArcRotateCamera(
 			'camera',
-			Math.PI / 2,
-			Math.PI / 2.2, // Slightly from above
-			12, // Zoomed out slightly to fit everything
-			new BABYLON.Vector3(0, -1, 0), // Target slightly lower
+			-Math.PI / 2,
+			Math.PI / 2.5,
+			25,
+			Vector3.Zero(),
 			scene
 		);
 		camera.attachControl(canvas, true);
-		camera.lowerRadiusLimit = 8;
-		camera.upperRadiusLimit = 20;
-		camera.wheelPrecision = 50;
-        // Lock camera angles to keep the "side view" feel mostly
-        camera.lowerBetaLimit = Math.PI / 3;
-        camera.upperBetaLimit = Math.PI / 1.8;
+		camera.lowerRadiusLimit = 10;
+		camera.upperRadiusLimit = 60;
 
 		// Lighting
-		new BABYLON.HemisphericLight('light1', new BABYLON.Vector3(0, 1, 0), scene);
-		const dirLight = new BABYLON.DirectionalLight('dir01', new BABYLON.Vector3(-1, -2, -1), scene);
-		dirLight.position = new BABYLON.Vector3(20, 40, 20);
-        dirLight.intensity = 1.2;
+		const light = new HemisphericLight('light', new Vector3(1, 1, 0), scene);
+		light.intensity = 1.5;
 
-		// Load Casing (Base)
+		// Create ground for picking
+		ground = MeshBuilder.CreateGround('ground', { width: 50, height: 50 }, scene);
+		ground.isPickable = true;
+		ground.visibility = 0.1;
+
+		// Load casing model
 		try {
-			const casingResult = await BABYLON.SceneLoader.ImportMeshAsync(
+			const result = await SceneLoader.ImportMeshAsync(
 				'',
-				'/models/assembly-disassembly/',
-				'Casing (Gray).glb',
+				'/models/assembly-disassembly/Casing (Gray).glb',
+				'',
 				scene
 			);
+			casingMesh = result.meshes[0];
 			
-			casingResult.meshes.forEach((m) => {
-				m.isPickable = false; // Casing is not draggable
-                m.position.y = 1.5; // Move casing UP
-			});
-		} catch (e) {
-			console.error('Error loading casing:', e);
+			if (casingMesh) {
+				const bounds = casingMesh.getHierarchyBoundingVectors();
+				const center = bounds.max.add(bounds.min).scale(0.5);
+				camera.target = center;
+				casingMesh.isPickable = false; // Don't select the casing
+			}
+		} catch (error) {
+			console.error('Error loading casing:', error);
 		}
 
-		// Load Components
-        await loadComponents();
+		// Setup Gizmo Manager
+		gizmoManager = new GizmoManager(scene);
+		gizmoManager.positionGizmoEnabled = true;
+		gizmoManager.rotationGizmoEnabled = true;
+		gizmoManager.scaleGizmoEnabled = false;
+		gizmoManager.usePointerToAttachGizmos = false;
+		
+		if (gizmoManager.gizmos.positionGizmo) {
+			gizmoManager.gizmos.positionGizmo.scaleRatio = 2;
+		}
 
+		// Click to select logic
+		scene.onPointerObservable.add((pointerInfo: any) => {
+			if (pointerInfo.type === PointerEventTypes.POINTERDOWN) {
+				if (pointerInfo.pickInfo?.hit && pointerInfo.pickInfo.pickedMesh) {
+					const mesh = pointerInfo.pickInfo.pickedMesh;
+					
+					if (mesh.name === 'ground' || mesh === casingMesh) {
+						gizmoManager.attachToMesh(null);
+						selectedMeshName = null;
+					} else {
+						const root = findRootMesh(mesh);
+						gizmoManager.attachToMesh(root);
+						selectedMeshName = root.metadata?.componentName || root.name;
+					}
+				} else {
+					gizmoManager.attachToMesh(null);
+					selectedMeshName = null;
+				}
+			}
+		});
+
+		// Keyboard shortcuts
+		scene.onKeyboardObservable.add((kbInfo: any) => {
+			if (kbInfo.type === 2) { // KEYDOWN
+				switch (kbInfo.event.key.toLowerCase()) {
+					case 'w':
+						gizmoManager.positionGizmoEnabled = true;
+						gizmoManager.rotationGizmoEnabled = false;
+						gizmoManager.scaleGizmoEnabled = false;
+						break;
+					case 'e':
+						gizmoManager.positionGizmoEnabled = false;
+						gizmoManager.rotationGizmoEnabled = true;
+						gizmoManager.scaleGizmoEnabled = false;
+						break;
+					case 'r':
+						gizmoManager.positionGizmoEnabled = false;
+						gizmoManager.rotationGizmoEnabled = false;
+						gizmoManager.scaleGizmoEnabled = true;
+						break;
+					case 'escape':
+						gizmoManager.attachToMesh(null);
+						selectedMeshName = null;
+						break;
+					case 'delete':
+					case 'backspace':
+						if (gizmoManager.gizmos.positionGizmo?.attachedMesh) {
+							const meshToDelete = gizmoManager.gizmos.positionGizmo.attachedMesh;
+							gizmoManager.attachToMesh(null);
+							meshToDelete.dispose();
+							placedMeshes = placedMeshes.filter(m => m !== meshToDelete);
+							selectedMeshName = null;
+							score = Math.max(0, score - 5);
+						}
+						break;
+				}
+			}
+		});
+
+		// Render loop
 		engine.runRenderLoop(() => {
-			scene.render();
+			scene?.render();
 		});
 
-		window.addEventListener('resize', () => {
-			engine.resize();
-		});
+		// Handle resize
+		if (browser && typeof window !== 'undefined') {
+			window.addEventListener('resize', handleResize);
+		}
+
+		// Load high score
+		await loadHighScore();
 	});
 
-    async function loadComponents() {
-        // We'll place them in a row at Y = -3.5 (closer to casing), spread along X
-		const startX = -6;
-		const spacing = 3;
-
-		// Shuffle the components array for random placement order
-		const shuffledComponents = [...components].sort(() => Math.random() - 0.5);
-
-		for (let i = 0; i < shuffledComponents.length; i++) {
-			const comp = shuffledComponents[i];
-			try {
-				const result = await BABYLON.SceneLoader.ImportMeshAsync(
-					'',
-					'/models/assembly-disassembly/',
-					comp.fileName,
-					scene
-				);
-				
-				const rootMesh = result.meshes[0];
-                componentMeshes[comp.name] = rootMesh;
-				
-				// Calculate initial position
-				const posX = startX + i * spacing;
-				const initialPos = new BABYLON.Vector3(posX, -3.5, 0); // Place below casing
-				rootMesh.position = initialPos.clone();
-				
-				// Store initial pos for reset
-				initialPositions[comp.name] = initialPos;
-
-				// Add metadata
-				rootMesh.metadata = { name: comp.name, isPlaced: false };
-
-				// Add Drag Behavior
-				const dragBehavior = new BABYLON.PointerDragBehavior({
-					dragPlaneNormal: new BABYLON.Vector3(0, 0, 1) // Drag on XY plane
-				});
-				
-				dragBehavior.onDragStartObservable.add(() => {
-					if (!rootMesh.metadata.isPlaced) {
-						// Optional: visual feedback
-					}
-				});
-
-				dragBehavior.onDragEndObservable.add((event) => {
-                    if (rootMesh.metadata.isPlaced) return;
-
-					const targetPos = new BABYLON.Vector3(0, 1.5, 0); // Target is now shifted up
-					const currentPos = rootMesh.position;
-					const distance = BABYLON.Vector3.Distance(currentPos, targetPos);
-
-					// Threshold for snapping
-					if (distance < 2.5) {
-						handleCorrectPlacement(rootMesh, comp.name);
-					} else {
-						handleIncorrectPlacement(rootMesh, comp.name);
-					}
-				});
-
-				rootMesh.addBehavior(dragBehavior);
-
-			} catch (e) {
-				console.error(`Error loading ${comp.name}:`, e);
-			}
-		}
-    }
-
-	function handleCorrectPlacement(mesh: BABYLON.AbstractMesh, name: string) {
-		// Snap to correct position (relative to casing at y=1.5)
-		mesh.position = new BABYLON.Vector3(0, 1.5, 0);
-        
-		// Highlight Green
-		highlightMesh(mesh, new BABYLON.Color3(0, 1, 0));
-
-		// Disable Drag
-        const dragBehavior = mesh.getBehaviorByName("PointerDrag");
-        if (dragBehavior) {
-            mesh.removeBehavior(dragBehavior);
-        }
-        
-        mesh.metadata.isPlaced = true;
-        placedComponents.add(name);
-        placedComponents = placedComponents; // Trigger reactivity
-        
-        // Update Score
-        score += 10;
-        // message = `Correct! ${name} placed.`;
-
-        checkCompletion();
-	}
-
-	function handleIncorrectPlacement(mesh: BABYLON.AbstractMesh, name: string) {
-		// Highlight Red temporarily
-		highlightMesh(mesh, new BABYLON.Color3(1, 0, 0));
-        
-        setTimeout(() => {
-             removeHighlight(mesh);
-             // Return to start
-             const initPos = initialPositions[name];
-             if (initPos) {
-                 const anim = BABYLON.Animation.CreateAndStartAnimation(
-                     "returnAnim",
-                     mesh,
-                     "position",
-                     30,
-                     30,
-                     mesh.position.clone(),
-                     initPos.clone(),
-                     BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT
-                 );
-             }
-        }, 500);
-
-        // score -= 5;
-        // message = `Incorrect placement for ${name}. Try again.`;
-	}
-
-    function highlightMesh(mesh: BABYLON.AbstractMesh, color: BABYLON.Color3) {
-        mesh.getChildMeshes().forEach(m => {
-            if (m instanceof BABYLON.Mesh) {
-                highlightLayer.addMesh(m, color);
-            }
-        });
-    }
-
-    function removeHighlight(mesh: BABYLON.AbstractMesh) {
-         mesh.getChildMeshes().forEach(m => {
-            if (m instanceof BABYLON.Mesh) {
-                highlightLayer.removeMesh(m);
-            }
-        });
-    }
-
-	function checkCompletion() {
-		if (placedComponents.size === totalComponents) {
-			message = `Congratulations! You completed the assembly!`;
-		}
-	}
-	
-	function shuffleComponents() {
-        // Reset all unplaced components
-        const unplaced = components.filter(c => !placedComponents.has(c.name));
-        const shuffled = [...unplaced].sort(() => Math.random() - 0.5);
-        
-        const startX = -6;
-		const spacing = 3;
-        
-        // Recalculate positions for unplaced items
-        // We might need to clear existing meshes and reload or just move them?
-        // Moving them is better.
-        
-        let index = 0;
-        // We need to find the meshes for these components
-        // But wait, the meshes are already in the scene.
-        // Let's just re-assign positions to the meshes that are NOT placed.
-        
-        // Get all unplaced meshes
-        const meshesToMove: BABYLON.AbstractMesh[] = [];
-        scene.meshes.forEach(m => {
-            if (m.metadata && m.metadata.name && !m.metadata.isPlaced && m.parent === null) {
-                 // This is a root mesh of a component
-                 meshesToMove.push(m);
-            }
-        });
-        
-        // Shuffle the meshes array
-        meshesToMove.sort(() => Math.random() - 0.5);
-        
-        meshesToMove.forEach((mesh, i) => {
-             const posX = startX + i * spacing;
-             const newPos = new BABYLON.Vector3(posX, -3.5, 0);
-             
-             // Animate to new pos
-             BABYLON.Animation.CreateAndStartAnimation(
-                 "shuffleAnim",
-                 mesh,
-                 "position",
-                 30,
-                 30,
-                 mesh.position.clone(),
-                 newPos,
-                 BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT
-             );
-             
-             // Update initial pos reference
-             if (mesh.metadata && mesh.metadata.name) {
-                 initialPositions[mesh.metadata.name] = newPos;
-             }
-        });
+	function handleResize() {
+		engine?.resize();
 	}
 
 	onDestroy(() => {
-		if (engine) {
-			engine.dispose();
+		if (browser && typeof window !== 'undefined') {
+			window.removeEventListener('resize', handleResize);
 		}
+		
+		// Dispose preview scenes
+		previewScenes.forEach(({ engine, scene }) => {
+			scene?.dispose();
+			engine?.dispose();
+		});
+		previewScenes.clear();
+		
+		scene?.dispose();
+		engine?.dispose();
 	});
+    
+    function initPreview(node: HTMLCanvasElement, component: Component) {
+		if (browser) {
+			tick().then(() => {
+				createComponentPreview(component, node);
+				componentPreviews.set(component.id, node);
+			});
+		}
+		
+		return {
+			destroy() {}
+		};
+	}
 </script>
 
-<div class="activity-wrapper">
-    <!-- Sky Background -->
-    <SkyBackground day={true} />
+<div class="assembly-container">
+	<!-- Instructions Banner -->
+	{#if showInstructions}
+		<div class="instructions-banner">
+			<div class="instructions-content">
+				<h3>🎮 Controls</h3>
+				<div class="controls-grid">
+					<div><kbd>W</kbd> Position Mode</div>
+					<div><kbd>E</kbd> Rotation Mode</div>
+					<div><kbd>ESC</kbd> Deselect</div>
+					<div><kbd>DEL</kbd> Delete Selected</div>
+				</div>
+				<p>Drag components from below onto the canvas. Click to select and use gizmos to position/rotate.</p>
+			</div>
+			<button class="close-instructions" onclick={() => showInstructions = false}>✕</button>
+		</div>
+	{/if}
 
-    <!-- Header Section -->
-    <div class="header-section">
-        <!-- Speech Bubble Box -->
-        <div class="speech-bubble">
-            <p class="speech-text">
-                <span class="speech-label">JAJA:</span> Yey! You've mastered the fundamentals of the turbofan engine!
-                Now it's time to put that knowledge into action.
-            </p>
-        </div>
-        
-        <!-- Character Image -->
-        <div class="character-container">
-            <img src="/images/jaja-standing.png" alt="Jaja Character" class="character-image" />
-        </div>
-    </div>
+	<!-- Main Canvas -->
+	<div class="canvas-wrapper">
+		<canvas 
+			bind:this={canvas} 
+			class="assembly-canvas"
+			ondragover={onCanvasDragOver}
+			ondrop={onCanvasDrop}
+		></canvas>
 
-    <!-- Main Activity Card -->
-    <div class="activity-card">
-        
-        <!-- Title -->
-        <h1 class="activity-title">
-            Assembly and Disassembly <br/> Activity
-        </h1>
+		<!-- Status Overlay -->
+		<div class="status-overlay">
+			<div class="score-badge">
+				<span class="score-label">Score</span>
+				<span class="score-value">{score}</span>
+			</div>
+			{#if highScore > 0}
+				<div class="high-score-badge">
+					<span class="high-score-label">High Score</span>
+					<span class="high-score-value">{highScore}</span>
+				</div>
+			{/if}
+			{#if selectedMeshName}
+				<div class="selected-badge">
+					Selected: {selectedMeshName}
+				</div>
+			{/if}
+		</div>
+	</div>
 
-        <!-- Instructions -->
-        <p class="activity-instructions">
-            <span class="instruction-label">Instruction:</span> {message}
-        </p>
+	<!-- Components Shelf -->
+	<div class="components-shelf">
+		<h3 class="shelf-title">Component Parts</h3>
+		<div class="shelf-grid">
+			{#each COMPONENTS as component (component.id)}
+				<div
+					class="component-card"
+					draggable="true"
+					ondragstart={(e) => {
+						e.dataTransfer?.setData('componentId', component.id);
+					}}
+					role="button"
+					tabindex="0"
+				>
+					<div class="component-preview-wrapper">
+						<canvas
+							class="component-preview"
+							use:initPreview={component}
+						></canvas>
+					</div>
+					<div class="component-info">
+						<div class="component-name">{component.name}</div>
+						<div class="drag-hint">Drag to canvas</div>
+					</div>
+				</div>
+			{/each}
+		</div>
+	</div>
 
-        <!-- 3D Canvas Area -->
-        <div class="canvas-container">
-            <canvas bind:this={canvas} class="babylon-canvas"></canvas>
-        </div>
+	<!-- Control Buttons -->
+	<div class="controls">
+		<button class="control-btn reset-btn" onclick={resetScene}>
+			<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+				<path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/>
+				<path d="M21 3v5h-5"/>
+			</svg>
+			Reset Scene
+		</button>
+		<button class="control-btn save-btn" onclick={saveScore} disabled={isSavingScore || score <= 0}>
+			<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+				<path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/>
+				<polyline points="17 21 17 13 7 13 7 21"/>
+				<polyline points="7 3 7 8 15 8"/>
+			</svg>
+			{isSavingScore ? 'Saving...' : 'Save Score'}
+		</button>
+		<button class="control-btn help-btn" onclick={() => showInstructions = !showInstructions}>
+			<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+				<circle cx="12" cy="12" r="10"/>
+				<path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/>
+				<line x1="12" y1="17" x2="12.01" y2="17"/>
+			</svg>
+			Help
+		</button>
+	</div>
 
-        <!-- Shuffle Button -->
-        <button 
-            onclick={shuffleComponents}
-            class="shuffle-button"
-        >
-            SHUFFLE
-        </button>
-    </div>
+	<!-- Save Message -->
+	{#if saveMessage}
+		<div class="save-message" class:success={saveMessage.type === 'success'} class:error={saveMessage.type === 'error'}>
+			{saveMessage.text}
+		</div>
+	{/if}
 </div>
 
+<!-- Svelte action for initializing previews -->
+<script module lang="ts">
+	import { tick } from 'svelte';
+</script>
+
 <style>
-    /* Wrapper */
-    .activity-wrapper {
-        min-height: 100vh;
-        width: 100%;
-        position: relative;
-        overflow-x: hidden;
-        padding: 2rem;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-    }
+	.assembly-container {
+		width: 100%;
+		display: flex;
+		flex-direction: column;
+		gap: 1.5rem;
+		position: relative;
+	}
 
-    /* Header Section */
-    .header-section {
-        position: relative;
-        max-width: 64rem; /* max-w-5xl */
-        width: 100%;
-        margin: 2rem auto;
-        display: flex;
-        justify-content: flex-end;
-    }
+	/* Instructions Banner */
+	.instructions-banner {
+		background: linear-gradient(135deg, rgba(255, 204, 0, 0.15), rgba(135, 206, 235, 0.15));
+		border: 2px solid var(--ui-yellow);
+		border-radius: 1rem;
+		padding: 1.5rem;
+		position: relative;
+		animation: slideDown 0.3s ease;
+	}
 
-    /* Speech Bubble */
-    .speech-bubble {
-        background: rgba(10, 47, 53, 0.85);
-        backdrop-filter: blur(12px);
-        -webkit-backdrop-filter: blur(12px);
-        border: 1px solid var(--ui-yellow);
-        padding: 1.5rem;
-        border-radius: 1rem;
-        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
-        position: relative;
-        z-index: 10;
-        margin-right: 8rem; /* Space for character */
-        max-width: 600px;
-    }
-
-    .speech-text {
-        font-family: var(--font-body);
-        font-size: 1.125rem; /* text-lg */
-        color: var(--font-secondary);
-        font-weight: 500;
-        line-height: 1.6;
-    }
-
-    .speech-label {
-        font-family: var(--font-heading);
-        font-weight: 800;
-        color: var(--ui-yellow);
-    }
-
-    /* Character */
-    .character-container {
-        position: absolute;
-        right: -1rem;
-        top: -1rem;
-        z-index: 20;
-        width: 10rem; /* w-40 */
-        height: 12rem; /* h-48 */
-    }
-
-    .character-image {
-        width: 100%;
-        height: 100%;
-        object-fit: contain;
-        filter: drop-shadow(0 10px 15px rgba(0, 0, 0, 0.3));
-    }
-
-    /* Main Activity Card */
-    .activity-card {
-        width: 100%;
-        max-width: 72rem; /* max-w-6xl */
-        background: rgba(10, 47, 53, 0.6);
-        backdrop-filter: blur(20px) saturate(180%);
-        -webkit-backdrop-filter: blur(20px) saturate(180%);
-        border-radius: 2rem;
-        padding: 2rem;
-        border: 2px solid rgba(135, 206, 235, 0.3);
-        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
-        position: relative;
-        z-index: 0;
-        min-height: 600px;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-    }
-
-    /* Title */
-    .activity-title {
-        font-family: var(--font-heading);
-        font-size: clamp(2rem, 4vw, 3rem);
-        font-weight: 900;
-        text-align: center;
-        margin-bottom: 1.5rem;
-        background: linear-gradient(
-            90deg,
-            var(--ui-yellow) 0%,
-            var(--font-accent-cyan) 20%,
-            var(--ui-light-blue) 40%,
-            var(--font-accent-yellow) 60%,
-            var(--ui-yellow) 80%,
-            var(--font-accent-cyan) 100%
-        );
-        background-size: 300% 100%;
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-        background-clip: text;
-        animation: gradient-flash 4s ease-in-out infinite;
-        filter: drop-shadow(0 4px 20px rgba(0, 0, 0, 0.5));
-    }
-
-    @keyframes gradient-flash {
-		0%, 100% {
-			background-position: 0% 50%;
+	@keyframes slideDown {
+		from {
+			opacity: 0;
+			transform: translateY(-20px);
 		}
-		25% {
-			background-position: 50% 50%;
-		}
-		50% {
-			background-position: 100% 50%;
-		}
-		75% {
-			background-position: 50% 50%;
+		to {
+			opacity: 1;
+			transform: translateY(0);
 		}
 	}
 
-    /* Instructions */
-    .activity-instructions {
-        text-align: center;
-        color: var(--font-secondary);
-        max-width: 56rem; /* max-w-4xl */
-        margin-bottom: 1rem;
-        font-size: 1.125rem; /* text-lg */
-        line-height: 1.625;
-        font-family: var(--font-body);
-    }
+	.instructions-content h3 {
+		font-family: var(--font-heading);
+		color: var(--ui-yellow);
+		margin: 0 0 1rem 0;
+		font-size: 1.25rem;
+	}
 
-    .instruction-label {
-        font-weight: 700;
-        color: var(--font-accent-yellow);
-    }
+	.controls-grid {
+		display: grid;
+		grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+		gap: 0.75rem;
+		margin-bottom: 1rem;
+		font-family: var(--font-body);
+		color: var(--font-secondary);
+	}
 
-    /* Canvas Area */
-    .canvas-container {
-        position: relative;
-        width: 100%;
-        flex-grow: 1;
-        min-height: 500px;
-        border-radius: 1rem;
-        overflow: hidden;
-        /* Optional: Add a subtle inner border/glow */
-        border: 1px solid rgba(255, 255, 255, 0.1);
-        background: rgba(0, 0, 0, 0.2);
-    }
+	.controls-grid kbd {
+		background: rgba(0, 0, 0, 0.5);
+		padding: 0.25rem 0.5rem;
+		border-radius: 0.25rem;
+		border: 1px solid var(--ui-yellow);
+		font-family: var(--font-heading);
+		font-weight: 700;
+		color: var(--ui-yellow);
+		margin-right: 0.5rem;
+	}
 
-    .babylon-canvas {
-        width: 100%;
-        height: 100%;
-        touch-action: none;
-        outline: none;
-    }
+	.instructions-content p {
+		color: var(--font-secondary);
+		margin: 0;
+		font-family: var(--font-body);
+	}
 
-    /* Shuffle Button */
-    .shuffle-button {
-        margin-top: 1.5rem;
-        background: linear-gradient(135deg, var(--ui-yellow) 0%, var(--font-accent-yellow) 100%);
-        color: #0f172a; /* Dark slate for contrast against yellow */
-        font-family: var(--font-heading);
-        font-weight: 800;
-        font-size: 1.1rem;
-        padding: 0.75rem 3rem;
-        border-radius: 9999px;
-        box-shadow: 0 4px 15px rgba(255, 215, 0, 0.3);
-        border: none;
-        cursor: pointer;
-        transition: all 0.2s ease;
-        text-transform: uppercase;
-        letter-spacing: 1px;
-    }
+	.close-instructions {
+		position: absolute;
+		top: 1rem;
+		right: 1rem;
+		background: rgba(0, 0, 0, 0.5);
+		border: 2px solid var(--ui-yellow);
+		color: var(--ui-yellow);
+		width: 2rem;
+		height: 2rem;
+		border-radius: 50%;
+		cursor: pointer;
+		font-size: 1.25rem;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		transition: all 0.3s ease;
+	}
 
-    .shuffle-button:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 6px 20px rgba(255, 215, 0, 0.5);
-        filter: brightness(1.1);
-    }
+	.close-instructions:hover {
+		background: var(--ui-yellow);
+		color: var(--bg-dark);
+		transform: rotate(90deg);
+	}
 
-    .shuffle-button:active {
-        transform: translateY(0);
-        filter: brightness(0.95);
-    }
+	/* Canvas */
+	.canvas-wrapper {
+		position: relative;
+		width: 100%;
+		height: 600px;
+		background: linear-gradient(135deg, rgba(0, 0, 0, 0.5), rgba(10, 47, 53, 0.5));
+		border-radius: 1rem;
+		overflow: hidden;
+		border: 2px solid rgba(135, 206, 235, 0.3);
+		box-shadow: inset 0 4px 20px rgba(0, 0, 0, 0.3);
+	}
+
+	.assembly-canvas {
+		width: 100%;
+		height: 100%;
+		display: block;
+		outline: none;
+		cursor: crosshair;
+	}
+
+	/* Status Overlay */
+	.status-overlay {
+		position: absolute;
+		top: 1rem;
+		right: 1rem;
+		display: flex;
+		flex-direction: column;
+		gap: 0.75rem;
+		align-items: flex-end;
+		pointer-events: none;
+	}
+
+	.score-badge {
+		background: rgba(0, 0, 0, 0.8);
+		border: 2px solid var(--ui-yellow);
+		border-radius: 0.75rem;
+		padding: 0.75rem 1.25rem;
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: 0.25rem;
+		box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+	}
+
+	.score-label {
+		font-family: var(--font-heading);
+		font-size: 0.875rem;
+		color: var(--font-accent-yellow);
+		font-weight: 700;
+		text-transform: uppercase;
+		letter-spacing: 0.05em;
+	}
+
+	.score-value {
+		font-family: var(--font-heading);
+		font-size: 2rem;
+		font-weight: 900;
+		color: var(--ui-yellow);
+		line-height: 1;
+	}
+
+	.selected-badge {
+		background: rgba(135, 206, 235, 0.2);
+		border: 2px solid var(--ui-light-blue);
+		border-radius: 0.5rem;
+		padding: 0.5rem 1rem;
+		font-family: var(--font-heading);
+		font-size: 0.875rem;
+		color: var(--ui-light-blue);
+		font-weight: 700;
+		box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+	}
+
+	.high-score-badge {
+		background: rgba(255, 215, 0, 0.2);
+		border: 2px solid gold;
+		border-radius: 0.75rem;
+		padding: 0.75rem 1.25rem;
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: 0.25rem;
+		box-shadow: 0 4px 12px rgba(255, 215, 0, 0.3);
+	}
+
+	.high-score-label {
+		font-family: var(--font-heading);
+		font-size: 0.75rem;
+		color: gold;
+		font-weight: 700;
+		text-transform: uppercase;
+		letter-spacing: 0.05em;
+	}
+
+	.high-score-value {
+		font-family: var(--font-heading);
+		font-size: 1.5rem;
+		font-weight: 900;
+		color: gold;
+		line-height: 1;
+	}
+
+	/* Components Shelf */
+	.components-shelf {
+		background: rgba(0, 0, 0, 0.3);
+		border: 2px solid rgba(135, 206, 235, 0.3);
+		border-radius: 1rem;
+		padding: 1.5rem;
+	}
+
+	.shelf-title {
+		font-family: var(--font-heading);
+		font-size: 1.5rem;
+		font-weight: 800;
+		color: var(--ui-yellow);
+		margin: 0 0 1.5rem 0;
+		text-align: center;
+	}
+
+	.shelf-grid {
+		display: grid;
+		grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+		gap: 1.5rem;
+	}
+
+	.component-card {
+		background: rgba(10, 47, 53, 0.8);
+		border: 2px solid rgba(135, 206, 235, 0.5);
+		border-radius: 1rem;
+		overflow: hidden;
+		cursor: grab;
+		transition: all 0.3s ease;
+		display: flex;
+		flex-direction: column;
+	}
+
+	.component-card:hover {
+		border-color: var(--ui-yellow);
+		transform: translateY(-4px);
+		box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+	}
+
+	.component-card:active {
+		cursor: grabbing;
+	}
+
+	.component-preview-wrapper {
+		width: 100%;
+		height: 150px;
+		background: rgba(0, 0, 0, 0.5);
+		position: relative;
+	}
+
+	.component-preview {
+		width: 100%;
+		height: 100%;
+		display: block;
+	}
+
+	.component-info {
+		padding: 1rem;
+		text-align: center;
+	}
+
+	.component-name {
+		font-family: var(--font-heading);
+		font-size: 1rem;
+		font-weight: 700;
+		color: var(--font-secondary);
+		margin-bottom: 0.5rem;
+	}
+
+	.drag-hint {
+		font-family: var(--font-body);
+		font-size: 0.8rem;
+		color: var(--font-accent-cyan);
+		font-style: italic;
+	}
+
+	/* Controls */
+	.controls {
+		display: flex;
+		justify-content: center;
+		gap: 1rem;
+		flex-wrap: wrap;
+	}
+
+	.control-btn {
+		display: flex;
+		align-items: center;
+		gap: 0.5rem;
+		padding: 0.75rem 1.5rem;
+		border: none;
+		border-radius: 0.75rem;
+		font-family: var(--font-heading);
+		font-size: 1rem;
+		font-weight: 700;
+		cursor: pointer;
+		transition: all 0.3s ease;
+		box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+	}
+
+	.reset-btn {
+		background: linear-gradient(135deg, var(--ui-yellow), var(--font-accent-yellow));
+		color: var(--bg-dark);
+	}
+
+	.help-btn {
+		background: linear-gradient(135deg, var(--ui-light-blue), var(--font-accent-cyan));
+		color: var(--bg-dark);
+	}
+
+	.save-btn {
+		background: linear-gradient(135deg, #10b981, #059669);
+		color: white;
+	}
+
+	.save-btn:disabled {
+		opacity: 0.5;
+		cursor: not-allowed;
+	}
+
+	.save-btn:disabled:hover {
+		transform: none;
+	}
+
+	.control-btn:hover {
+		transform: translateY(-2px);
+		box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4);
+	}
+
+	.control-btn:active {
+		transform: translateY(0);
+	}
+
+	.control-btn svg {
+		flex-shrink: 0;
+	}
+
+	/* Save Message */
+	.save-message {
+		padding: 1rem 1.5rem;
+		border-radius: 0.75rem;
+		font-family: var(--font-heading);
+		font-weight: 700;
+		text-align: center;
+		animation: slideDown 0.3s ease;
+	}
+
+	.save-message.success {
+		background: rgba(16, 185, 129, 0.2);
+		border: 2px solid #10b981;
+		color: #10b981;
+	}
+
+	.save-message.error {
+		background: rgba(239, 68, 68, 0.2);
+		border: 2px solid #ef4444;
+		color: #ef4444;
+	}
+
+	/* Responsive */
+	@media (max-width: 768px) {
+		.canvas-wrapper {
+			height: 400px;
+		}
+
+		.shelf-grid {
+			grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+			gap: 1rem;
+		}
+
+		.component-preview-wrapper {
+			height: 120px;
+		}
+
+		.controls-grid {
+			grid-template-columns: 1fr 1fr;
+		}
+	}
 </style>

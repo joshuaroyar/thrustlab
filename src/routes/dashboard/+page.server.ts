@@ -1,7 +1,7 @@
 import { redirect } from '@sveltejs/kit';
 import { db } from '$lib/server/db';
 import { tests, testQuestions, user as userTable } from '$lib/server/db/schema';
-import { eq, desc } from 'drizzle-orm';
+import { eq, desc, inArray } from 'drizzle-orm';
 import type { PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async ({ locals: { safeGetSession } }) => {
@@ -11,21 +11,16 @@ export const load: PageServerLoad = async ({ locals: { safeGetSession } }) => {
         throw redirect(303, '/login');
     }
 
-    // Fetch user profile from DB
-    let dbUser = null;
-    try {
-        const result = await db.select().from(userTable).where(eq(userTable.id, user.id));
-        dbUser = result[0];
-    } catch (e) {
-        console.error('Error fetching user profile:', e);
-    }
+    // Parallelize initial fetches
+    const [userProfileResult, userTests] = await Promise.all([
+        db.select().from(userTable).where(eq(userTable.id, user.id)),
+        db.select()
+            .from(tests)
+            .where(eq(tests.userId, user.id))
+            .orderBy(desc(tests.testDate))
+    ]);
 
-    // Fetch user's test history
-    const userTests = await db
-        .select()
-        .from(tests)
-        .where(eq(tests.userId, user.id))
-        .orderBy(desc(tests.testDate));
+    const dbUser = userProfileResult[0];
 
     // Fetch questions for the recent tests (last 5)
     const recentTests = userTests.slice(0, 5);
@@ -33,20 +28,11 @@ export const load: PageServerLoad = async ({ locals: { safeGetSession } }) => {
 
     let recentTestQuestions: any[] = [];
     if (recentTestIds.length > 0) {
-        // We need to fetch questions for these tests
-        // Since we can't easily do "where in" with the current setup without importing 'inArray', 
-        // let's just loop or fetch all for these IDs. 
-        // Actually, let's import inArray if possible, or just map.
-        // For simplicity and to avoid import issues if not available, I'll just fetch all testQuestions 
-        // that match the testIds.
-
-        // A simple way is to fetch all testQuestions for these IDs.
-        // But let's try to be efficient.
-        // I'll just fetch them one by one or use a raw query if needed, but let's try to use the ORM.
-        // I'll assume I can filter by testId.
-
-        const allQuestions = await db.select().from(testQuestions);
-        recentTestQuestions = allQuestions.filter(q => q.testId !== null && recentTestIds.includes(q.testId));
+        // Optimized query using inArray
+        recentTestQuestions = await db
+            .select()
+            .from(testQuestions)
+            .where(inArray(testQuestions.testId, recentTestIds));
     }
 
     // Calculate stats

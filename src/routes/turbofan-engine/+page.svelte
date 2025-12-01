@@ -3,6 +3,9 @@
 	import { goto } from '$app/navigation';
 	import ModelViewer from '$lib/components/ModelViewer.svelte';
 	import { turbofanPartDescriptions } from '$lib/data/turbofanParts';
+	import { searchQuery, showSearchModal, performSearch } from '$lib/stores/searchStore';
+	import { MODULE_CONTENT } from '$lib/data/searchContent';
+	import SearchModal from '$lib/components/SearchModal.svelte';
 
 	let mounted = $state(false);
 
@@ -48,6 +51,13 @@
 	];
 
 	const turbofanParts = turbofanPartDescriptions;
+
+	function handleSearch() {
+		if ($searchQuery.trim()) {
+			performSearch($searchQuery, MODULE_CONTENT);
+			showSearchModal.set(true);
+		}
+	}
 
 	function scrollToMoreInfo() {
 		const moreInfoElement = document.getElementById('more-info-section');
@@ -115,6 +125,8 @@
 
 <!-- Main Content -->
 <div class="turbofan-page">
+	<SearchModal />
+	
 	<!-- Title Section -->
 	<h1 class="main-title">Turbofan Engine</h1>
 
@@ -125,6 +137,25 @@
 		inner workings of every section, and gain a clear understanding of how these powerful machines
 		drive modern aircraft to the skies.
 	</p>
+
+	<!-- Search Bar -->
+	<div class="search-section">
+		<div class="search-container">
+			<input 
+				type="text" 
+				placeholder="Search turbofan components, sections, or concepts..." 
+				bind:value={$searchQuery}
+				onkeydown={(e) => e.key === 'Enter' && handleSearch()}
+				class="search-input"
+			/>
+			<button onclick={handleSearch} class="search-button" aria-label="Search">
+				<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+					<circle cx="11" cy="11" r="8"></circle>
+					<path d="m21 21-4.35-4.35"></path>
+				</svg>
+			</button>
+		</div>
+	</div>
 
 	<!-- Tab Toggle Buttons -->
 	<div class="tab-buttons">
@@ -152,6 +183,7 @@
 						modelPath="/models/Turbofan (Caseless).glb"
 						partDescriptions={turbofanParts}
 						cameraPosition={{ alpha: Math.PI / 2, beta: Math.PI / 2.5, radius: 8 }}
+						autoLoad={true}
 					/>
 					<button
 						class="zoom-icon"
@@ -409,7 +441,7 @@
 							includes the air inlet duct and the compressor section.
 						</p>
 						<div class="image-wrapper" style="height: 500px; width: 100%;">
-							<ModelViewer modelPath="/models/Turbofan (Caseless).glb" />
+							<ModelViewer modelPath="/models/Turbofan (Caseless).glb" autoLoad={true} />
 						</div>
 					</section>
 
@@ -418,7 +450,7 @@
 						<h3 class="section-heading">COLD SECTION</h3>
 						<h4 class="subsection-heading">AIR INLET</h4>
 						<div class="image-wrapper" style="height: 400px; width: 100%;">
-							<ModelViewer modelPath="/models/Intake.glb" />
+							<ModelViewer modelPath="/models/Intake.glb" autoLoad={true} />
 						</div>
 						<p class="content-text">
 							The air intake of a gas turbine engine is either built into the airframe itself, if
@@ -539,7 +571,7 @@
 					<section class="content-section">
 						<h3 class="section-heading">COMPRESSOR SECTION</h3>
 						<div class="image-wrapper" style="height: 400px; width: 100%;">
-							<ModelViewer modelPath="/models/Compression.glb" />
+							<ModelViewer modelPath="/models/Compression.glb" autoLoad={true} />
 						</div>
 						<p class="content-text">
 							The second major section and also a part of the cold section of a gas turbine engine
@@ -948,7 +980,7 @@
 						<h3 class="section-heading">HOT SECTION</h3>
 						<h4 class="subsection-heading">COMBUSTION SECTION</h4>
 						<div class="image-wrapper" style="height: 400px; width: 100%;">
-							<ModelViewer modelPath="/models/Combustion.glb" />
+							<ModelViewer modelPath="/models/Combustion.glb" autoLoad={true} />
 						</div>
 						<ul class="content-list">
 							<li>
@@ -1112,7 +1144,7 @@
 					<section class="content-section">
 						<h4 class="subsection-heading">TURBINE SECTION</h4>
 						<div class="image-wrapper" style="height: 400px; width: 100%;">
-							<ModelViewer modelPath="/models/Turbine.glb" />
+							<ModelViewer modelPath="/models/Turbine.glb" autoLoad={true} />
 						</div>
 						<p class="content-text">
 							A turbine transforms a portion of the kinetic energy in the hot exhaust gases into
@@ -1288,7 +1320,7 @@
 					<section class="content-section">
 						<h4 class="subsection-heading">EXHAUST SECTION</h4>
 						<div class="image-wrapper" style="height: 400px; width: 100%;">
-							<ModelViewer modelPath="/models/Exhaust.glb" />
+							<ModelViewer modelPath="/models/Exhaust.glb" autoLoad={true} />
 						</div>
 						<p class="content-text">
 							A typical exhaust section extends from the rear of the turbine section to the point
@@ -1593,6 +1625,62 @@
 		border-radius: 1rem;
 		border: 1px solid rgba(135, 206, 235, 0.3);
 		box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+	}
+
+	/* Search Section */
+	.search-section {
+		display: flex;
+		justify-content: center;
+		margin: 0 auto 3rem;
+		max-width: 800px;
+	}
+
+	.search-container {
+		display: flex;
+		align-items: center;
+		background: rgba(255, 255, 255, 0.95);
+		backdrop-filter: blur(10px);
+		border: 2px solid rgba(0, 206, 209, 0.3);
+		border-radius: 50px;
+		padding: 0.75rem 1.5rem;
+		width: 100%;
+		transition: all 0.3s ease;
+		box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+	}
+
+	.search-container:focus-within {
+		border-color: var(--font-accent-cyan, #00CED1);
+		box-shadow: 0 0 20px rgba(0, 206, 209, 0.3);
+	}
+
+	.search-input {
+		background: transparent;
+		border: none;
+		outline: none;
+		color: #0A1628;
+		font-size: 1rem;
+		flex: 1;
+		padding: 0.5rem;
+	}
+
+	.search-input::placeholder {
+		color: rgba(10, 22, 40, 0.5);
+	}
+
+	.search-button {
+		background: transparent;
+		border: none;
+		color: var(--font-accent-cyan, #00CED1);
+		cursor: pointer;
+		padding: 0.5rem;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		transition: color 0.3s ease;
+	}
+
+	.search-button:hover {
+		color: var(--ui-yellow, #FFD966);
 	}
 
 	/* Tab Buttons */

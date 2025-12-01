@@ -8,9 +8,12 @@ export const GET = async ({ url, locals: { supabase } }) => {
 		const { error } = await supabase.auth.exchangeCodeForSession(code);
 		if (!error) {
 			throw redirect(303, next);
+		} else {
+			console.error('Auth Error:', error);
+			throw redirect(303, `/auth/error?message=${encodeURIComponent(error.message)}`);
 		}
 	}
 
 	// return the user to an error page with instructions
-	throw redirect(303, '/auth/error');
+	throw redirect(303, '/auth/error?message=No+code+provided');
 };

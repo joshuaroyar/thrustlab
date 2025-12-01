@@ -48,9 +48,21 @@ export const testQuestions = pgTable('test_questions', {
 	userAnswer: text('user_answer').notNull()
 });
 
+export const activityScores = pgTable('activity_scores', {
+	id: serial('id').primaryKey(),
+	userId: text('user_id')
+		.notNull()
+		.references(() => user.id),
+	activityType: text('activity_type').notNull(), // 'assembly-disassembly', 'preliminary', etc.
+	score: integer('score').notNull(),
+	completedAt: timestamp('completed_at').defaultNow().notNull(),
+	metadata: jsonb('metadata') // For storing additional data like time taken, attempts, etc.
+});
+
 export type Session = typeof session.$inferSelect;
 export type User = typeof user.$inferSelect;
 export type Module = typeof modules.$inferSelect;
 export type Question = typeof questions.$inferSelect;
 export type Test = typeof tests.$inferSelect;
 export type TestQuestion = typeof testQuestions.$inferSelect;
+export type ActivityScore = typeof activityScores.$inferSelect;

@@ -9,21 +9,25 @@ export const load: LayoutLoad = async ({ data, depends, fetch }) => {
      */
     depends('supabase:auth');
 
-    const supabase = createBrowserClient(PUBLIC_SUPABASE_URL, PUBLIC_SUPABASE_ANON_KEY, {
-        global: {
-            fetch,
-        },
-        cookies: {
-            getAll() {
-                return data.cookies;
+    const supabase = isBrowser()
+        ? createBrowserClient(PUBLIC_SUPABASE_URL, PUBLIC_SUPABASE_ANON_KEY, {
+            global: {
+                fetch,
             },
-            setAll(cookiesToSet) {
-                // This is required by @supabase/ssr
+        })
+        : createBrowserClient(PUBLIC_SUPABASE_URL, PUBLIC_SUPABASE_ANON_KEY, {
+            global: {
+                fetch,
             },
-        },
-    });
-
-    const { session, user } = data;
+            cookies: {
+                getAll() {
+                    return data.cookies;
+                },
+                setAll(cookiesToSet) {
+                    // This is required by @supabase/ssr
+                },
+            },
+        }); const { session, user } = data;
 
     return { supabase, session, user };
 };

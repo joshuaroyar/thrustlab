@@ -1,5 +1,8 @@
 <script lang="ts">
 	import SkyBackground from '$lib/components/SkyBackground.svelte';
+	import { page } from '$app/stores';
+
+	const errorMessage = $derived($page.url.searchParams.get('message'));
 </script>
 
 <SkyBackground />
@@ -7,7 +10,11 @@
 <div class="error-container">
 	<div class="error-card">
 		<h1>Authentication Error</h1>
-		<p>There was an error signing you in. Please try again.</p>
+		<p>There was an error signing you in.</p>
+		{#if errorMessage}
+			<p class="error-details">{errorMessage}</p>
+		{/if}
+		<p>Please try again.</p>
 		<a href="/login" class="login-button">Return to Login</a>
 	</div>
 </div>
@@ -17,6 +24,15 @@
 		margin: 0;
 		padding: 0;
 		overflow: hidden;
+	}
+
+	.error-details {
+		color: #e74c3c;
+		font-weight: bold;
+		background: rgba(231, 76, 60, 0.1);
+		padding: 0.5rem;
+		border-radius: 0.5rem;
+		margin-bottom: 1rem;
 	}
 
 	.error-container {

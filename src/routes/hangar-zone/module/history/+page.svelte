@@ -1,8 +1,10 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
 	import { page } from '$app/stores';
+	import { searchQuery, showSearchModal, performSearch } from '$lib/stores/searchStore';
+	import { MODULE_CONTENT } from '$lib/data/searchContent';
+	import SearchModal from '$lib/components/SearchModal.svelte';
 	
-	let searchQuery = '';
 	const totalPages = 4;
 	
 	// Reactive statement to get current page from URL
@@ -13,9 +15,9 @@
 	$: if (currentPage > totalPages) currentPage = totalPages;
 	
 	function handleSearch() {
-		if (searchQuery.trim()) {
-			console.log('Searching for:', searchQuery);
-			// Search functionality to be implemented
+		if ($searchQuery.trim()) {
+			performSearch($searchQuery, MODULE_CONTENT);
+			showSearchModal.set(true);
 		}
 	}
 	
@@ -44,6 +46,8 @@
 
 <!-- Page Container -->
 <div class="page-container">
+	<SearchModal />
+	
 	<!-- Header Section -->
 	<div class="header-section">
 		<h1 class="module-title">LEARNING MODULE 01: HISTORY OF GAS TURBINE ENGINES</h1>
@@ -51,7 +55,7 @@
 			<input 
 				type="text" 
 				placeholder="Looking for something?" 
-				bind:value={searchQuery}
+				bind:value={$searchQuery}
 				on:keydown={(e) => e.key === 'Enter' && handleSearch()}
 				class="search-input"
 			/>

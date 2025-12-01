@@ -178,28 +178,47 @@
 			<h2>Quick Actions</h2>
 			<div class="actions-grid">
 				<a href="/test-bay" class="action-card">
-					<div class="action-icon">🚀</div>
+					<div class="action-icon">
+						<img src="/icons/test-bay.png" alt="Test Bay" />
+					</div>
 					<span>Test Bay</span>
 				</a>
 				<a href="/hangar-zone" class="action-card">
-					<div class="action-icon">🏭</div>
+					<div class="action-icon">
+						<img src="/icons/hangar-zone.png" alt="Hangar Zone" />
+					</div>
 					<span>Hangar Zone</span>
 				</a>
 				<a href="/turbofan-engine" class="action-card">
-					<div class="action-icon">⚙️</div>
+					<div class="action-icon">
+						<img src="/icons/turbofan-engine.png" alt="Turbofan Zone" />
+					</div>
 					<span>Turbofan Zone</span>
 				</a>
 				<a href="/overhaul-station" class="action-card">
-					<div class="action-icon">🔧</div>
+					<div class="action-icon">
+						<img src="/icons/overhaul-station.png" alt="Overhaul Station" />
+					</div>
 					<span>Overhaul Station</span>
 				</a>
 				<a href="/profile" class="action-card">
-					<div class="action-icon">👤</div>
+					<div class="action-icon">
+						<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+							<path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+							<circle cx="12" cy="7" r="4"></circle>
+						</svg>
+					</div>
 					<span>Edit Profile</span>
 				</a>
 				<form action="/login?/logout" method="POST" class="action-card-form">
 					<button type="submit" class="action-card logout-btn">
-						<div class="action-icon">🚪</div>
+						<div class="action-icon">
+							<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+								<path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+								<polyline points="16 17 21 12 16 7"></polyline>
+								<line x1="21" y1="12" x2="9" y2="12"></line>
+							</svg>
+						</div>
 						<span>Logout</span>
 					</button>
 				</form>
@@ -212,9 +231,9 @@
 	<div 
 		class="modal-backdrop" 
 		transition:fade={{ duration: 200 }} 
-		onclick={closeFeedback}
-		role="button"
+		aria-label="Close feedback modal"
 		tabindex="0"
+		onclick={closeFeedback}
 		onkeydown={(e) => { if(e.key === 'Escape' || e.key === 'Enter') closeFeedback(); }}
 	>
 		<div
@@ -222,7 +241,6 @@
 			transition:scale={{ duration: 300, start: 0.95, easing: quintOut }}
 			onclick={(e) => e.stopPropagation()}
 			role="document"
-			tabindex="0"
 			onkeydown={(e) => e.stopPropagation()}
 		>
 			<div class="modal-header">
@@ -666,8 +684,19 @@
 	}
 
 	.action-icon {
-		font-size: 2rem;
+		width: 48px;
+		height: 48px;
 		margin-bottom: 0.5rem;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+	}
+
+	.action-icon img,
+	.action-icon svg {
+		width: 100%;
+		height: 100%;
+		object-fit: contain;
 	}
 
 	.action-card span {
