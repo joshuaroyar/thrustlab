@@ -38,7 +38,6 @@
         </p>
 
 		<!-- Assembly Activity Component -->
-		// <AssemblyActivity />
 
     </div>
 </div>
