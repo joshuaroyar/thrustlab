@@ -6,6 +6,7 @@
 	import { MODULE_CONTENT } from '$lib/data/searchContent';
 	import SearchModal from '$lib/components/SearchModal.svelte';
 	import ImageModal from '$lib/components/ImageModal.svelte';
+	import ImageGrid from '$lib/components/ImageGrid.svelte';
 	
 	const totalPages = 4;
 	
@@ -102,9 +103,7 @@
 				PRINCIPLE OF JET PROPULSION
 			</h2>
 			<div class="section-content">
-				<div class="image-placeholder">
-					<img src="/images/hangar-zone/history/1.png" alt="Principle of Jet Propulsion" />
-				</div>
+				<ImageGrid images={[{ src: '/images/hangar-zone/history/1.png', alt: 'Principle of Jet Propulsion' }]} columns={1} height="260px" />
 				<ul class="bullet-list">
 					<li><strong>Isaac Newton's Third Law of Motion</strong> states that for every force acting on a body, there is an opposite and equal reaction.</li>
 					<li><strong>Jet propulsion</strong> is the force which is generated in the opposite direction to that of a discharge of fluid under pressure, escaping through an opening.</li>
@@ -124,9 +123,7 @@
 					<div class="timeline-date">250 B.C.</div>
 					<div class="timeline-content">
 						<p>A writer and mathematician named <strong>Hero</strong> devised a toy that used the reaction principle. The toy, called the <strong>aeolipile</strong>, consisted of a covered kettle of water that was heated to produce steam.</p>
-						<div class="image-placeholder">
-							<img src="/images/hangar-zone/history/2.png" alt="Aeolipile" />
-						</div>
+						<ImageGrid images={[{ src: '/images/hangar-zone/history/2.png', alt: 'Aeolipile' }]} columns={1} height="260px" />
 					</div>
 				</div>
 
@@ -134,9 +131,7 @@
 					<div class="timeline-date">1791</div>
 					<div class="timeline-content">
 						<p>The first patent covering a gas turbine was granted to <strong>John Barber</strong> of England. It included all the essential elements of the modern gas turbine except that it had a reciprocating-type compressor.</p>
-						<div class="image-placeholder">
-							<img src="/images/hangar-zone/history/3.png" alt="John Barber's Gas Turbine Patent" />
-						</div>
+						<ImageGrid images={[{ src: '/images/hangar-zone/history/3.png', alt: "John Barber's Gas Turbine Patent" }]} columns={1} height="260px" />
 					</div>
 				</div>
 
@@ -165,9 +160,7 @@
 					<div class="timeline-date">1930</div>
 					<div class="timeline-content">
 						<p><strong>Frank Whittle</strong> of England developed what became the first successful turbojet engine and was granted his first patent for the jet engine.</p>
-						<div class="image-placeholder">
-							<img src="/images/hangar-zone/history/4.png" alt="Frank Whittle's Engine" />
-						</div>
+						<ImageGrid images={[{ src: '/images/hangar-zone/history/4.png', alt: "Frank Whittle's Engine" }]} columns={1} height="260px" />
 					</div>
 				</div>
 
@@ -175,9 +168,7 @@
 					<div class="timeline-date">1936</div>
 					<div class="timeline-content">
 						<p>While Whittle was developing the gas turbine engine in England, <strong>Hans von Ohain</strong>, a German engineer, designed and built a jet engine that produced 1,100 pounds of thrust. This engine was installed in the <strong>Heinkel He-178 aircraft</strong> in <strong>1939</strong>, which became recognized as the first practical flight by a jet-propelled aircraft.</p>
-						<div class="image-placeholder">
-							<img src="/images/hangar-zone/history/5.png" alt="Heinkel He-178 Aircraft" />
-						</div>
+						<ImageGrid images={[{ src: '/images/hangar-zone/history/5.png', alt: 'Heinkel He-178 Aircraft' }]} columns={1} height="260px" />
 					</div>
 				</div>
 
@@ -185,16 +176,10 @@
 					<div class="timeline-date">1941</div>
 					<div class="timeline-content">
 						<p>Frank Whittle's engine completed its first flight in a <strong>Gloster model E28/39</strong> aircraft. The engine produced about one thousand pounds of thrust and propelled the aircraft at speeds over 400 miles per hour.</p>
-						<div class="image-row">
-							<img src="/images/hangar-zone/history/6_1.png" alt="Gloster E28/39 Aircraft" />
-							<img src="/images/hangar-zone/history/6_2.png" alt="Gloster E28/39 in Flight" />
-						</div>
+						<ImageGrid images={[{src:'/images/hangar-zone/history/6_1.png', alt:'Gloster E28/39 Aircraft'},{src:'/images/hangar-zone/history/6_2.png', alt:'Gloster E28/39 in Flight'}]} columns={2} height="260px" />
 						<p class="highlight-text">The majority of commercial aircraft utilize some form of jet propulsion.</p>
 						<p>Another step in the progression of commercial and military aviation was the ability to produce an engine that would propel an aircraft faster than the speed of sound. Such aircraft are the SR-71 Blackbird which flies in excess of Mach five and the Concorde capable of flying 2.2 times the speed of sound.</p>
-						<div class="image-row">
-							<img src="/images/hangar-zone/history/7_1.png" alt="SR-71 Blackbird" />
-							<img src="/images/hangar-zone/history/7_2.png" alt="Concorde" />
-						</div>
+						<ImageGrid images={[{src:'/images/hangar-zone/history/7_1.png', alt:'SR-71 Blackbird'},{src:'/images/hangar-zone/history/7_2.png', alt:'Concorde'}]} columns={2} height="260px" />
 					</div>
 				</div>
 			</div>
@@ -218,10 +203,14 @@
 						<li>Uses atmospheric air and some fuel as the main propellant.</li>
 						<li>Examples are piston engines, ramjet, scramjet, pulsejet, and gas turbine engines.</li>
 					</ul>
-					<div class="image-row">
-						<img src="/images/hangar-zone/history/8_1.png" alt="Air Breathing Engine Example 1" />
-						<img src="/images/hangar-zone/history/8_2.png" alt="Air Breathing Engine Example 2" />
-					</div>
+					<ImageGrid
+						images={[
+							{ src: '/images/hangar-zone/history/8_1.png', alt: 'Air Breathing Engine Example 1' },
+							{ src: '/images/hangar-zone/history/8_2.png', alt: 'Air Breathing Engine Example 2' }
+						]}
+						columns={2}
+						height="260px"
+					/>
 				</div>
 
 				<div class="subsection">
@@ -229,9 +218,7 @@
 					<ul class="bullet-list">
 						<li>Carries the entire propellant composed of liquid or solid fuel and oxygen.</li>
 					</ul>
-					<div class="image-placeholder">
-						<img src="/images/hangar-zone/history/9.png" alt="Rocket Engine" />
-					</div>
+					<ImageGrid images={[{ src: '/images/hangar-zone/history/9.png', alt: 'Rocket Engine' }]} columns={1} height="260px" />
 				</div>
 			</div>
 		</section>
@@ -280,10 +267,7 @@
 						<li>An athodyd (aero-thermodynamic-duct) which has no rotating parts and consists of a duct with a divergent entry and a convergent or convergent-divergent exit.</li>
 						<li>With a forward motion imparted by an external source, air is forced into the divergent inlet (increasing its pressure). The total energy of air is further increased by the combustion of fuel, and the rapidly expanding gases accelerate to the atmosphere through the outlet duct.</li>
 					</ul>
-					<div class="image-row">
-						<img src="/images/hangar-zone/history/11_1.png" alt="Ramjet Diagram" />
-						<img src="/images/hangar-zone/history/11_2.png" alt="Ramjet Engine" />
-					</div>
+					<ImageGrid images={[{src:'/images/hangar-zone/history/11_1.png', alt:'Ramjet Diagram'},{src:'/images/hangar-zone/history/11_2.png', alt:'Ramjet Engine'}]} columns={2} height="260px" />
 				</div>
 
 				<div class="engine-type">
@@ -547,86 +531,7 @@
 		font-weight: 700;
 	}
 
-	/* Image Placeholder */
-	.image-placeholder {
-		background: linear-gradient(135deg, rgba(27, 53, 88, 0.08), rgba(135, 206, 235, 0.05));
-		border: 3px solid rgba(27, 53, 88, 0.25);
-		border-radius: 16px;
-		padding: 1.5rem; /* Reduced padding */
-		margin: 0 0 1.5rem 2rem; /* Adjusted margin for float */
-		min-height: 150px; /* Reduced height */
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		overflow: hidden;
-		transition: all 0.3s ease;
-		position: relative;
-		float: right; /* Float right for side-by-side */
-		width: 40%; /* Reduced width */
-		clear: right;
-	}
-
-	/* Clearfix for containers with floated images */
-	.section-content::after,
-	.timeline-content::after,
-	.subsection::after {
-		content: "";
-		display: table;
-		clear: both;
-	}
-
-	.image-placeholder::before {
-		position: absolute;
-		top: 1rem;
-		left: 1.5rem;
-		font-size: 0.85rem;
-		color: #00838F;
-		font-weight: 600;
-		opacity: 0.7;
-		background: rgba(255, 255, 255, 0.8);
-		padding: 0.25rem 0.75rem;
-		border-radius: 4px;
-	}
-
-	.image-placeholder:hover {
-		border-color: rgba(27, 53, 88, 0.5);
-		box-shadow: 0 8px 24px rgba(27, 53, 88, 0.2);
-	}
-
-	.image-placeholder img {
-		max-width: 70%;
-		height: auto;
-		border-radius: 12px;
-		box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
-	}
-
-	/* Image Row - Side by Side Images */
-	.image-row {
-		display: grid;
-		grid-template-columns: repeat(2, 1fr);
-		gap: 1rem; /* Reduced gap */
-		margin: 0 0 1.5rem 2rem;
-		float: right;
-		width: 45%;
-		clear: right;
-	}
-
-	.image-row img {
-		width: auto;
-		max-width: 90%;
-		height: auto;
-		border-radius: 12px;
-		box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
-		border: 2px solid rgba(0, 206, 209, 0.2);
-		transition: all 0.3s ease;
-		justify-self: center;
-	}
-
-	.image-row img:hover {
-		transform: scale(1.02);
-		box-shadow: 0 8px 32px rgba(27, 53, 88, 0.3);
-		border-color: rgba(27, 53, 88, 0.4);
-	}
+	/* ImageGrid handles grid and placeholder styling now. */
 
 	/* Two Column Layout - Text and Diagram */
 	.two-column-layout {
@@ -650,9 +555,9 @@
 	}
 
 	.diagram-column img {
-		width: auto;
-		max-width: 90%;
-		height: auto;
+		width: 100%;
+		max-width: 100%;
+		height: 320px; /* make the diagram column image larger for readability */
 		border-radius: 12px;
 		box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
 		border: 2px solid rgba(27, 53, 88, 0.2);
@@ -914,14 +819,13 @@
 			gap: 1.5rem;
 		}
 
-		.image-row,
-		.image-placeholder {
+		:global(.image-grid) {
 			float: none;
 			width: 100%;
 			margin: 2rem 0;
 		}
 
-		.image-row {
+		:global(.image-grid) {
 			grid-template-columns: 1fr;
 			gap: 1rem;
 		}
@@ -963,7 +867,7 @@
 			gap: 1.25rem;
 		}
 
-		.image-row {
+		:global(.image-grid) {
 			grid-template-columns: 1fr;
 			gap: 0.8rem;
 		}

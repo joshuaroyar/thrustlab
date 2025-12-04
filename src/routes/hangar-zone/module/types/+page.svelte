@@ -6,6 +6,7 @@
 	import { MODULE_CONTENT } from '$lib/data/searchContent';
 	import SearchModal from '$lib/components/SearchModal.svelte';
 	import ImageModal from '$lib/components/ImageModal.svelte';
+	import ImageGrid from '$lib/components/ImageGrid.svelte';
 	
 	const totalPages = 4; // 9 sections divided into 4 pages
 	
@@ -102,14 +103,14 @@
 				TURBO JET
 			</h2>
 			<div class="section-content">
-				<div class="image-row">
-					<div class="image-placeholder">
-						<img src="/images/hangar-zone/types/1_1.png" alt="Turbojet Engine Diagram 1" />
-					</div>
-					<div class="image-placeholder">
-						<img src="/images/hangar-zone/types/1_2.png" alt="Turbojet Engine Diagram 2" />
-					</div>
-				</div>
+				<ImageGrid
+					images={[
+						{ src: '/images/hangar-zone/types/1_1.png', alt: 'Turbojet Engine Diagram 1' },
+						{ src: '/images/hangar-zone/types/1_2.png', alt: 'Turbojet Engine Diagram 2' }
+					]}
+					columns={2}
+					height="260px"
+				/>
 				<p class="intro-text">The basic operating principles of a turbojet engine are relatively straight forward:</p>
 				<ul class="bullet-list">
 					<li>Air is compressed in the <strong>compressor</strong>, burned in the <strong>combustion chamber</strong>, expands and spins the <strong>turbine</strong>, which in turn drives the compressor (self-sustaining), and leaves the exhaust at high velocities.</li>
@@ -128,17 +129,15 @@
 				AIRFLOW THROUGH TURBOJET
 			</h2>
 			<div class="section-content">
-				<div class="image-row">
-					<div class="image-placeholder">
-						<img src="/images/hangar-zone/types/2_1.png" alt="Airflow Through Turbojet 1" />
-					</div>
-					<div class="image-placeholder">
-						<img src="/images/hangar-zone/types/2_2.png" alt="Airflow Through Turbojet 2" />
-					</div>
-					<div class="image-placeholder">
-						<img src="/images/hangar-zone/types/2_3.png" alt="Airflow Through Turbojet 3" />
-					</div>
-				</div>
+				<ImageGrid
+					images={[
+						{ src: '/images/hangar-zone/types/2_1.png', alt: 'Airflow Through Turbojet 1' },
+						{ src: '/images/hangar-zone/types/2_2.png', alt: 'Airflow Through Turbojet 2' },
+						{ src: '/images/hangar-zone/types/2_3.png', alt: 'Airflow Through Turbojet 3' }
+					]}
+					columns={3}
+					height="220px"
+				/>
 				<ul class="bullet-list">
 					<li>When a compressor and turbine are joined on one shaft, the unit is called a 'spool'.</li>
 					<li>From the compressor, the air is fed directly into the combustion chambers. Fuel is added and the resulting mixture is ignited. The resultant increase in temperature causes a substantial increase in volume.</li>
@@ -159,14 +158,14 @@
 				TURBOPROP
 			</h2>
 			<div class="section-content">
-				<div class="image-row">
-					<div class="image-placeholder">
-						<img src="/images/hangar-zone/types/3_1.png" alt="Turboprop Engine Diagram 1" />
-					</div>
-					<div class="image-placeholder">
-						<img src="/images/hangar-zone/types/3_2.png" alt="Turboprop Engine Diagram 2" />
-					</div>
-				</div>
+				<ImageGrid
+					images={[
+						{ src: '/images/hangar-zone/types/3_1.png', alt: 'Turboprop Engine Diagram 1' },
+						{ src: '/images/hangar-zone/types/3_2.png', alt: 'Turboprop Engine Diagram 2' }
+					]}
+					columns={2}
+					height="260px"
+				/>
 				<ul class="bullet-list">
 					<li>A gas turbine engine that delivers power to a propeller is referred to as a <strong>turboprop engine</strong>.</li>
 					<li>Turboprop engines are similar in design to turbojet engines except that the power produced by a turboprop engine is delivered to a <strong>reduction gear system</strong> that spins a propeller</li>
@@ -182,14 +181,14 @@
 				TURBOPROP PARAMETERS
 			</h2>
 			<div class="section-content">
-				<div class="image-row">
-					<div class="image-placeholder">
-						<img src="/images/hangar-zone/types/4_1.png" alt="Turboprop Parameters Diagram 1" />
-					</div>
-					<div class="image-placeholder">
-						<img src="/images/hangar-zone/types/4_2.png" alt="Turboprop Parameters Diagram 2" />
-					</div>
-				</div>
+				<ImageGrid
+					images={[
+						{ src: '/images/hangar-zone/types/4_1.png', alt: 'Turboprop Parameters Diagram 1' },
+						{ src: '/images/hangar-zone/types/4_2.png', alt: 'Turboprop Parameters Diagram 2' }
+					]}
+					columns={2}
+					height="260px"
+				/>
 				<ul class="bullet-list">
 					<li>The output from a turboprop engine is the sum of the shaft horsepower developed at the turbine, and the residual jet thrust. This is called <strong>Equivalent Shaft Horsepower</strong> or <strong>ESHP.</strong></li>
 					<li>In turboprop, almost all the energy in the gas stream is converted into mechanical power, to drive both the compressor and the propeller.</li>
@@ -210,9 +209,7 @@
 			</h2>
 			<div class="section-content">
 				<div class="two-column-layout">
-					<div class="image-placeholder">
-						<img src="/images/hangar-zone/types/5.png" alt="Turboshaft Engine" />
-					</div>
+					<ImageGrid images={[{ src: '/images/hangar-zone/types/5.png', alt: 'Turboshaft Engine' }]} columns={1} height="320px" />
 					<ul class="bullet-list">
 						<li>Turboprop engines are used extensively in business and commuter type aircraft because the combination of jet power and propeller efficiency provides good performance characteristics at speeds between 300 and 400 miles per hour.</li>
 						<li>In addition, most turboprop engines provide the best specific fuel consumption of any gas turbine engine.</li>
@@ -228,17 +225,11 @@
 				AIRFLOW THROUGH TURBOSHAFT
 			</h2>
 			<div class="section-content">
-				<div class="image-row">
-					<div class="image-placeholder">
-						<img src="/images/hangar-zone/types/6_1.png" alt="Airflow Through Turboshaft 1" />
-					</div>
-					<div class="image-placeholder">
-						<img src="/images/hangar-zone/types/6_2.png" alt="Airflow Through Turboshaft 2" />
-					</div>
-					<div class="image-placeholder">
-						<img src="/images/hangar-zone/types/6_3.png" alt="Airflow Through Turboshaft 3" />
-					</div>
-				</div>
+				<ImageGrid images={[
+					{ src: '/images/hangar-zone/types/6_1.png', alt: 'Airflow Through Turboshaft 1' },
+					{ src: '/images/hangar-zone/types/6_2.png', alt: 'Airflow Through Turboshaft 2' },
+					{ src: '/images/hangar-zone/types/6_3.png', alt: 'Airflow Through Turboshaft 3' }
+				]} columns={3} height="220px" />
 				<ul class="bullet-list">
 					<li>A gas turbine engine that delivers power to a shaft that can drive something else is referred to as a <strong>turboshaft engine</strong>.</li>
 					<li>In addition, turboshaft engines are widely used as auxiliary power units and in industrial applications to drive electrical generators and surface transportation systems.</li>
@@ -259,20 +250,25 @@
 				TURBOPROP AND TURBOSHAFT
 			</h2>
 			<div class="section-content">
-				<ul class="bullet-list">
-					<li>Most turboshaft engine incorporates a free power turbine.</li>
-					<li>Single spool, turboshaft engine has a reverse flow combustion chamber system allowing it to be shorter, stiffer, and lighter. It does however add the requirement for a centrifugal compressor to be used in the high-pressure stage. This throws the air out radially so that it can enter the combustion chamber in the correct direction.</li>
-				</ul>
-				<div class="image-placeholder">
-					<img src="/images/hangar-zone/types/9_1.png" alt="Airflow Diagram 1" />
-				</div>
-				<div class="image-placeholder">
-					<img src="/images/hangar-zone/types/9_2.png" alt="Airflow Diagram 2" />
+				<div class="two-column-layout">
+					<div class="left-column">
+						<div class="small-icon">
+							<ImageGrid images={[{ src: '/images/hangar-zone/types/11.png', alt: 'Turboprop Icon' }]} columns={1} height="120px" />
+						</div>
+						<ul class="bullet-list">
+							<li>Most turboshaft engine incorporates a free power turbine.</li>
+							<li>Single spool, turboshaft engine has a reverse flow combustion chamber system allowing it to be shorter, stiffer, and lighter. It does however add the requirement for a centrifugal compressor to be used in the high-pressure stage. This throws the air out radially so that it can enter the combustion chamber in the correct direction.</li>
+						</ul>
+					</div>
+					<div class="right-column stacked-images">
+						<ImageGrid images={[
+							{ src: '/images/hangar-zone/types/9_1.png', alt: 'Airflow Diagram 1' },
+							{ src: '/images/hangar-zone/types/9_2.png', alt: 'Airflow Diagram 2' }
+						]} columns={1} height="260px" />
+					</div>
 				</div>
 				<div class="two-column-layout">
-					<div class="image-placeholder">
-						<img src="/images/hangar-zone/types/10.png" alt="Turbine System" />
-					</div>
+					<ImageGrid images={[{ src: '/images/hangar-zone/types/10.png', alt: 'Turbine System' }]} columns={1} height="260px" />
 					<ul class="bullet-list">
 						<li>Airflow is similar to turbojet up to a point where it leaves the first stage turbine.</li>
 						<li>The first stage turbine drives the compressor and the free power turbine converts any remaining energy to mechanical energy.</li>
@@ -288,9 +284,7 @@
 				TURBOPROP AND TURBOSHAFT
 			</h2>
 			<div class="section-content">
-				<div class="image-placeholder">
-					<img src="/images/hangar-zone/types/11.png" alt="Turboprop and Turboshaft Comparison" />
-				</div>
+				<ImageGrid images={[{ src: '/images/hangar-zone/types/11.png', alt: 'Turboprop and Turboshaft Comparison' }]} columns={1} height="260px" />
 				<ul class="bullet-list">
 					<li>Both turboprop [TP] and turboshaft [TS] engines use a gas turbine core engine to drive an output power shaft for a propeller or helicopter rotor</li>
 					<li>The main difference between the two variants is that a TP engine might also produce a fraction of its overall thrust via a hot core exhaust jet, while a conventional TS engine will have a lower exhaust velocity but correspondingly somewhat higher shaft power as the tradeoff</li>
@@ -306,14 +300,10 @@
 				DUCTED AND UNDUCTED PROP FAN
 			</h2>
 			<div class="section-content">
-				<div class="image-row">
-					<div class="image-placeholder">
-						<img src="/images/hangar-zone/types/12_1.png" alt="Ducted Prop Fan" />
-					</div>
-					<div class="image-placeholder">
-						<img src="/images/hangar-zone/types/12_2.png" alt="Unducted Prop Fan" />
-					</div>
-				</div>
+				<ImageGrid images={[
+					{ src: '/images/hangar-zone/types/12_1.png', alt: 'Ducted Prop Fan' },
+					{ src: '/images/hangar-zone/types/12_2.png', alt: 'Unducted Prop Fan' }
+				]} columns={2} height="260px" />
 				<ul class="bullet-list">
 					<li>These new designs utilize titanium, lightweight stainless steel, and composite materials to surpass the fuel economy of several high bypass turbofan engines by more than 15 percent.</li>
 					<li>The use of composite blades reduces weight and allows safe operation at tip speeds higher than conventional blades.</li>
@@ -601,84 +591,7 @@
 		font-weight: 700;
 	}
 
-	/* Image Placeholder */
-	.image-placeholder {
-		background: linear-gradient(135deg, rgba(27, 53, 88, 0.08), rgba(135, 206, 235, 0.05));
-		border: 3px solid rgba(27, 53, 88, 0.25);
-		border-radius: 16px;
-		padding: 1.5rem; /* Reduced padding */
-		margin: 0 0 1.5rem 2rem; /* Adjusted margin for float */
-		min-height: 150px; /* Reduced height */
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		overflow: hidden;
-		transition: all 0.3s ease;
-		position: relative;
-		float: right;
-		width: 40%;
-		clear: right;
-	}
-
-	/* Clearfix */
-	.section-content::after {
-		content: "";
-		display: table;
-		clear: both;
-	}
-
-	.image-placeholder::before {
-		position: absolute;
-		top: 1rem;
-		left: 1.5rem;
-		font-size: 0.85rem;
-		color: #00838F;
-		font-weight: 600;
-		opacity: 0.7;
-		background: rgba(255, 255, 255, 0.8);
-		padding: 0.25rem 0.75rem;
-		border-radius: 4px;
-	}
-
-	.image-placeholder:hover {
-		border-color: rgba(27, 53, 88, 0.5);
-		box-shadow: 0 8px 24px rgba(27, 53, 88, 0.2);
-	}
-
-	.image-placeholder img {
-		max-width: 70%;
-		height: auto;
-		border-radius: 12px;
-		box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
-	}
-
-	/* Image Row - Side by Side Images */
-	.image-row {
-		display: grid;
-		grid-template-columns: repeat(2, 1fr);
-		gap: 1rem; /* Reduced gap */
-		margin: 0 0 1.5rem 2rem;
-		float: right;
-		width: 45%;
-		clear: right;
-	}
-
-	.image-row img {
-		width: auto;
-		max-width: 90%;
-		height: auto;
-		border-radius: 12px;
-		box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
-		border: 2px solid rgba(27, 53, 88, 0.2);
-		transition: all 0.3s ease;
-		justify-self: center;
-	}
-
-	.image-row img:hover {
-		transform: scale(1.02);
-		box-shadow: 0 8px 32px rgba(27, 53, 88, 0.3);
-		border-color: rgba(27, 53, 88, 0.4);
-	}
+	/* Image grid and placeholder styles are handled by ImageGrid component now. */
 
 	/* Two Column Layout - Text and Diagram */
 	.two-column-layout {
@@ -687,6 +600,42 @@
 		gap: 2rem; /* Reduced gap */
 		align-items: start;
 		margin: 1.5rem 0;
+	}
+
+	/* right-column children use ImageGrid, no manual image-placeholder rules here. */
+
+	/* Left/Right column helpers for specific layouts */
+	.two-column-layout .left-column {
+		display: flex;
+		flex-direction: column;
+		gap: 1rem;
+	}
+
+	.two-column-layout .right-column {
+		display: flex;
+		flex-direction: column;
+		gap: 1rem;
+	}
+
+	/* Small icon sizes */
+	.small-icon {
+		width: 80px;
+		min-width: 80px;
+		display: block;
+	}
+
+	.small-icon :global(img) {
+		width: 80px;
+		height: auto;
+		object-fit: contain;
+	}
+
+	/* Stacked image sizes for right column */
+	.right-column :global(img),
+	.stacked-images :global(img) {
+		width: 100%;
+		height: 220px;
+		object-fit: contain;
 	}
 
 	/* Bullet List */
@@ -854,17 +803,22 @@
 			gap: 1.5rem;
 		}
 
-		.image-row,
-		.image-placeholder {
+		:global(.image-grid) {
 			float: none;
 			width: 100%;
 			margin: 2rem 0;
 		}
 
-		.image-row {
-			grid-template-columns: 1fr;
-			gap: 1rem;
-		}
+		/* On tablet and smaller, stack three-column rows into a single column */
+		/* ImageGrid stacks to single column by default on smaller screens */
+
+		/* ImageGrid handles responsive image heights */
+
+		/* ImageGrid stacks two-column grids automatically */
+
+		/* rely on ImageGrid for image sizing */
+
+		/* layout is managed by ImageGrid component */
 	}
 
 	@media (max-width: 768px) {
@@ -894,7 +848,7 @@
 			gap: 1.25rem;
 		}
 
-		.image-row {
+		:global(.image-grid) {
 			grid-template-columns: 1fr;
 			gap: 0.8rem;
 		}

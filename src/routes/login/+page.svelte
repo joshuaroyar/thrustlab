@@ -28,7 +28,7 @@
 
 <div class="login-container">
 	<div class="login-card animate-scale">
-		<h1 class="gradient-animated">Log In to ThrustLab</h1>
+		<h1 class="gradient-animated gradient-text">Log In to ThrustLab</h1>
 
 		<form method="POST" action="?/login" class="login-form animate-on-scroll" use:enhance>
 			{#if form?.error}
@@ -110,15 +110,21 @@
 		font-weight: 900;
 		margin: 0 0 0.5rem 0;
 		text-align: center;
-		/* Use .gradient-animated utility to enable gradient; fallback to font color */
-		background: transparent;
-		color: var(--font-secondary);
+		/* Gradient handled by .gradient-text class */
+	}
+
+	.gradient-text {
+		background: linear-gradient(
+			90deg,
+			var(--navbar-accent, var(--ui-yellow)) 0%,
+			var(--font-accent-cyan) 50%,
+			var(--navbar-accent, var(--ui-yellow)) 100%
+		);
 		background-size: 200% 100%;
 		-webkit-background-clip: text;
 		-webkit-text-fill-color: transparent;
 		background-clip: text;
 		animation: gradient-flash var(--gradient-duration) ease-in-out infinite;
-		filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.5));
 	}
 
 	.login-form {

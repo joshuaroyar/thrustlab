@@ -12,36 +12,63 @@
 	}
 
 	onMount(() => {
-		function handleGlobalClick(e: MouseEvent) {
-			const target = e.target as HTMLElement;
-			if (target.tagName === 'IMG') {
-				// Check if image is inside a content area
-				const isContentImage = target.closest('.content-card') || 
-									   target.closest('.content-section') || 
-									   target.closest('.image-placeholder') || 
-									   target.closest('.image-row') ||
-									   target.closest('.parameter-image') ||
-									   target.closest('.diagram-column') ||
-									   target.closest('.more-info-container');
-				
-				// Exclude specific images
-				const isExcluded = target.closest('.character-container') || 
-								   target.closest('.logo') || 
-								   target.classList.contains('no-zoom');
+			function isZoomableImage(imgEl: HTMLElement) {
+				const imgElement = imgEl;
+				const isContentImage = imgElement.closest('.content-card') || 
+									imgElement.closest('.section-content') || 
+									imgElement.closest('.image-placeholder') || 
+									imgElement.closest('.image-grid') || 
+									imgElement.closest('.image-row') ||
+									imgElement.closest('.parameter-image') || 
+									imgElement.closest('.diagram-column') || 
+									imgElement.closest('.more-info-container');
 
-				if (isContentImage && !isExcluded) {
-					const img = target as HTMLImageElement;
-					zoomedImage.set({ src: img.src, alt: img.alt });
+				const isExcluded = imgElement.closest('.character-container') || 
+									imgElement.closest('.logo') || 
+									imgElement.classList.contains('no-zoom');
+
+				return isContentImage && !isExcluded;
+			}
+
+			function handleGlobalClick(e: MouseEvent) {
+				const clicked = e.target as HTMLElement;
+				const targetImg = clicked.closest('img') as HTMLImageElement | null;
+				if (!targetImg) return;
+				if (isZoomableImage(targetImg)) {
+					zoomedImage.set({ src: targetImg.src, alt: targetImg.alt });
 					e.stopPropagation();
 				}
 			}
-		}
 
-		document.addEventListener('click', handleGlobalClick);
-		return () => {
-			document.removeEventListener('click', handleGlobalClick);
-		};
-	});
+			function handleGlobalKeyDown(e: KeyboardEvent) {
+				if (e.key !== 'Enter' && e.key !== ' ') return;
+				const active = document.activeElement as HTMLElement | null;
+				if (!active) return;
+				let targetImg: HTMLImageElement | null = null;
+				if (active.tagName === 'IMG') {
+					targetImg = active as HTMLImageElement;
+				} else if (active.classList.contains('image-placeholder')) {
+					// find child img
+					targetImg = active.querySelector('img');
+				} else {
+					const nearestImg = active.closest('img') as HTMLImageElement | null;
+					if (nearestImg) targetImg = nearestImg;
+				}
+				if (!targetImg) return;
+				if (isZoomableImage(targetImg)) {
+					zoomedImage.set({ src: targetImg.src, alt: targetImg.alt });
+					(e as Event).stopPropagation();
+				}
+			}
+
+			document.addEventListener('click', handleGlobalClick);
+			document.addEventListener('keydown', handleGlobalKeyDown);
+
+			return () => {
+				document.removeEventListener('click', handleGlobalClick);
+				document.removeEventListener('keydown', handleGlobalKeyDown);
+			};
+		});
 </script>
 
 <svelte:window on:keydown={handleKeydown} />

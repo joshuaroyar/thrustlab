@@ -4,6 +4,7 @@
 	import { page } from '$app/stores';
 	import { fade, fly } from 'svelte/transition';
 	import ImageModal from '$lib/components/ImageModal.svelte';
+	import ImageGrid from '$lib/components/ImageGrid.svelte';
 
 	let totalPages = 3;
 	$: currentPage = parseInt($page.url.searchParams.get('page') || '1');
@@ -128,9 +129,7 @@
 				</p>
 
 				<h3 class="subsection-title">INSPECTION</h3>
-				<div class="image-wrapper">
-					<img src="/images/overhaul-preliminary/img_1.png" alt="Typical overhaul workshop layout" />
-				</div>
+				<ImageGrid images={[{src:'/images/overhaul-preliminary/img_1.png', alt:'Typical overhaul workshop layout'}]} columns={1} height="320px" />
 				<p class="content-text">
 					After cleaning, and prior to inspection, the surfaces of some parts, e.g. turbine discs, are etched. This process removes a small amount of material from the surface of the part, leaving an even matt finish which reveals surface defects that cannot normally be seen with the naked eye. The metal removal is normally achieved either by an electrolytic process in which the part forms the anode, or by immersing the part for a short time in a special acid bath. Both methods must be carefully controlled to avoid the removal of too much material.
 				</p>
@@ -170,9 +169,7 @@
 			</h2>
 			<div class="section-content">
 				<h3 class="subsection-title">BALANCING</h3>
-				<div class="image-wrapper">
-					<img src="/images/overhaul-preliminary/img_2.png" alt="Dynamic balancing diagram" />
-				</div>
+				<ImageGrid images={[{src:'/images/overhaul-preliminary/img_2.png', alt:'Dynamic balancing diagram'}]} columns={1} height="320px" />
 				<p class="content-text">
 					Because of the high rotational speeds, any unbalance in the main rotating assembly of a gas turbine engine is capable of producing vibration and stresses which increase as the square of the rotational speed. Therefore very accurate balancing of the rotating assembly is necessary. The two main methods of measuring and correcting unbalance are single plane (static) balancing and two plane (dynamic) balancing. With single plane, the unbalance is only in one plane i.e., centrally through the component at 90 degrees to the axis. This is appropriate for components such as individual compressor or turbine discs. For compressor and/or turbine rotor assemblies possessing appreciable axial length, unbalance may be present at many positions along the axis. In general it is not possible to correct this combination of distributed unbalance in a single plane. However, if two correction planes are chosen, usually at axially opposed ends of the assembly, it is always possible to find a combination of two unbalance weights which are equivalent for the unbalances present in the assembled rotor, hence two plane balancing.
 				</p>
@@ -181,17 +178,13 @@
 					The distribution of unbalance in the rotor has been reduced to an equivalent system of two unbalances 'A' and 'B'. The rotor is already in static balance because in this example 'A' and 'B' are equal and opposed. However, when the part is rotating, each weight produces its own centrifugal force in opposition to the other causing unbalance couples, with the tendency to turn the part end-over-end. This action is restricted by the bearings, with resultant stresses and vibration. It will be seen, therefore, that to bring the part to a state of dynamic balance, an equal amount of weight must be removed at 'A' and 'B' or added at 'P' and 'O'. When the couples set up by the centrifugal forces are equal, it is said that a part is dynamically balanced. Unbalance is expressed in units of ounce-inches, thus one ounce of excess weight displaced two inches from the axis of a rotor is two ounce inches of unbalance.
 				</p>
 
-				<div class="image-wrapper">
-					<img src="/images/overhaul-preliminary/img_3.png" alt="Dynamic balancing machine" />
-				</div>
+				<ImageGrid images={[{src:'/images/overhaul-preliminary/img_3.png', alt:'Dynamic balancing machine'}]} columns={1} height="320px" />
 				<p class="content-text">
 					A typical dynamic balancing machine for indicating the magnitude and angular position of unbalance in each plane is shown below. Correction of unbalance may be achieved by one or a combination of the following basic methods; redistribution of weight, addition of weight and removal of weight.
 				</p>
 
 				<h3 class="subsection-title">ASSEMBLING</h3>
-				<div class="image-wrapper">
-					<img src="/images/overhaul-preliminary/img_4.png" alt="Engine assembly" />
-				</div>
+				<ImageGrid images={[{src:'/images/overhaul-preliminary/img_4.png', alt:'Engine assembly'}]} columns={1} height="320px" />
 				<p class="content-text">
 					The engine can be built in the vertical or horizontal position, using a ram or stand. Assembling of the engine sub-assemblies or modules is done in separate areas, thus minimizing the build time on the build rams or stands.
 				</p>
@@ -201,9 +194,7 @@
 				</p>
 
 				<h3 class="subsection-title">TESTING</h3>
-				<div class="image-wrapper">
-					<img src="/images/overhaul-preliminary/img_5.png" alt="Engine testing" />
-				</div>
+				<ImageGrid images={[{src:'/images/overhaul-preliminary/img_5.png', alt:'Engine testing'}]} columns={1} height="320px" />
 				<p class="content-text">
 					On completion of assembly, every production and/or overhauled engine must be tested in a 'sea level' test cell i.e. a test cell in which the engine is run at ambient temperature and pressure conditions, the resultant performance figures being corrected to International Standard Atmosphere (I.S.A.) sea-level conditions. To ensure that the engine performance meets that guaranteed to the customer and the requirements of the Government licensing and purchasing authorities, each engine is tested to an acceptance test schedule.
 				</p>
@@ -371,33 +362,7 @@
 		clear: both;
 	}
 
-	/* Image Wrapper - Side by Side Layout */
-	.image-wrapper {
-		float: right;
-		width: 45%;
-		margin: 0 0 1.5rem 2rem;
-		clear: right;
-		background: linear-gradient(135deg, rgba(93, 168, 203, 0.06), rgba(135, 206, 235, 0.04));
-		border: 3px solid rgba(93, 168, 203, 0.20);
-		border-radius: 16px;
-		padding: 1.5rem;
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		transition: all 0.3s ease;
-	}
-
-	.image-wrapper:hover {
-		border-color: rgba(93, 168, 203, 0.35);
-		box-shadow: 0 8px 24px rgba(93, 168, 203, 0.15);
-	}
-
-	.image-wrapper img {
-		max-width: 100%;
-		height: auto;
-		border-radius: 12px;
-		box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
-	}
+	/* NOTE: Image layout is now handled by the ImageGrid component; removed old .image-wrapper styles */
 
 	/* Video Container */
 	.video-container {
@@ -514,11 +479,7 @@
 
 	/* Responsive Design */
 	@media (max-width: 1024px) {
-		.image-wrapper {
-			float: none;
-			width: 100%;
-			margin: 2rem 0;
-		}
+		/* ImageGrid handles layout; no image-wrapper float rules required */
 	}
 
 	@media (max-width: 768px) {

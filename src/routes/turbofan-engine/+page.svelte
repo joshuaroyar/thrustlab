@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
+    import ImageGrid from '$lib/components/ImageGrid.svelte';
 	import { goto } from '$app/navigation';
 	import { fade, fly } from 'svelte/transition';
 	import ModelViewer from '$lib/components/ModelViewer.svelte';
@@ -237,20 +238,15 @@
 							<li>Turbofan engines have turbojet-type cruise speed capability yet retain some of the short-field takeoff capability of a turboprop.</li>
 						</ul>
 					</div>
-					<div class="image-row three-column">
-						<div class="parameter-image">
-							<img src="/images/turbofan-overview/1.1.png" alt="Pressure Parameter" />
-							<p>Pressure</p>
-						</div>
-						<div class="parameter-image">
-							<img src="/images/turbofan-overview/1.2.png" alt="Temperature Parameter" />
-							<p>Temperature</p>
-						</div>
-						<div class="parameter-image">
-							<img src="/images/turbofan-overview/1.3.png" alt="Flow Parameter" />
-							<p>Flow</p>
-						</div>
-					</div>
+					<ImageGrid
+						images={[
+							{ src: '/images/turbofan-overview/1.1.png', alt: 'Pressure Parameter', caption: 'Pressure' },
+							{ src: '/images/turbofan-overview/1.2.png', alt: 'Temperature Parameter', caption: 'Temperature' },
+							{ src: '/images/turbofan-overview/1.3.png', alt: 'Flow Parameter', caption: 'Flow' }
+						]}
+						columns={3}
+						height="220px"
+					/>
 				</div>
 			</section>
 
@@ -276,18 +272,14 @@
 											turbine section are called aft-fan engines.
 										</p>
 									</div>
-									<div class="image-row">
-										<img
-											src="/images/turbofan-more-info/img_1.1.png"
-											alt="Turbofan Engine Forward Fan"
-											class="image-wrapper-inline"
-										/>
-										<img
-											src="/images/turbofan-more-info/img_1.2.png"
-											alt="Turbofan Engine Aft Fan"
-											class="image-wrapper-inline"
-										/>
-									</div>
+									<ImageGrid
+										images={[
+											{ src: '/images/turbofan-more-info/img_1.1.png', alt: 'Turbofan Engine Forward Fan' },
+											{ src: '/images/turbofan-more-info/img_1.2.png', alt: 'Turbofan Engine Aft Fan' }
+										]}
+										columns={2}
+										height="260px"
+									/>
 								</div>
 							</section>
 
@@ -343,18 +335,14 @@
 											</li>
 										</ul>
 									</div>
-									<div class="image-row">
-										<img
-											src="/images/turbofan-more-info/img_3.1.png"
-											alt="Turbofan Classifications"
-											class="image-wrapper-inline"
-										/>
-										<img
-											src="/images/turbofan-more-info/img_3.2.png"
-											alt="Bypass Ratio Types"
-											class="image-wrapper-inline"
-										/>
-									</div>
+									<ImageGrid
+										images={[
+											{ src: '/images/turbofan-more-info/img_3.1.png', alt: 'Turbofan Classifications' },
+											{ src: '/images/turbofan-more-info/img_3.2.png', alt: 'Bypass Ratio Types' }
+										]}
+										columns={2}
+										height="260px"
+									/>
 								</div>
 							</section>
 						</div>
@@ -437,10 +425,7 @@
 						<div class="image-wrapper" style="height: 500px; width: 100%;">
 							<ModelViewer modelPath="/models/Turbofan (Caseless).glb" autoLoad={true} />
 						</div>
-						<div class="image-placeholder">
-							<img src="/images/turbofan-module3/3d_img_1.png" alt="3D VIEW WITHOUT CASING–COLOR CODED PER SECTION" />
-							<p style="text-align: center; font-style: italic;">(3D VIEW WITHOUT CASING–COLOR CODED PER SECTION)</p>
-						</div>
+						<ImageGrid images={[{ src: '/images/turbofan-module3/3d_img_1.png', alt: '3D VIEW WITHOUT CASING–COLOR CODED PER SECTION', caption: '(3D VIEW WITHOUT CASING–COLOR CODED PER SECTION)' }]} columns={1} height="320px" />
 					</div>
 				</section>
 
@@ -669,16 +654,14 @@
 							Some long fan blades have a mid-span shroud that helps support the blades, making them more resistant to the bending forces created by the airstream. The shrouds, however, do block some of the airflow and create additional aerodynamic drag that reduces fan efficiency. The rotor blades used in an axial flow compressor have an airfoil cross- section with a varying angle of incidence, or twist. This twist compensates for the blade velocity variation caused by its radius.
 						</p>
 
-						<div class="image-row">
-							<img src="/images/turbofan-module3/img_7.1.png" alt="Axial Flow Compressor" />
-							<img src="/images/turbofan-module3/img_7.2.png" alt="Axial Compressor Detail" />
-						</div>
-						<div class="image-placeholder">
-							<img src="/images/turbofan-module3/img_8.png" alt="Rotor Blade Attachment" />
-						</div>
-						<div class="image-placeholder">
-							<img src="/images/turbofan-module3/img_9.png" alt="Blade Twist" />
-						</div>
+						<ImageGrid images={[
+							{ src: '/images/turbofan-module3/img_7.1.png', alt: 'Axial Flow Compressor' },
+							{ src: '/images/turbofan-module3/img_7.2.png', alt: 'Axial Compressor Detail' }
+						]} columns={2} height="260px" />
+						<ImageGrid images={[
+							{ src: '/images/turbofan-module3/img_8.png', alt: 'Rotor Blade Attachment' },
+							{ src: '/images/turbofan-module3/img_9.png', alt: 'Blade Twist' }
+						]} columns={2} height="260px" />
 
 						<p class="content-text">
 							The <b>stator vanes</b>, on the other hand, are arranged in fixed rows between the rows of rotor blades and act as diffusers at each stage, decreasing air velocity and raising pressure. Like rotor blades, stator vanes have an airfoil shape. In addition, the angle of attack of stator vanes can be <b>fixed or variable</b>.
@@ -696,12 +679,10 @@
 							The last set of vanes the compressor air passes through is the <b>outlet vane assembly</b>. These vanes straighten the airflow and eliminate any swirling motion or turbulence.
 							The air velocity of the compressed air must be slowed before it enters the combustion chamber. The divergent shape of a <b>diffuser</b> slows compressor discharge while, at the same time, increasing air pressure to its highest value in the engine.
 						</p>
-						<div class="image-placeholder">
-							<img src="/images/turbofan-module3/img_10.png" alt="Stator Vanes" />
-						</div>
-						<div class="image-placeholder">
-							<img src="/images/turbofan-module3/img_11.png" alt="Shrouded Stator Vanes" />
-						</div>
+						<ImageGrid images={[
+							{ src: '/images/turbofan-module3/img_10.png', alt: 'Stator Vanes' },
+							{ src: '/images/turbofan-module3/img_11.png', alt: 'Shrouded Stator Vanes' }
+						]} columns={2} height="260px" />
 
 						<h5 class="detail-heading">Pressure Stage</h5>
 						<ul class="bullet-list">
@@ -734,9 +715,7 @@
 							<li>The <b>front section</b> of a dual- spool compressor is called the <b>low pressure, low speed, or N1 compressor</b>. This low pressure compressor is typically driven by a two-stage turbine at the rear of the turbine section.</li>
 							<li>The <b>second compressor</b> section of a twin-spool compressor is called the <b>high pressure, high speed, or N2 compressor</b> and is typically driven by a single stage high-pressure turbine at the front of the turbine section.</li>
 						</ul>
-						<div class="image-placeholder">
-							<img src="/images/turbofan-module3/img_13.png" alt="Dual Spool Compressor" />
-						</div>
+						<ImageGrid images={[{ src: '/images/turbofan-module3/img_13.png', alt: 'Dual Spool Compressor' }]} columns={1} height="260px" />
 
 						<h5 class="detail-heading">Triple Spool Compressor</h5>
 						<ul class="bullet-list">
@@ -744,9 +723,7 @@
 							<li>The compressor next in line is called the <b>intermediate, or N2 compressor</b>,</li>
 							<li>The innermost compressor is the <b>high pressure, or N3 compressor</b>.</li>
 						</ul>
-						<div class="image-placeholder">
-							<img src="/images/turbofan-module3/img_14.png" alt="Triple Spool Compressor" />
-						</div>
+						<ImageGrid images={[{ src: '/images/turbofan-module3/img_14.png', alt: 'Triple Spool Compressor' }]} columns={1} height="260px" />
 
 						<h5 class="detail-heading" style="text-align: center; margin-top: 2rem;">AXIAL FLOW COMPRESSOR</h5>
 						<div style="overflow-x: auto;">
@@ -823,9 +800,7 @@
 						<p class="content-text">
 							A fuel drainage system accomplishes the important task of draining the unburned fuel after engine shutdown. In addition, draining the unburned fuel helps to prevent gum deposits in the fuel manifold, nozzles, and combustion chambers, which are caused by fuel residue.
 						</p>
-						<div class="image-placeholder">
-							<img src="/images/turbofan-module3/img_15.png" alt="Combustion Chamber Components" />
-						</div>
+						<ImageGrid images={[{ src: '/images/turbofan-module3/img_15.png', alt: 'Combustion Chamber Components' }]} columns={1} height="320px" />
 
 						<h5 class="detail-heading">Combustion Chambers (Combustors)</h5>
 						<p class="content-text">
@@ -841,9 +816,7 @@
 						<p class="content-text">
 							The multiple-can type combustion chamber consists of a series of individual combustor cans, which act as individual burner units. It is well-suited to centrifugal compressor engines because of the way the compressor discharge air is equally divided at the diffuser.
 						</p>
-						<div class="image-placeholder">
-							<img src="/images/turbofan-module3/img_16.png" alt="Multiple Can Type Combustor" />
-						</div>
+						<ImageGrid images={[{ src: '/images/turbofan-module3/img_16.png', alt: 'Multiple Can Type Combustor' }]} columns={1} height="320px" />
 						<p class="content-text">
 							One of the major advantages of this type of combustor chamber is that multiple combustors can be individually removed for inspection. The individual combustors in a typical multiple-can combustion chamber are interconnected with small <b>flame propagation tubes</b>. The combustion starts in the two cans equipped with igniter plugs; the flame then travels through the tubes and ignites the fuel/air mixture in the other cans. There are 8 or 10 cans in a typical multiple-can combustion section.
 						</p>
@@ -852,17 +825,13 @@
 						<p class="content-text">
 							An annular combustion chamber consists of a housing and a perforated inner liner, or basket. It must be removed as a single unit for repair or replacement. Annular combustors are commonly used in both small and large engines. Normally, the ignition source consists of two spark igniters similar to the type found in multiple-can combustors. In a conventional annular combustor, airflow enters at the front and is discharged at the rear, with primary and secondary airflow much the same as in the multiple-can design.
 						</p>
-						<div class="image-placeholder">
-							<img src="/images/turbofan-module3/img_17.png" alt="Annular Type Combustor" />
-						</div>
+						<ImageGrid images={[{ src: '/images/turbofan-module3/img_17.png', alt: 'Annular Type Combustor' }]} columns={1} height="320px" />
 
 						<h5 class="detail-heading">Can-Annular Type Combustor / Tuboannular</h5>
 						<p class="content-text">
 							Can-annular combustion sections represent a combination of the multiple-can combustor and the annular type combustor. It was invented by Pratt & Whitney and consists of a removable steel shroud that encircles the entire combustion section. An individual can and liner is removed and installed as one unit for maintenance. This design combines the ease of overhaul and testing of the multiple-can arrangement with the compactness of the annular combustor.
 						</p>
-						<div class="image-placeholder">
-							<img src="/images/turbofan-module3/img_18.png" alt="Can-Annular Type Combustor" />
-						</div>
+						<ImageGrid images={[{ src: '/images/turbofan-module3/img_18.png', alt: 'Can-Annular Type Combustor' }]} columns={1} height="320px" />
 					</div>
 				</section>
 
@@ -887,9 +856,7 @@
 							<li>Primary, or combustion air, is directed inside the liner in the front end of a combustor. It is used to support the combustion.</li>
 							<li>The secondary airflow in the combustion section forms a cooling air blanket on both sides of the liner and centers the combustion flames so they do not contact the liner. It also cools the hot gases before they enter the turbine section.</li>
 						</ul>
-						<div class="image-placeholder">
-							<img src="/images/turbofan-module3/img_19.png" alt="Primary and Secondary Air" />
-						</div>
+						<ImageGrid images={[{ src: '/images/turbofan-module3/img_19.png', alt: 'Primary and Secondary Air' }]} columns={1} height="320px" />
 					</div>
 				</section>
 
@@ -929,10 +896,10 @@
 						<p class="content-text">
 							A turbine transforms a portion of the kinetic energy in the hot exhaust gases into mechanical energy to drive the compressor and accessories. The turbine section of a turbojet engine is located downstream of the combustion section and consists of four basic elements: <b>a case, a stator, a shroud, and a rotor</b>.
 						</p>
-						<div class="image-row">
-							<img src="/images/turbofan-module3/img_20.1.png" alt="Turbine Components" />
-							<img src="/images/turbofan-module3/img_20.2.png" alt="Turbine Assembly" />
-						</div>
+						<ImageGrid images={[
+							{ src: '/images/turbofan-module3/img_20.1.png', alt: 'Turbine Components' },
+							{ src: '/images/turbofan-module3/img_20.2.png', alt: 'Turbine Assembly' }
+						]} columns={2} height="260px" />
 
 						<h5 class="detail-heading">Case</h5>
 						<p class="content-text">
@@ -958,10 +925,7 @@
 						<p class="content-text">
 							<b><i>Growth or Creep</i></b> – it is a phenomenon in which extreme stress on turbine blades may cause the turbine blades to grow in length due to severe centrifugal loads imposed by high rotational speeds.
 						</p>
-						<div class="image-placeholder">
-							<img src="/images/turbofan-module3/img_21.png" alt="Case, Stator, Shroud, and Rotor" />
-							<p style="text-align: center; font-style: italic;">Case, Stator, Shroud, and Rotor</p>
-						</div>
+						<ImageGrid images={[{ src: '/images/turbofan-module3/img_21.png', alt: 'Case, Stator, Shroud, and Rotor', caption: 'Case, Stator, Shroud, and Rotor' }]} columns={1} height="320px" />
 					</div>
 				</section>
 
@@ -975,9 +939,11 @@
 							<li><b>Impulse Turbine Blades</b> – the blades merely change the direction of airflow coming from the turbine nozzle and cause relatively no change in gas pressure or velocity.</li>
 							<li><b>Reaction Turbine Blades</b> – produce a turning force based on an aerodynamic action. To do this, the turbine blades form a series of converging ducts that increase gas velocity and reduce pressure.</li>
 						</ul>
-						<div class="image-row">
-							<img src="/images/turbofan-module3/img_22.png" alt="Impulse and Reaction Turbine Blades" />
-						</div>
+						<ImageGrid images={[
+							{ src: '/images/turbofan-module3/img_22.png', alt: 'Impulse and Reaction Turbine Blades' },
+							{ src: '/images/turbofan-module3/img_24.1.png', alt: 'Turbine Blade Attachment Detail' },
+							{ src: '/images/turbofan-module3/img_24.2.png', alt: 'Turbine Blade Shroud and Tip Detail' }
+						]} columns={3} height="260px" />
 						<ul class="bullet-list">
 							<li><b>Impulse-Reaction Turbine Blades</b> – a combination of impulse and reaction blades, the workload along the length of the blade is evenly distributed. The blade base is impulse-shaped while the blade tip is reaction-shaped.</li>
 						</ul>
@@ -1002,9 +968,10 @@
 						<p class="content-text">
 							<b>Active Tip Clearance Control (ACC)</b> – ACC controls the thermal expansion rate of the turbine case by regulating the flow of cooling air around the turbine case.
 						</p>
-						<div class="image-placeholder">
-							<img src="/images/turbofan-module3/img_23.1.png" alt="Active Tip Clearance Control" />
-						</div>
+						<ImageGrid images={[
+							{ src: '/images/turbofan-module3/img_23.1.png', alt: 'Active Tip Clearance Control 1' },
+							{ src: '/images/turbofan-module3/img_23.2.png', alt: 'Active Tip Clearance Control 2' }
+						]} columns={2} height="320px" />
 						<p class="content-text">
 							<b>Counter Counter-rotating turbines</b> – are chosen by engine designers for their effectiveness in dampening gyroscopic effects and reducing engine vibration, not for aerodynamic reasons.
 						</p>
@@ -1024,9 +991,7 @@
 						<p class="content-text">
 							A typical exhaust section extends from the rear of the turbine section to the point where the exhaust gases leave the engine. It must direct the flow of hot gases rearward in such a manner as to prevent turbulence and, at the same time, impart a high final or exit velocity to the gases. It is comprised of several components including the <b>exhaust cone, exhaust duct</b> or <b>tailpipe,</b> and <b>exhaust nozzle.</b>
 						</p>
-						<div class="image-placeholder">
-							<img src="/images/turbofan-module3/img_26.png" alt="Exhaust Components" />
-						</div>
+						<ImageGrid images={[{ src: '/images/turbofan-module3/img_26.png', alt: 'Exhaust Components' }]} columns={1} height="320px" />
 
 						<h5 class="detail-heading">Exhaust Cone</h5>
 						<p class="content-text">
@@ -1046,19 +1011,19 @@
 							<li><b>Converging Exhaust Nozzle</b> – the convergent shape produces a venturi that accelerates the exhaust gases and increases engine thrust.</li>
 							<li><b>Converging-Diverging Nozzle</b> – the converging portion of the exhaust nozzle accelerates the turbine exhaust gases to supersonic speed at the narrowest part of the duct, then, they are accelerated further in the nozzle's divergent portion, so the exhaust gases exit the nozzle well above the speed of sound.</li>
 						</ul>
-						<div class="image-row">
-							<img src="/images/turbofan-module3/img_27.1.png" alt="Converging Exhaust Nozzle" />
-							<img src="/images/turbofan-module3/img_27.2.png" alt="Converging-Diverging Nozzle" />
-						</div>
+						<ImageGrid images={[
+							{ src: '/images/turbofan-module3/img_27.1.png', alt: 'Converging Exhaust Nozzle' },
+							{ src: '/images/turbofan-module3/img_27.2.png', alt: 'Converging-Diverging Nozzle' }
+						]} columns={2} height="260px" />
 
 						<h5 class="detail-heading">Mixer Unit</h5>
 						<p class="content-text">
 							On fan or bypass type engines, there are two gas streams venting to the atmosphere; high temperature gases are discharged by the turbine and cool air mass moved rearward by the fan section. In a low by-pass engine, the flow of cool and hot air are combined in a mixer unit that ensures mixing of the two streams prior to exiting the engine.
 						</p>
-						<div class="image-row">
-							<img src="/images/turbofan-module3/img_28.1.png" alt="Mixer Unit 1" />
-							<img src="/images/turbofan-module3/img_28.2.png" alt="Mixer Unit 2" />
-						</div>
+						<ImageGrid images={[
+							{ src: '/images/turbofan-module3/img_28.1.png', alt: 'Mixer Unit 1' },
+							{ src: '/images/turbofan-module3/img_28.2.png', alt: 'Mixer Unit 2' }
+						]} columns={2} height="260px" />
 
 						<h5 class="detail-heading">Variable Geometry Nozzle</h5>
 						<p class="content-text">
@@ -1094,9 +1059,7 @@
 						<p class="content-text">
 							A set of beveled gears is used to drive an accessory shaft, which, in turn, drives an accessory gearbox. Since turbine engines operate at a relatively high rpm, reduction gearing is necessary in the accessory drive system to provide appropriate drive speeds for the accessories. In some installations, an intermediate or transfer gearbox is necessary to obtain the appropriate reduction gearing for the accessories.
 						</p>
-						<div class="image-placeholder">
-							<img src="/images/turbofan-module3/img_29.png" alt="Accessory Section" />
-						</div>
+						<ImageGrid images={[{ src: '/images/turbofan-module3/img_29.png', alt: 'Accessory Section' }]} columns={1} height="260px" />
 					</div>
 				</section>
 
@@ -1111,14 +1074,16 @@
 							<li>Bleed air for engine starting and air conditioning on the ground,</li>
 							<li>Bleed air for air conditioning/pressurization and wing anti-ice in flight.</li>
 						</ul>
-						<div class="image-row">
-							<img src="/images/turbofan-module3/img_30.png" alt="APU 1" />
-							<img src="/images/turbofan-module3/img_31.png" alt="APU 2" />
-						</div>
-						<div class="image-row">
-							<img src="/images/turbofan-module3/img_32.1.png" alt="APU 3" />
-							<img src="/images/turbofan-module3/img_32.2.png" alt="APU 4" />
-						</div>
+						<ImageGrid images={[
+							{ src: '/images/turbofan-module3/img_30.png', alt: 'APU 1' },
+							{ src: '/images/turbofan-module3/img_31.png', alt: 'APU 2' },
+							{ src: '/images/turbofan-module3/img_33.1.png', alt: 'APU 3' },
+							{ src: '/images/turbofan-module3/img_33.2.png', alt: 'APU 4' }
+						]} columns={2} height="260px" />
+						<ImageGrid images={[
+							{ src: '/images/turbofan-module3/img_32.1.png', alt: 'APU 3' },
+							{ src: '/images/turbofan-module3/img_32.2.png', alt: 'APU 4' }
+						]} columns={2} height="260px" />
 					</div>
 				</section>
 			{/if}
@@ -1362,62 +1327,9 @@
 		min-height: 300px;
 	}
 
-	/* Image Styles */
-	.image-placeholder {
-		background: linear-gradient(135deg, rgba(var(--turbofan-accent-rgb), 0.08), rgba(var(--turbofan-accent-rgb), 0.05));
-		border: 3px solid rgba(var(--turbofan-accent-rgb), 0.25);
-		border-radius: 16px;
-		padding: var(--card-padding-mobile);
-		margin: 2rem 0;
-		min-height: 200px;
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		overflow: hidden;
-		transition: all 0.3s ease;
-		position: relative;
-	}
+	/* Image grids and placeholders are managed by ImageGrid component now */
 
-	.image-placeholder img {
-		max-width: 100%;
-		height: auto;
-		border-radius: 12px;
-		box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
-	}
-
-	.image-row {
-		display: grid;
-		grid-template-columns: repeat(2, 1fr);
-		gap: 1.5rem;
-		margin: 1.5rem 0;
-	}
-
-	.image-row img, .image-row .image-wrapper-inline {
-		width: auto;
-		max-width: 90%;
-		height: auto;
-		border-radius: 12px;
-		box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
-		border: 2px solid rgba(var(--turbofan-accent-rgb), 0.2);
-		transition: all 0.3s ease;
-		justify-self: center;
-	}
-
-	.image-row.three-column {
-		grid-template-columns: repeat(3, 1fr);
-	}
-
-	.parameter-image {
-		display: flex;
-		flex-direction: column;
-		align-items: center;
-		gap: 1rem;
-	}
-
-	.parameter-image p {
-		color: #1a2b47;
-		font-weight: 700;
-	}
+	/* three-column and parameter-image styles are handled by ImageGrid and caption use */
 
 	.image-wrapper {
 		display: flex;
@@ -1632,8 +1544,7 @@
 	}
 
 	#engine-sections-tab .section-content .image-wrapper,
-	#engine-sections-tab .section-content .image-placeholder,
-	#engine-sections-tab .section-content .image-row {
+	#engine-sections-tab .section-content :global(.image-grid) {
 		float: right;
 		width: 45%;
 		margin: 0 0 1.5rem 2rem;
@@ -1647,8 +1558,7 @@
 
 	@media (max-width: 1024px) {
 		#engine-sections-tab .section-content .image-wrapper,
-		#engine-sections-tab .section-content .image-placeholder,
-		#engine-sections-tab .section-content .image-row {
+		#engine-sections-tab .section-content :global(.image-grid) {
 			float: none;
 			width: 100%;
 			margin: 2rem 0;
@@ -1681,7 +1591,7 @@
 			justify-self: center;
 			width: 100%;
 		}
-		.image-row {
+		:global(.image-grid) {
 			grid-template-columns: 1fr;
 		}
 	}

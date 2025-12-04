@@ -28,7 +28,7 @@
 
 <div class="signup-container">
 	<div class="signup-card animate-scale">
-		<h1 class="gradient-animated">Join ThrustLab</h1>
+		<h1 class="gradient-animated gradient-text">Join ThrustLab</h1>
 
 		<form class="signup-form animate-on-scroll" method="POST" use:enhance>
 			{#if form?.error}
@@ -125,14 +125,21 @@
 		font-weight: 900;
 		margin: 0 0 0.5rem 0;
 		text-align: center;
-		/* gradient is opt-in; use `.gradient-animated` class to enable */
-		background: transparent;
+		/* Gradient handled by .gradient-text class */
+	}
+
+	.gradient-text {
+		background: linear-gradient(
+			90deg,
+			var(--navbar-accent, var(--ui-yellow)) 0%,
+			var(--font-accent-cyan) 50%,
+			var(--navbar-accent, var(--ui-yellow)) 100%
+		);
 		background-size: 200% 100%;
 		-webkit-background-clip: text;
 		-webkit-text-fill-color: transparent;
 		background-clip: text;
 		animation: gradient-flash var(--gradient-duration) ease-in-out infinite;
-		filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.5));
 	}
 
 	.signup-form {
