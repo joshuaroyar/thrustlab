@@ -1,12 +1,14 @@
 <script lang="ts">
-	import AssemblyActivity from '$lib/components/AssemblyActivity.svelte';
-	import SkyBackground from '$lib/components/SkyBackground.svelte';
+    import AssemblyActivity from '$lib/components/AssemblyActivity.svelte';
+    import { onMount } from 'svelte';
+
+    onMount(() => {
+        document.body.classList.add('zone-overhaul');
+        return () => document.body.classList.remove('zone-overhaul');
+    });
 </script>
 
 <div class="activity-wrapper">
-    <!-- Sky Background -->
-    <SkyBackground day={true} />
-
     <!-- Header Section -->
     <div class="header-section">
         <!-- Speech Bubble Box -->
@@ -38,6 +40,7 @@
         </p>
 
 		<!-- Assembly Activity Component -->
+		<AssemblyActivity />
 
     </div>
 </div>
@@ -49,7 +52,7 @@
         width: 100%;
         position: relative;
         overflow-x: hidden;
-        padding: 2rem;
+        padding: var(--spacing-lg);
         display: flex;
         flex-direction: column;
         align-items: center;
@@ -67,11 +70,11 @@
 
     /* Speech Bubble */
     .speech-bubble {
-        background: rgba(10, 47, 53, 0.85);
+                animation: gradient-flash var(--gradient-duration) ease-in-out infinite; /* gradient-flash keyframes moved to global app.css */
         backdrop-filter: blur(12px);
         -webkit-backdrop-filter: blur(12px);
-        border: 1px solid var(--ui-yellow);
-        padding: 1.5rem;
+        border: 1px solid var(--navbar-accent, var(--ui-yellow));
+        padding: var(--card-padding-mobile);
         border-radius: 1rem;
         box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
         position: relative;
@@ -84,14 +87,9 @@
         font-family: var(--font-body);
         font-size: 1.125rem; /* text-lg */
         color: var(--font-secondary);
-        font-weight: 500;
-        line-height: 1.6;
-    }
-
-    .speech-label {
-        font-family: var(--font-heading);
+            /* gradient-flash keyframes moved to global app.css */
         font-weight: 800;
-        color: var(--ui-yellow);
+        color: var(--navbar-accent, var(--ui-yellow));
     }
 
     /* Character */
@@ -115,12 +113,12 @@
     .activity-card {
         width: 100%;
         max-width: 72rem; /* max-w-6xl */
-        background: rgba(10, 47, 53, 0.6);
+        background: rgba(34, 58, 94, 0.6);
         backdrop-filter: blur(20px) saturate(180%);
         -webkit-backdrop-filter: blur(20px) saturate(180%);
         border-radius: 2rem;
-        padding: 2rem;
-        border: 2px solid rgba(135, 206, 235, 0.3);
+        padding: var(--card-padding);
+        border: 2px solid rgba(93, 168, 203, 0.18);
         box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
         position: relative;
         z-index: 0;
@@ -133,46 +131,30 @@
     /* Title */
     .activity-title {
         font-family: var(--font-heading);
-        font-size: clamp(2rem, 4vw, 3rem);
+        font-size: clamp(2.5rem, 6vw, 4.5rem);
         font-weight: 900;
         text-align: center;
         margin-bottom: 1.5rem;
         background: linear-gradient(
             90deg,
-            var(--ui-yellow) 0%,
-            var(--font-accent-cyan) 20%,
-            var(--ui-light-blue) 40%,
-            var(--font-accent-yellow) 60%,
-            var(--ui-yellow) 80%,
-            var(--font-accent-cyan) 100%
+            var(--navbar-accent, var(--ui-yellow)) 0%,
+            var(--font-accent-cyan) 50%,
+            var(--navbar-accent, var(--ui-yellow)) 100%
         );
-        background-size: 300% 100%;
+        background-size: 200% 100%;
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
         background-clip: text;
-        animation: gradient-flash 4s ease-in-out infinite;
+        animation: gradient-flash var(--gradient-duration) ease-in-out infinite;
         filter: drop-shadow(0 4px 20px rgba(0, 0, 0, 0.5));
     }
 
-    @keyframes gradient-flash {
-		0%, 100% {
-			background-position: 0% 50%;
-		}
-		25% {
-			background-position: 50% 50%;
-		}
-		50% {
-			background-position: 100% 50%;
-		}
-		75% {
-			background-position: 50% 50%;
-		}
-	}
+    /* gradient-flash keyframes moved to global app.css */
 
     /* Instructions */
     .activity-instructions {
         text-align: center;
-        color: var(--font-secondary);
+        color: var(--font-primary);
         max-width: 56rem; /* max-w-4xl */
         margin-bottom: 1rem;
         font-size: 1.125rem; /* text-lg */
@@ -182,6 +164,6 @@
 
     .instruction-label {
         font-weight: 700;
-        color: var(--font-accent-yellow);
+        color: var(--navbar-accent, var(--ui-yellow));
     }
 </style>

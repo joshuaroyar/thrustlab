@@ -15,6 +15,8 @@ class TTSService {
 	 * @returns Promise that resolves when audio FINISHES playing
 	 */
 	async speak(text: string): Promise<void> {
+		if (typeof window === 'undefined') return;
+
 		if (!text || text.trim() === '') {
 			console.warn('TTS: Empty text provided');
 			return;
@@ -93,7 +95,7 @@ class TTSService {
 	 * Fallback to browser's native SpeechSynthesis
 	 */
 	private async speakFallback(text: string): Promise<void> {
-		if (!('speechSynthesis' in window)) {
+		if (typeof window === 'undefined' || !('speechSynthesis' in window)) {
 			console.error('Browser does not support speech synthesis');
 			return;
 		}
@@ -144,7 +146,7 @@ class TTSService {
 			this.currentAudio = null;
 		}
 
-		if ('speechSynthesis' in window) {
+		if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
 			window.speechSynthesis.cancel();
 		}
 

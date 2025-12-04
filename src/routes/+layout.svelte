@@ -6,6 +6,7 @@
 	import favicon from '$lib/assets/favicon.svg';
 	import Navbar from '$lib/components/navbar/Navbar.svelte';
 	import ChatbotPopup from '$lib/components/chatbot/ChatbotPopup.svelte';
+	import ImageModal from '$lib/components/ImageModal.svelte';
 	import type { LayoutData } from './$types';
 	import type { AuthChangeEvent, Session } from '@supabase/supabase-js';
 
@@ -38,6 +39,8 @@
 
 	// Check if we're on the Test Bay page to hide the popup
 	let isTestBayPage = $derived(page.url.pathname === '/test-bay');
+	// Check if we're on the JAJA fullscreen page to hide the popup
+	let isJajaPage = $derived(page.url.pathname === '/jaja');
 	// Check if we're on the home page for transparent navbar and JAJA icon
 	let isHomePage = $derived(page.url.pathname === '/');
 
@@ -107,9 +110,11 @@
 	{@render children()}
 </main>
 
-{#if !isTestBayPage}
+{#if !isTestBayPage && !isJajaPage}
 	<ChatbotPopup />
 {/if}
+
+<ImageModal />
 
 <style>
 	:global(body) {
@@ -128,7 +133,7 @@
 
 	/* Add padding for non-home pages */
 	main:not(.home-page) {
-		padding-top: 64px;
-		margin-top: -64px;
+		padding-top: 5rem;
+		margin-top: -5rem;
 	}
 </style>

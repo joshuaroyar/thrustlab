@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { onMount, onDestroy } from 'svelte';
+	import { fade } from 'svelte/transition';
 	import {
 		Engine,
 		Scene,
@@ -24,7 +25,8 @@
 		enableHighlight?: boolean;
 		partDescriptions?: Record<string, { name: string; description: string }>;
 		onModelLoaded?: () => void;
-		enableTTS?: boolean; // Enable text-to-speech for component descriptions
+		enableTTS?: boolean;
+		autoLoad?: boolean;
 	}
 
 	let {
@@ -36,26 +38,21 @@
 		onModelLoaded,
 		enableTTS = true,
 		autoLoad = false
-	}: ModelViewerProps & { autoLoad?: boolean } = $props();
+	}: ModelViewerProps = $props();
 
 	let canvas: HTMLCanvasElement;
 	let engine: Engine | null = null;
 	let scene: Scene | null = null;
-	let selectedMesh: AbstractMesh | null = null;
-	let highlightedMesh: AbstractMesh | null = null;
 	let highlightLayer: HighlightLayer | null = null;
 	let observer: IntersectionObserver | null = null;
 	let isVisible = false;
 	let hasLoaded = $state(false);
 	let isLoading = $state(false);
-
-	// Tooltip state
 	let tooltipVisible = $state(false);
 	let tooltipContent = $state({ name: '', description: '' });
-
-	// TTS state
 	let isPlayingAudio = $state(false);
 	let audioError = $state<string | null>(null);
+	let showControls = $state(true);
 
 	const sanitizeValue = (value?: string | null) =>
 		(value || '')
@@ -69,17 +66,186 @@
 		return sanitized ? ` ${sanitized} ` : '';
 	};
 
+	const DEFAULT_ACCENT_HEX = '#FFD700';
+
+	const hexToRgba = (hex: string, alpha = 1) => {
+		const cleanHex = hex.replace('#', '');
+		const bigint = parseInt(cleanHex, 16);
+		const r = (bigint >> 16) & 255;
+		const g = (bigint >> 8) & 255;
+		const b = bigint & 255;
+		return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+	};
+
+	let activeAccent = $state({
+		hex: DEFAULT_ACCENT_HEX,
+		soft: hexToRgba(DEFAULT_ACCENT_HEX, 0.15),
+		glow: hexToRgba(DEFAULT_ACCENT_HEX, 0.5)
+	});
+
+	const DEFAULT_HOVER_COLOR = Color3.FromHexString('#FACC15');
+	const GREY_OVERLAY_COLOR = Color3.FromHexString('#4B5563');
+
+	const GROUP_STYLES: Record<string, { color: Color3; accentHex: string }> = {
+		'Air Inlet Duct': { color: Color3.FromHexString('#87CEFA'), accentHex: '#87CEFA' },
+		'Compressor Section': { color: Color3.FromHexString('#32CD32'), accentHex: '#32CD32' },
+		'Combustion Section': { color: Color3.FromHexString('#FFD700'), accentHex: '#FFD700' },
+		'Turbine Section': { color: Color3.FromHexString('#FFA500'), accentHex: '#FFA500' },
+		'Exhaust Section': { color: Color3.FromHexString('#1E3A8A'), accentHex: '#1E3A8A' }
+	};
+
+	const groupMeshMap = new Map<string, Mesh[]>();
+	let currentSelectedGroup: string | null = null;
+	let currentHoverGroup: string | null = null;
+
+	const setActiveAccent = (groupName: string | null) => {
+		const accent = groupName ? GROUP_STYLES[groupName] : null;
+		const hex = accent?.accentHex ?? DEFAULT_ACCENT_HEX;
+		activeAccent = {
+			hex,
+			soft: hexToRgba(hex, 0.15),
+			glow: hexToRgba(hex, 0.5)
+		};
+	};
+
+	function setupHighlighting(scene: Scene) {
+		highlightLayer = new HighlightLayer('highlightLayer', scene);
+		highlightLayer.blurHorizontalSize = 0.8;
+		highlightLayer.blurVerticalSize = 0.8;
+
+		scene.onPointerObservable.add((pointerInfo) => {
+			if (pointerInfo.type === PointerEventTypes.POINTERMOVE) {
+				const pickResult = scene.pick(scene.pointerX, scene.pointerY);
+
+				if (pickResult.hit && pickResult.pickedMesh) {
+					const description = findPartDescription(pickResult.pickedMesh);
+					if (description) {
+						const groupName = description.name;
+						if (currentSelectedGroup === groupName) {
+							if (currentHoverGroup && currentHoverGroup !== groupName) {
+								clearGroupHighlight(currentHoverGroup);
+								currentHoverGroup = null;
+							}
+						} else if (currentHoverGroup !== groupName) {
+							if (currentHoverGroup) {
+								clearGroupHighlight(currentHoverGroup);
+							}
+							addGroupHighlight(groupName, getGroupColor(groupName));
+							currentHoverGroup = groupName;
+						}
+					} else if (currentHoverGroup) {
+						clearGroupHighlight(currentHoverGroup);
+						currentHoverGroup = null;
+					}
+				} else if (currentHoverGroup) {
+					clearGroupHighlight(currentHoverGroup);
+					currentHoverGroup = null;
+				}
+			} else if (pointerInfo.type === PointerEventTypes.POINTERDOWN) {
+				const pickResult = scene.pick(scene.pointerX, scene.pointerY);
+
+				if (pickResult.hit && pickResult.pickedMesh) {
+					const description = findPartDescription(pickResult.pickedMesh);
+
+					if (description) {
+						const groupName = description.name;
+
+						if (currentHoverGroup) {
+							clearGroupHighlight(currentHoverGroup);
+							currentHoverGroup = null;
+						}
+
+						if (currentSelectedGroup === groupName) {
+							resetSelection();
+						} else {
+							resetSelection();
+							currentSelectedGroup = groupName;
+							tooltipContent = description;
+							tooltipVisible = true;
+							setActiveAccent(groupName);
+							addGroupHighlight(groupName, getGroupColor(groupName));
+							applyOverlayState(groupName);
+
+							if (enableTTS) {
+								playComponentDescription(description);
+							}
+						}
+					} else {
+						if (currentHoverGroup) {
+							clearGroupHighlight(currentHoverGroup);
+							currentHoverGroup = null;
+						}
+						resetSelection();
+					}
+				} else {
+					if (currentHoverGroup) {
+						clearGroupHighlight(currentHoverGroup);
+						currentHoverGroup = null;
+					}
+					resetSelection();
+				}
+			}
+		});
+	}
+	const getGroupColor = (groupName: string) => GROUP_STYLES[groupName]?.color ?? DEFAULT_HOVER_COLOR;
+
+	const getMeshesByGroup = (groupName: string) => groupMeshMap.get(groupName) ?? [];
+
+	const clearGroupHighlight = (groupName: string | null) => {
+		if (!highlightLayer || !groupName) return;
+		const meshes = getMeshesByGroup(groupName);
+		meshes.forEach((mesh) => highlightLayer?.removeMesh(mesh));
+	};
+
+	const addGroupHighlight = (groupName: string, color?: Color3) => {
+		if (!highlightLayer) return;
+		const meshes = getMeshesByGroup(groupName);
+		if (!meshes.length) return;
+		const highlightColor = color ?? getGroupColor(groupName);
+		meshes.forEach((mesh) => highlightLayer?.addMesh(mesh, highlightColor));
+	};
+
+	const applyOverlayState = (activeGroup: string | null) => {
+		if (!scene) return;
+		scene.meshes.forEach((mesh) => {
+			if (!(mesh instanceof Mesh)) return;
+			const description = findPartDescription(mesh);
+			const shouldGrey = Boolean(activeGroup) && description?.name !== activeGroup;
+			if (shouldGrey) {
+				mesh.renderOverlay = true;
+				mesh.overlayColor = GREY_OVERLAY_COLOR;
+				mesh.overlayAlpha = 0.65;
+			} else {
+				mesh.renderOverlay = false;
+				mesh.overlayAlpha = 0;
+			}
+		});
+	};
+
+	const resetSelection = () => {
+		if (currentSelectedGroup) {
+			clearGroupHighlight(currentSelectedGroup);
+			currentSelectedGroup = null;
+		}
+		applyOverlayState(null);
+		setActiveAccent(null);
+		tooltipVisible = false;
+		if (enableTTS) {
+			ttsService.stop();
+			isPlayingAudio = false;
+			audioError = null;
+		}
+	};
+
 	// Helper to find description by mesh name or material name
 	function findPartDescription(mesh: AbstractMesh) {
 		if (!partDescriptions) return null;
 
-		// Log mesh names for debugging
-		console.log('Clicked mesh:', {
-			name: mesh.name,
-			material: mesh.material?.name,
-			id: mesh.id,
-			parent: mesh.parent?.name
-		});
+		const metadata = (mesh.metadata ??= {});
+		const cachedPart = (metadata as Record<string, any>).turbofanPart;
+		if (cachedPart !== undefined) {
+			return cachedPart;
+		}
 
 		const meshNameLower = mesh.name.toLowerCase();
 		const materialNameLower = mesh.material?.name?.toLowerCase() || '';
@@ -87,8 +253,8 @@
 		const meshNameSearch = buildSearchable(mesh.name);
 		const materialNameSearch = buildSearchable(mesh.material?.name);
 		const meshIdSearch = buildSearchable(mesh.id);
-		
-		let bestMatchKey = null;
+
+		let bestMatchKey: string | null = null;
 		let bestMatchLength = -1;
 
 		for (const key in partDescriptions) {
@@ -96,25 +262,11 @@
 			const keySearch = buildSearchable(key);
 			const keySearchLen = keySearch.trim().length;
 
-			// 1. Check Mesh Name (exact match first)
-			if (meshNameLower === keyLower) {
-				console.log('Exact mesh name match:', key);
+			if (meshNameLower === keyLower || materialNameLower === keyLower || meshIdLower === keyLower) {
+				(metadata as Record<string, any>).turbofanPart = partDescriptions[key];
 				return partDescriptions[key];
 			}
 
-			// 2. Check Material Name (exact match)
-			if (materialNameLower === keyLower) {
-				console.log('Exact material name match:', key);
-				return partDescriptions[key];
-			}
-
-			// 3. Check Mesh ID (exact match)
-			if (meshIdLower === keyLower) {
-				console.log('Exact mesh ID match:', key);
-				return partDescriptions[key];
-			}
-
-			// 4. Check partial matches in mesh name
 			if (
 				keySearch &&
 				((meshNameSearch && meshNameSearch.includes(keySearch)) ||
@@ -128,13 +280,9 @@
 			}
 		}
 
-		if (bestMatchKey) {
-			console.log('Best partial match found:', bestMatchKey);
-			return partDescriptions[bestMatchKey];
-		}
-
-		console.log('No match found for mesh');
-		return null;
+		const match = bestMatchKey ? partDescriptions[bestMatchKey] : null;
+		(metadata as Record<string, any>).turbofanPart = match;
+		return match;
 	}
 
 	onMount(() => {
@@ -192,6 +340,12 @@
 	function loadModel() {
 		if (!scene) return;
 
+		groupMeshMap.clear();
+		currentSelectedGroup = null;
+		currentHoverGroup = null;
+		setActiveAccent(null);
+		applyOverlayState(null);
+
 		isLoading = true;
 
 		SceneLoader.Append(
@@ -202,7 +356,7 @@
 				hasLoaded = true;
 				isLoading = false;
 
-				// Log all meshes for debugging
+				// Log all meshes for debugging and map them to component groups
 				console.log('=== LOADED MODEL MESHES ===');
 				loadedScene.meshes.forEach((mesh, index) => {
 					console.log(`Mesh ${index}:`, {
@@ -211,6 +365,13 @@
 						material: mesh.material?.name,
 						parent: mesh.parent?.name
 					});
+
+					const partInfo = findPartDescription(mesh);
+					if (partInfo) {
+						const existing = groupMeshMap.get(partInfo.name) ?? [];
+						existing.push(mesh as Mesh);
+						groupMeshMap.set(partInfo.name, existing);
+					}
 				});
 				console.log('=== END MESHES ===');
 
@@ -344,123 +505,6 @@
 		}
 	}
 
-	function setupHighlighting(scene: Scene) {
-		highlightLayer = new HighlightLayer('highlightLayer', scene);
-		highlightLayer.blurHorizontalSize = 0.8;
-		highlightLayer.blurVerticalSize = 0.8;
-
-		scene.onPointerObservable.add((pointerInfo) => {
-			// Handle hover for highlighting only
-			if (pointerInfo.type === PointerEventTypes.POINTERMOVE) {
-				const pickResult = scene.pick(scene.pointerX, scene.pointerY);
-
-				if (pickResult.hit && pickResult.pickedMesh) {
-					const mesh = pickResult.pickedMesh;
-					const description = findPartDescription(mesh);
-
-					if (description) {
-						// Only update highlight if it's different from selected mesh
-						if (highlightedMesh !== mesh && selectedMesh !== mesh) {
-							if (highlightedMesh && highlightedMesh !== selectedMesh) {
-								highlightLayer?.removeMesh(highlightedMesh as Mesh);
-							}
-							// Use cyan for hover
-							highlightLayer?.addMesh(mesh as Mesh, new Color3(0, 1, 1));
-							highlightedMesh = mesh;
-						}
-					} else {
-						// Remove highlight if not hovering over a valid part and not selected
-						if (highlightedMesh && highlightedMesh !== selectedMesh) {
-							highlightLayer?.removeMesh(highlightedMesh as Mesh);
-							highlightedMesh = null;
-						}
-					}
-				} else {
-					// Remove highlight if not hovering over anything and not selected
-					if (highlightedMesh && highlightedMesh !== selectedMesh) {
-						highlightLayer?.removeMesh(highlightedMesh as Mesh);
-						highlightedMesh = null;
-					}
-				}
-			}
-
-			// Handle click for selection
-			else if (pointerInfo.type === PointerEventTypes.POINTERDOWN) {
-				const pickResult = scene.pick(scene.pointerX, scene.pointerY);
-
-				if (pickResult.hit && pickResult.pickedMesh) {
-					const mesh = pickResult.pickedMesh;
-					const description = findPartDescription(mesh);
-
-					if (description) {
-						// Deselect previous
-						if (selectedMesh && selectedMesh !== mesh) {
-							highlightLayer?.removeMesh(selectedMesh as Mesh);
-						}
-
-						// If clicking the same mesh, deselect it
-						if (selectedMesh === mesh) {
-							highlightLayer?.removeMesh(selectedMesh as Mesh);
-							selectedMesh = null;
-							tooltipVisible = false;
-							// Stop audio when deselecting
-							if (enableTTS) {
-								ttsService.stop();
-								isPlayingAudio = false;
-								audioError = null;
-							}
-						} else {
-							// Select new mesh
-							selectedMesh = mesh;
-							// Use yellow/gold for selected mesh
-							highlightLayer?.addMesh(selectedMesh as Mesh, new Color3(1, 0.84, 0));
-
-							// Show tooltip above the model
-							tooltipContent = description;
-							tooltipVisible = true;
-
-							// Play text-to-speech if enabled
-							if (enableTTS) {
-								playComponentDescription(description);
-							}
-						}
-
-						// Remove hover highlight if it exists
-						if (highlightedMesh) {
-							highlightLayer?.removeMesh(highlightedMesh as Mesh);
-							highlightedMesh = null;
-						}
-					} else {
-						// Clicked on non-interactive part - deselect
-						if (selectedMesh) {
-							highlightLayer?.removeMesh(selectedMesh as Mesh);
-							selectedMesh = null;
-						}
-						tooltipVisible = false;
-						// Stop audio when clicking away
-						if (enableTTS) {
-							ttsService.stop();
-							isPlayingAudio = false;
-							audioError = null;
-						}
-					}
-				} else {
-					// Clicked on background - deselect
-					if (selectedMesh) {
-						highlightLayer?.removeMesh(selectedMesh as Mesh);
-						selectedMesh = null;
-					}
-					tooltipVisible = false;
-					// Stop audio when clicking away
-					if (enableTTS) {
-						ttsService.stop();
-						isPlayingAudio = false;
-						audioError = null;
-					}
-				}
-			}
-		});
-	}
 </script>
 
 <div class="model-viewer-container">
@@ -481,19 +525,11 @@
 	{/if}
 
 	{#if tooltipVisible}
-		<div class="model-tooltip fixed-top">
-			<button class="tooltip-close" onclick={() => { 
-				tooltipVisible = false; 
-				if (selectedMesh) { 
-					highlightLayer?.removeMesh(selectedMesh as Mesh); 
-					selectedMesh = null; 
-				}
-				if (enableTTS) {
-					ttsService.stop();
-					isPlayingAudio = false;
-					audioError = null;
-				}
-			}} aria-label="Close tooltip">
+		<div
+			class="model-tooltip fixed-top"
+			style={`--accent-color:${activeAccent.hex}; --accent-soft:${activeAccent.soft}; --accent-glow:${activeAccent.glow};`}
+		>
+			<button class="tooltip-close" onclick={resetSelection} aria-label="Close tooltip">
 				<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
 					<line x1="18" y1="6" x2="6" y2="18"></line>
 					<line x1="6" y1="6" x2="18" y2="18"></line>
@@ -522,23 +558,38 @@
 		</div>
 	{/if}
 
-	<div class="controls-info">
-		<div class="control-item highlight">
-			<strong>Click</strong> on any colored component to learn more
+	<button 
+		class="controls-toggle" 
+		onclick={() => showControls = !showControls}
+		aria-label={showControls ? "Hide Instructions" : "Show Instructions"}
+	>
+		<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+			<circle cx="12" cy="12" r="10"></circle>
+			<path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
+			<line x1="12" y1="17" x2="12.01" y2="17"></line>
+		</svg>
+		{showControls ? 'Hide Instructions' : 'Show Instructions'}
+	</button>
+
+	{#if showControls}
+		<div class="controls-info" transition:fade={{ duration: 200 }}>
+			<div class="control-item highlight">
+				<strong>Click</strong> on any colored component to learn more
+			</div>
+			<div class="control-item">
+				<strong>Mouse:</strong> Left-click + drag to rotate
+			</div>
+			<div class="control-item">
+				<strong>Zoom:</strong> Scroll wheel or pinch
+			</div>
+			<div class="control-item">
+				<strong>Pan:</strong> Right-click + drag or middle mouse
+			</div>
+			<div class="control-item">
+				<strong>Keys:</strong> W/A/S/D to rotate
+			</div>
 		</div>
-		<div class="control-item">
-			<strong>Mouse:</strong> Left-click + drag to rotate
-		</div>
-		<div class="control-item">
-			<strong>Zoom:</strong> Scroll wheel or pinch
-		</div>
-		<div class="control-item">
-			<strong>Pan:</strong> Right-click + drag or middle mouse
-		</div>
-		<div class="control-item">
-			<strong>Keys:</strong> W/A/S/D to rotate
-		</div>
-	</div>
+	{/if}
 </div>
 
 <style>
@@ -566,10 +617,13 @@
 		pointer-events: auto;
 		z-index: 1000;
 		max-width: 300px;
-		box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5), 0 0 0 2px rgba(0, 212, 255, 0.3);
-		border: 2px solid rgba(0, 212, 255, 0.5);
+		box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5), 0 0 0 2px var(--accent-glow, rgba(255, 215, 0, 0.3));
+		border: 2px solid var(--accent-color, #FFD700);
 		backdrop-filter: blur(10px);
 		animation: tooltipSlideIn 0.3s ease-out;
+		--accent-color: #FFD700;
+		--accent-soft: rgba(255, 215, 0, 0.15);
+		--accent-glow: rgba(255, 215, 0, 0.5);
 	}
 
 	@keyframes tooltipSlideIn {
@@ -621,8 +675,8 @@
 		margin: 0 0 12px 0;
 		font-size: 18px;
 		font-weight: 700;
-		color: #00d4ff;
-		text-shadow: 0 0 10px rgba(0, 212, 255, 0.5);
+		color: var(--accent-color, #FFD700);
+		text-shadow: 0 0 10px var(--accent-glow, rgba(255, 215, 0, 0.5));
 		letter-spacing: 0.5px;
 	}
 
@@ -639,9 +693,9 @@
 		gap: 8px;
 		margin-bottom: 12px;
 		padding: 8px 12px;
-		background: rgba(0, 212, 255, 0.1);
+		background: var(--accent-soft, rgba(255, 215, 0, 0.1));
 		border-radius: 6px;
-		border-left: 3px solid #00d4ff;
+		border-left: 3px solid var(--accent-color, #FFD700);
 	}
 
 	.audio-wave {
@@ -655,7 +709,7 @@
 		display: inline-block;
 		width: 3px;
 		height: 100%;
-		background: #00d4ff;
+		background: var(--accent-color, #FFD700);
 		border-radius: 2px;
 		animation: audioWave 1s ease-in-out infinite;
 	}
@@ -683,7 +737,7 @@
 
 	.audio-text {
 		font-size: 12px;
-		color: #00d4ff;
+		color: var(--accent-color, #FFD700);
 		font-weight: 500;
 	}
 
@@ -697,11 +751,38 @@
 		font-size: 12px;
 	}
 
-	.controls-info {
+	.controls-toggle {
 		position: absolute;
 		bottom: 20px;
 		left: 20px;
-		background: rgba(0, 0, 0, 0.7);
+		background: rgba(0, 212, 255, 0.15);
+		border: 1px solid rgba(0, 212, 255, 0.3);
+		color: #00d4ff;
+		padding: 8px 12px;
+		border-radius: 8px;
+		font-size: 13px;
+		font-weight: 600;
+		cursor: pointer;
+		display: flex;
+		align-items: center;
+		gap: 8px;
+		backdrop-filter: blur(10px);
+		transition: all 0.2s ease;
+		z-index: 100;
+	}
+
+	.controls-toggle:hover {
+		background: rgba(0, 212, 255, 0.25);
+		border-color: rgba(0, 212, 255, 0.5);
+		transform: translateY(-2px);
+		box-shadow: 0 4px 12px rgba(0, 212, 255, 0.2);
+	}
+
+	.controls-info {
+		position: absolute;
+		bottom: 65px;
+		left: 20px;
+		background: rgba(0, 0, 0, 0.8);
 		padding: 16px;
 		border-radius: 8px;
 		color: white;
@@ -709,6 +790,8 @@
 		backdrop-filter: blur(10px);
 		border: 1px solid rgba(255, 255, 255, 0.1);
 		pointer-events: none;
+		box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+		max-width: 250px;
 	}
 
 	.control-item {
@@ -803,10 +886,17 @@
 	}
 
 	@media (max-width: 768px) {
+		.controls-toggle {
+			bottom: 10px;
+			left: 10px;
+			padding: 6px 10px;
+			font-size: 12px;
+		}
+
 		.controls-info {
 			font-size: 11px;
 			padding: 12px;
-			bottom: 10px;
+			bottom: 50px;
 			left: 10px;
 		}
 	}

@@ -39,6 +39,85 @@
 	let aiFeedback = $state<FeedbackItem[] | null>(null);
 	let isLoadingFeedback = $state(false);
 
+	function escapeHtml(text: string) {
+		return text
+			.replace(/&/g, '&amp;')
+			.replace(/</g, '&lt;')
+			.replace(/>/g, '&gt;')
+			.replace(/"/g, '&quot;')
+			.replace(/'/g, '&#39;');
+	}
+
+	function applyInlineFormatting(text: string) {
+		let formatted = escapeHtml(text);
+		// Bold: **text** or __text__
+		formatted = formatted.replace(/(\*\*|__)(.*?)\1/g, '<strong>$2</strong>');
+		// Italic: *text* or _text_
+		formatted = formatted.replace(/(\*|_)(.*?)\1/g, '<em>$2</em>');
+		return formatted;
+	}
+
+	function formatAiExplanation(rawText: string) {
+		if (!rawText) return '';
+		const lines = rawText.split(/\r?\n/);
+		let html = '';
+		let listType: 'ul' | 'ol' | null = null;
+
+		const closeList = () => {
+			if (listType) {
+				html += `</${listType}>`;
+				listType = null;
+			}
+		};
+
+		for (const original of lines) {
+			const line = original.trim();
+			if (!line) {
+				closeList();
+				continue;
+			}
+
+			// Headers
+			const headerMatch = line.match(/^(#{1,6})\s+(.+)/);
+			if (headerMatch) {
+				closeList();
+				const level = headerMatch[1].length;
+				html += `<h${level}>${applyInlineFormatting(headerMatch[2])}</h${level}>`;
+				continue;
+			}
+
+			// Unordered List
+			if (/^(\*|-)\s+/.test(line)) {
+				if (listType !== 'ul') {
+					closeList();
+					listType = 'ul';
+					html += '<ul>';
+				}
+				const content = line.replace(/^(\*|-)\s+/, '');
+				html += `<li>${applyInlineFormatting(content)}</li>`;
+				continue;
+			}
+
+			// Ordered List
+			if (/^\d+[\.)]\s+/.test(line)) {
+				if (listType !== 'ol') {
+					closeList();
+					listType = 'ol';
+					html += '<ol>';
+				}
+				const content = line.replace(/^\d+[\.)]\s+/, '');
+				html += `<li>${applyInlineFormatting(content)}</li>`;
+				continue;
+			}
+
+			closeList();
+			html += `<p>${applyInlineFormatting(line)}</p>`;
+		}
+
+		closeList();
+		return html;
+	}
+
 	// Derived state for current question
 	let currentQuestion = $derived(
 		selectedModule?.questions?.[currentQuestionIndex]
@@ -191,15 +270,20 @@
 		// Scroll to top when changing questions or views
 		window.scrollTo({ top: 0, behavior: 'smooth' });
 	});
+
+	onMount(() => {
+		document.body.classList.add('zone-testbay');
+		return () => document.body.classList.remove('zone-testbay');
+	});
 </script>
 
-<SkyBackground day={true} />
+<SkyBackground dawn={true} />
 
 <div class="page-container">
 	{#if viewState === 'selection'}
 		<!-- Module Selection View -->
 		<div class="content-wrapper animate-on-scroll">
-			<h1 class="page-title">Test Bay</h1>
+			<h1 class="page-title gradient-animated">Test Bay</h1>
 			<p class="intro-text">Welcome to the Test Bay, where learning turns into a challenge. Here, students face interactive assessments designed to gauge their understanding of the Hangar Zone, Turbofan Engine Zone, and Overhaul Bay. It's not just an activity—it's a test of mastery, confidence, and readiness to take flight.</p>
 
             <div class="info-card animate-on-scroll">
@@ -221,7 +305,7 @@
 				{#each modules as module, idx}
 					<div class="test-card module-{module.id}" style="--delay: {idx * 0.1}s">
 						<h3 class="module-label">MODULE {String(module.id).padStart(2, '0')}:</h3>
-						<h4 class="module-title">{module.title.toUpperCase()}</h4>
+						<h4 class="module-title gradient-animated">{module.title.toUpperCase()}</h4>
 						<p class="module-description">{module.description}</p>
 						<button class="start-button" onclick={() => startModule(module)}>START ASSESSMENT</button>
 					</div>
@@ -375,7 +459,9 @@
 							{#each aiFeedback as item}
 								<div class="feedback-card">
 									<h4>{item.questionText}</h4>
-									<p class="explanation">{item.explanation}</p>
+									<div class="explanation">
+										{@html formatAiExplanation(item.explanation)}
+									</div>
 									<div class="review-topic">
 										<span class="topic-label">💡 Review Topic:</span> {item.topicToReview}
 									</div>
@@ -447,11 +533,14 @@
 	{/if}
 </div>
 
+
+
 <style>
 	.page-container {
 		position: relative;
 		min-height: 100vh;
-		padding: 8rem 2rem 4rem;
+		/* Align padding with the standard used across pages (Hangar/Overhaul) */
+		padding: var(--spacing-xxl) var(--container-side-padding) var(--spacing-xl); /* increase side padding to align description text */
 		max-width: 1400px;
 		margin: 0 auto;
 		z-index: 5;
@@ -465,67 +554,44 @@
 
 	.page-title {
 		font-family: var(--font-heading), 'Poppins', sans-serif;
-		font-size: clamp(3rem, 6vw, 5rem);
+		font-size: clamp(2rem, 4vw, 3.5rem);
 		font-weight: 900;
-		margin: 0 0 2rem 0;
+		margin: 0 0 1.5rem 0;
 		text-align: center;
-		background: linear-gradient(
-			90deg,
-			var(--ui-yellow) 0%,
-			var(--font-accent-cyan) 20%,
-			var(--ui-light-blue) 40%,
-			var(--font-accent-yellow) 60%,
-			var(--ui-yellow) 80%,
-			var(--font-accent-cyan) 100%
-		);
-		background-size: 300% 100%;
-		-webkit-background-clip: text;
-		-webkit-text-fill-color: transparent;
-		background-clip: text;
-		animation: gradient-flash 4s ease-in-out infinite;
+		/* Unified gradient is opt-in via `.gradient-animated` */
+		background: transparent;
+		color: var(--font-secondary);
 		filter: drop-shadow(0 4px 20px rgba(0, 0, 0, 0.9));
 		letter-spacing: -1px;
 	}
 
-	@keyframes gradient-flash {
-		0%, 100% {
-			background-position: 0% 50%;
-		}
-		25% {
-			background-position: 50% 50%;
-		}
-		50% {
-			background-position: 100% 50%;
-		}
-		75% {
-			background-position: 50% 50%;
-		}
-	}
+	/* gradient-flash keyframes moved to global app.css */
 
 	.intro-text {
-		font-family: var(--font-body), 'Inter', sans-serif;
-		font-size: clamp(1.1rem, 2vw, 1.4rem);
+		font-family: var(--font-heading), 'Poppins', sans-serif;
+		/* Match Hangar Zone hero description sizing for consistent layout */
+		font-size: clamp(1.1rem, 2vw, 1.3rem);
 		line-height: 1.8;
 		color: var(--font-primary);
 		max-width: 900px;
 		margin: 0 auto 2rem auto;
 		text-align: justify;
-		background: #FFFFFF;
-		padding: 2rem 3rem;
-		border-radius: 20px;
-		box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-		border: 1px solid rgba(255, 255, 255, 0.3);
+		background: transparent;
+		padding: 0 var(--card-padding);
+		border-radius: 0;
+		box-shadow: none;
+		border: none;
 	}
 
 	.info-card {
 		background: #FFFFFF;
 		border-radius: 25px;
-		padding: 2.5rem;
-		margin-bottom: 3rem;
+		padding: var(--card-padding-mobile);
+		margin-bottom: 2rem;
 		box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
 		border: 2px solid rgba(255, 255, 255, 0.5);
 		display: flex;
-		gap: 2rem;
+		gap: var(--card-padding-mobile);
 		align-items: center;
 		transition: all 0.3s ease;
 	}
@@ -567,7 +633,7 @@
 		content: '▶';
 		position: absolute;
 		left: 0.5rem;
-		color: var(--font-accent-cyan);
+		color: var(--testbay-accent);
 		font-size: 0.8rem;
 	}
 
@@ -589,14 +655,15 @@
 	.test-grid {
 		display: grid;
 		grid-template-columns: repeat(3, 1fr);
-		gap: 2rem;
+		gap: var(--card-padding-mobile);
 	}
 
 	.test-card {
 		background: #FFFFFF;
 		border: 3px solid;
 		border-radius: 25px;
-		padding: 2.5rem 2rem;
+		/* Use consistent padding with other module cards across the site */
+		padding: var(--card-padding);
 		text-align: center;
 		transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 		transition-delay: var(--delay, 0s);
@@ -614,7 +681,7 @@
 		left: -100%;
 		width: 100%;
 		height: 100%;
-		background: linear-gradient(90deg, transparent, rgba(255, 217, 102, 0.2), transparent);
+		background: linear-gradient(90deg, transparent, rgba(var(--navbar-accent-rgb), 0.2), transparent);
 		transition: left 0.6s ease;
 	}
 
@@ -635,7 +702,7 @@
 	}
 
 	.test-card:hover {
-		transform: translateY(-10px) scale(1.02);
+		transform: translateY(-8px) scale(1.02);
 		box-shadow: 0 20px 60px rgba(0, 0, 0, 0.25);
 	}
 
@@ -663,18 +730,23 @@
 	.module-title {
 		font-family: var(--font-heading), 'Poppins', sans-serif;
 		color: var(--font-primary);
-		font-size: 1.2rem;
+		/* Larger module title size — aligned more closely to Hangar module titles */
+		font-size: 1.6rem;
 		margin: 0 0 1.5rem 0;
 		font-weight: 900;
 		line-height: 1.3;
+		/* Module title gradient is opt-in via `.gradient-animated` */
+		background: transparent;
+		color: var(--font-primary);
 	}
 
 	.module-description {
 		font-family: var(--font-body), 'Inter', sans-serif;
 		color: var(--font-primary);
-		font-size: 1rem;
+		/* Match Hangar description sizing and rhythm */
+		font-size: clamp(1rem, 1.9vw, 1.15rem);
 		margin-bottom: auto;
-		line-height: 1.7;
+		line-height: 1.75;
 		flex-grow: 1;
 		opacity: 0.9;
 		text-align: justify;
@@ -682,7 +754,7 @@
 
 	.start-button {
 		margin-top: 2rem;
-		padding: 1rem 2rem;
+		padding: var(--spacing-sm) var(--spacing-lg);
 		font-family: var(--font-heading), 'Poppins', sans-serif;
 		font-weight: 700;
 		font-size: 1rem;
@@ -764,7 +836,7 @@
 		margin: 0 auto;
 		background: #FFFFFF;
 		border-radius: 25px;
-		padding: 2.5rem;
+		padding: var(--card-padding);
 		box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
 		border: 2px solid rgba(255, 255, 255, 0.5);
 	}
@@ -774,8 +846,8 @@
 	}
 
 	.back-button {
-		background: rgba(135, 206, 235, 0.15);
-		border: 2px solid rgba(135, 206, 235, 0.3);
+		background: rgba(118, 102, 127, 0.15);
+		border: 2px solid rgba(118, 102, 127, 0.3);
 		border-radius: 12px;
 		color: var(--font-primary);
 		font-family: var(--font-body), 'Inter', sans-serif;
@@ -791,8 +863,8 @@
 	}
 
 	.back-button:hover {
-		background: rgba(135, 206, 235, 0.25);
-		border-color: var(--font-accent-cyan);
+		background: rgba(118, 102, 127, 0.25);
+		border-color: var(--testbay-accent);
 		transform: translateX(-5px);
 	}
 
@@ -812,6 +884,18 @@
 		font-size: 1.8rem;
 		font-weight: 900;
 		margin: 0;
+		/* Apply moving gradient to quiz module header titles too */
+		background: linear-gradient(
+			90deg,
+			var(--navbar-accent, var(--ui-yellow)) 0%,
+			var(--font-accent-cyan) 50%,
+			var(--navbar-accent, var(--ui-yellow)) 100%
+		);
+		background-size: 200% 100%;
+		-webkit-background-clip: text;
+		-webkit-text-fill-color: transparent;
+		background-clip: text;
+		animation: gradient-flash var(--gradient-duration) ease-in-out infinite;
 	}
 
 	.progress-bar {
@@ -825,9 +909,9 @@
 
 	.progress-fill {
 		height: 100%;
-		background: linear-gradient(90deg, var(--font-accent-green) 0%, #45a049 100%);
+		background: linear-gradient(90deg, #2196F3 0%, #1976D2 100%);
 		transition: width 0.4s ease;
-		box-shadow: 0 2px 4px rgba(56, 193, 114, 0.3);
+		box-shadow: 0 2px 4px rgba(33, 150, 243, 0.3);
 	}
 
 	.progress-text {
@@ -842,7 +926,7 @@
 	.question-card {
 		background: #FFFFFF;
 		border-radius: 20px;
-		padding: 2.5rem;
+		padding: var(--card-padding);
 		margin-bottom: 2rem;
 		border: 1px solid rgba(255, 255, 255, 0.6);
 		box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
@@ -877,16 +961,16 @@
 	}
 
 	.option-item:hover {
-		border-color: var(--font-accent-cyan);
-		background: rgba(135, 206, 235, 0.1);
+		border-color: var(--testbay-accent);
+		background: rgba(118, 102, 127, 0.1);
 		transform: translateX(5px);
-		box-shadow: 0 4px 12px rgba(0, 206, 209, 0.15);
+		box-shadow: 0 4px 12px rgba(118, 102, 127, 0.15);
 	}
 
 	.option-item.selected {
-		border-color: var(--font-accent-green);
-		background: rgba(56, 193, 114, 0.12);
-		box-shadow: 0 4px 12px rgba(56, 193, 114, 0.2);
+		border-color: #2196F3;
+		background: rgba(33, 150, 243, 0.15);
+		box-shadow: 0 4px 12px rgba(33, 150, 243, 0.2);
 	}
 
 	.option-item input[type="radio"] {
@@ -922,7 +1006,7 @@
 		display: flex;
 		align-items: center;
 		gap: 0.75rem;
-		padding: 1rem 2rem;
+		padding: var(--spacing-sm) var(--spacing-lg);
 		border: none;
 		border-radius: 12px;
 		font-family: var(--font-heading), 'Poppins', sans-serif;
@@ -936,25 +1020,25 @@
 	}
 
 	.nav-button.primary {
-		background: linear-gradient(135deg, var(--font-accent-green) 0%, #45a049 100%);
+		background: linear-gradient(135deg, #2196F3 0%, #1976D2 100%);
 		color: var(--font-secondary);
 	}
 
 	.nav-button.primary:hover:not(:disabled) {
-		background: linear-gradient(135deg, #45a049 0%, #388e3c 100%);
+		background: linear-gradient(135deg, #1976D2 0%, #1565C0 100%);
 		transform: translateY(-2px);
-		box-shadow: 0 6px 16px rgba(56, 193, 114, 0.3);
+		box-shadow: 0 6px 16px rgba(33, 150, 243, 0.3);
 	}
 
 	.nav-button.secondary {
 		background: #F5F5F5;
 		color: var(--font-primary);
-		border: 2px solid rgba(135, 206, 235, 0.3);
+		border: 2px solid rgba(118, 102, 127, 0.3);
 	}
 
 	.nav-button.secondary:hover:not(:disabled) {
-		background: rgba(135, 206, 235, 0.2);
-		border-color: var(--font-accent-cyan);
+		background: rgba(118, 102, 127, 0.2);
+		border-color: var(--testbay-accent);
 		transform: translateY(-2px);
 	}
 
@@ -975,24 +1059,21 @@
 
 	.question-nav {
 		background: #FFFFFF;
-		padding: 1.5rem;
+		padding: var(--spacing-md);
 		border-radius: 20px;
 		border: 1px solid rgba(255, 255, 255, 0.6);
 		box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
 	}
 
 	.question-nav p {
-		font-family: var(--font-body), 'Inter', sans-serif;
-		color: var(--font-primary);
-		font-size: 0.95rem;
-		font-weight: 600;
-		margin: 0 0 1rem 0;
+		display: none;
 	}
 
 	.question-dots {
 		display: flex;
 		flex-wrap: wrap;
 		gap: 0.75rem;
+		justify-content: center;
 	}
 
 	.dot {
@@ -1013,22 +1094,22 @@
 	}
 
 	.dot:hover {
-		border-color: var(--font-accent-cyan);
-		background: rgba(135, 206, 235, 0.15);
+		border-color: var(--testbay-accent);
+		background: rgba(118, 102, 127, 0.15);
 		transform: scale(1.1);
 	}
 
 	.dot.answered {
-		background: linear-gradient(135deg, var(--font-accent-green) 0%, #45a049 100%);
-		border-color: var(--font-accent-green);
+		background: linear-gradient(135deg, #2196F3 0%, #1976D2 100%);
+		border-color: #2196F3;
 		color: var(--font-secondary);
-		box-shadow: 0 4px 12px rgba(56, 193, 114, 0.3);
+		box-shadow: 0 4px 12px rgba(33, 150, 243, 0.3);
 	}
 
 	.dot.current {
-		border-color: var(--font-accent-cyan);
+		border-color: var(--testbay-accent);
 		border-width: 3px;
-		box-shadow: 0 0 0 3px rgba(0, 206, 209, 0.2);
+		box-shadow: 0 0 0 3px rgba(118, 102, 127, 0.2);
 	}
 
 	/* Results Styles */
@@ -1037,7 +1118,7 @@
 		margin: 0 auto;
 		background: #FFFFFF;
 		border-radius: 25px;
-		padding: 3rem 2.5rem;
+		padding: var(--card-padding);
 		box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
 		border: 2px solid rgba(255, 255, 255, 0.5);
 	}
@@ -1061,8 +1142,8 @@
 		margin: 0 0 1rem 0;
 		background: linear-gradient(
 			90deg,
-			var(--font-accent-green) 0%,
-			var(--font-accent-cyan) 100%
+			var(--testbay-accent) 0%,
+			#a896b3 100%
 		);
 		background-size: 200% 100%;
 		-webkit-background-clip: text;
@@ -1177,10 +1258,10 @@
 	.ai-feedback-section {
 		background: #FFFFFF;
 		border-radius: 20px;
-		padding: 2rem;
+		padding: var(--spacing-lg);
 		margin-bottom: 2.5rem;
-		border: 2px solid var(--font-accent-cyan);
-		box-shadow: 0 4px 16px rgba(0, 206, 209, 0.15);
+		border: 2px solid var(--testbay-accent);
+		box-shadow: 0 4px 16px rgba(118, 102, 127, 0.15);
 	}
 
 	.ai-feedback-section h3 {
@@ -1203,7 +1284,7 @@
 		background: #FFFFFF;
 		border-radius: 15px;
 		padding: 1.5rem;
-		border-left: 4px solid var(--font-accent-cyan);
+		border-left: 4px solid var(--testbay-accent);
 		box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
 	}
 
@@ -1225,8 +1306,12 @@
 		text-align: justify;
 	}
 
+	.explanation p {
+		margin: 0 0 0.75rem 0;
+	}
+
 	.review-topic {
-		background: rgba(135, 206, 235, 0.15);
+		background: rgba(118, 102, 127, 0.15);
 		padding: 0.75rem 1rem;
 		border-radius: 10px;
 		font-family: var(--font-body), 'Inter', sans-serif;
@@ -1237,7 +1322,7 @@
 
 	.topic-label {
 		font-weight: 700;
-		color: var(--font-accent-cyan);
+		color: var(--testbay-accent);
 		margin-right: 0.5rem;
 	}
 
@@ -1246,7 +1331,7 @@
 		flex-direction: column;
 		align-items: center;
 		gap: 1rem;
-		padding: 2rem;
+		padding: var(--spacing-lg);
 		color: #666;
 	}
 
@@ -1254,7 +1339,7 @@
 		width: 40px;
 		height: 40px;
 		border: 4px solid rgba(0, 0, 0, 0.1);
-		border-left-color: var(--font-accent-cyan);
+		border-left-color: var(--testbay-accent);
 		border-radius: 50%;
 		animation: spin 1s linear infinite;
 	}
@@ -1275,7 +1360,7 @@
 		display: flex;
 		align-items: center;
 		gap: 0.75rem;
-		padding: 1rem 2rem;
+		padding: var(--spacing-sm) var(--spacing-lg);
 		border: 2px solid;
 		border-radius: 12px;
 		font-family: var(--font-heading), 'Poppins', sans-serif;
@@ -1333,7 +1418,7 @@
 	.review-question {
 		background: #FFFFFF;
 		border-radius: 20px;
-		padding: 2rem;
+		padding: var(--spacing-lg);
 		margin-bottom: 1.5rem;
 		border-left: 5px solid;
 		border-color: rgba(224, 224, 224, 0.5);
@@ -1404,7 +1489,7 @@
 		display: flex;
 		align-items: center;
 		gap: 1rem;
-		padding: 1rem 1.25rem;
+		padding: var(--spacing-sm) var(--spacing-sm);
 		background: #FFFFFF;
 		border: 2px solid rgba(224, 224, 224, 0.5);
 		border-radius: 15px;
@@ -1445,7 +1530,6 @@
 		background: linear-gradient(135deg, #FF3C7E 0%, #e91e63 100%);
 		color: var(--font-secondary);
 	}
-
 	/* Responsive Design */
 	@media (max-width: 1024px) {
 		.test-grid {
@@ -1455,7 +1539,7 @@
 
 		.info-card {
 			flex-direction: column;
-			padding: 2rem;
+			padding: var(--spacing-lg);
 		}
 
 		.jaja-character {
@@ -1468,14 +1552,14 @@
 		}
 
 		.intro-text {
-			padding: 1.5rem 2rem;
+			padding: var(--spacing-md) var(--spacing-lg);
 			font-size: 1.1rem;
 		}
 	}
 
 	@media (max-width: 768px) {
 		.page-container {
-			padding: 1rem;
+			padding: var(--spacing-sm);
 		}
 
 		.content-wrapper {
@@ -1494,7 +1578,7 @@
 		}
 
 		.info-card {
-			padding: 1.5rem;
+			padding: var(--spacing-md);
 			margin-bottom: 2rem;
 		}
 
@@ -1518,15 +1602,15 @@
 		}
 
 		.test-card {
-			padding: 2rem 1.5rem;
+			padding: var(--card-padding-mobile);
 		}
 
 		.module-title {
-			font-size: 1.1rem;
+			font-size: 1.3rem;
 		}
 
 		.module-description {
-			font-size: 0.95rem;
+			font-size: 1rem;
 		}
 
 		.start-button {
@@ -1535,7 +1619,7 @@
 		}
 
 		.quiz-container, .results-container {
-			padding: 1.5rem;
+			padding: var(--spacing-md);
 		}
 
 		.page-title {
@@ -1547,7 +1631,7 @@
 		}
 
 		.info-card {
-			padding: 1.5rem;
+			padding: var(--spacing-md);
 			border-radius: 1.5rem;
 		}
 
@@ -1573,11 +1657,11 @@
 		}
 
 		.module-title {
-			font-size: 1rem;
+			font-size: 1.1rem;
 		}
 
 		.module-description {
-			font-size: 0.85rem;
+			font-size: 0.95rem;
 		}
 
 		.score-card {
@@ -1647,4 +1731,49 @@
 	.near-clouds-layer {
 		z-index: 4;
 	}
+
+	/* Bottom Navigation */
+	.bottom-nav {
+		display: grid;
+		grid-auto-flow: column;
+		grid-auto-columns: max-content;
+		justify-content: center;
+		align-items: center;
+		gap: 1.5rem;
+		margin-top: 3rem;
+		padding-top: 1.5rem;
+		border-top: 2px solid rgba(118, 102, 127, 0.2);
+	}
+
+	.nav-link {
+		display: flex;
+		align-items: center;
+		gap: 0.5rem;
+		padding: 0.8rem 1.5rem;
+		background: rgba(255, 255, 255, 0.9);
+		backdrop-filter: blur(10px);
+		border: 2px solid rgba(118, 102, 127, 0.3);
+		border-radius: 10px;
+		color: var(--font-primary);
+		font-weight: 600;
+		transition: all 0.3s ease;
+		width: fit-content;
+		min-width: 160px;
+		cursor: pointer;
+		box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+		text-decoration: none;
+	}
+
+	.nav-link:not(:disabled):hover {
+		border-color: var(--testbay-accent);
+		/* Keep background unchanged; use a soft glow */
+		box-shadow: 0 6px 30px rgba(var(--testbay-accent-rgb, 118, 102, 127), 0.25), 0 0 18px rgba(var(--testbay-accent-rgb, 118, 102, 127), 0.18) inset;
+		transform: translateY(-2px);
+	}
+
+	/* Test Bay has no bottom nav markup; nav-arrow color handled globally or by pages where navigation exists */
+
+	.nav-link.prev { justify-self: center; }
+	.nav-link.next { justify-self: center; }
+	.nav-arrow { font-size: 1.25rem; color: var(--testbay-accent); }
 </style>

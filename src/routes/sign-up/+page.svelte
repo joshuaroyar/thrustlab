@@ -28,8 +28,7 @@
 
 <div class="signup-container">
 	<div class="signup-card animate-scale">
-		<h1>Join ThrustLab</h1>
-		<p class="subtitle">Start your journey in aerospace engineering education</p>
+		<h1 class="gradient-animated">Join ThrustLab</h1>
 
 		<form class="signup-form animate-on-scroll" method="POST" use:enhance>
 			{#if form?.error}
@@ -85,31 +84,11 @@
 		<p class="login-link">
 			Already have an account? <a href="/login">Log in</a>
 		</p>
-
-		<div class="features-list animate-on-scroll">
-			<h3>What you'll get:</h3>
-			<ul>
-				<li>✅ Access to all learning zones</li>
-				<li>✅ Interactive 3D simulations</li>
-				<li>✅ AI-powered assistance</li>
-				<li>✅ Progress tracking</li>
-				<li>✅ Assessment tools</li>
-			</ul>
-		</div>
 	</div>
 </div>
 
 <style>
-	/* Shared Gradient Animation */
-	@keyframes gradient-flash {
-		0%,
-		100% {
-			background-position: 0% 50%;
-		}
-		50% {
-			background-position: 100% 50%;
-		}
-	}
+	/* Using global `gradient-flash` keyframes (moved to src/app.css) */
 
 	.signup-container {
 		position: relative;
@@ -118,7 +97,7 @@
 		display: flex;
 		align-items: center;
 		justify-content: center;
-		padding: 8rem 2rem 4rem;
+		padding: calc(var(--spacing-xxl) * 2) var(--container-side-padding) var(--spacing-xxl);
 	}
 
 	.signup-card {
@@ -126,7 +105,7 @@
 		backdrop-filter: blur(20px) saturate(180%);
 		-webkit-backdrop-filter: blur(20px) saturate(180%);
 		border-radius: 1.5rem;
-		padding: 3rem;
+		padding: var(--card-padding);
 		max-width: 500px;
 		width: 100%;
 		box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5);
@@ -146,29 +125,14 @@
 		font-weight: 900;
 		margin: 0 0 0.5rem 0;
 		text-align: center;
-		background: linear-gradient(
-			90deg,
-			var(--ui-yellow) 0%,
-			var(--font-accent-cyan) 50%,
-			var(--ui-yellow) 100%
-		);
+		/* gradient is opt-in; use `.gradient-animated` class to enable */
+		background: transparent;
 		background-size: 200% 100%;
 		-webkit-background-clip: text;
 		-webkit-text-fill-color: transparent;
 		background-clip: text;
-		animation: gradient-flash 3.5s ease-in-out infinite;
+		animation: gradient-flash var(--gradient-duration) ease-in-out infinite;
 		filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.5));
-	}
-
-	.subtitle {
-		font-family: var(--font-body);
-		color: var(--font-secondary);
-		opacity: 0.9;
-		text-align: center;
-		margin: 0 0 2rem 0;
-		font-size: 1.1rem;
-		line-height: 1.5;
-		text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
 	}
 
 	.signup-form {
@@ -193,7 +157,7 @@
 	}
 
 	input {
-		padding: 1rem 1.25rem;
+		padding: var(--spacing-sm) var(--spacing-sm);
 		border: 1px solid rgba(135, 206, 235, 0.3);
 		border-radius: 0.75rem;
 		font-family: var(--font-body);
@@ -209,24 +173,24 @@
 
 	input:focus {
 		outline: none;
-		border-color: var(--ui-yellow);
-		box-shadow: 0 0 0 3px rgba(255, 217, 102, 0.2);
+		border-color: var(--navbar-accent, var(--ui-yellow));
+		box-shadow: 0 0 0 3px rgba(var(--navbar-accent-rgb, 255, 217, 102), 0.2);
 		background: rgba(0, 0, 0, 0.5);
 	}
 
 	.signup-button {
 		position: relative;
-		background: linear-gradient(135deg, var(--ui-yellow) 0%, #ffe66d 100%);
+		background: linear-gradient(135deg, var(--navbar-accent, var(--ui-yellow)) 0%, #ffe66d 100%);
 		color: #000000;
 		border: none;
-		padding: 1.25rem 2rem;
+		padding: var(--spacing-sm) var(--spacing-lg);
 		border-radius: 50px;
 		font-family: var(--font-body);
 		font-size: 1.1rem;
 		font-weight: 700;
 		cursor: pointer;
 		transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-		box-shadow: 0 6px 20px rgba(255, 217, 102, 0.5);
+		box-shadow: 0 6px 20px rgba(var(--navbar-accent-rgb, 255, 217, 102), 0.5);
 		overflow: hidden;
 		text-transform: uppercase;
 		letter-spacing: 1px;
@@ -252,7 +216,7 @@
 
 	.signup-button:hover {
 		transform: translateY(-3px);
-		box-shadow: 0 10px 30px rgba(255, 217, 102, 0.6);
+		box-shadow: 0 10px 30px rgba(var(--navbar-accent-rgb, 255, 217, 102), 0.6);
 	}
 
 	.divider {
@@ -291,7 +255,7 @@
 	}
 
 	.login-link a {
-		color: var(--ui-yellow);
+		color: var(--navbar-accent, var(--ui-yellow));
 		text-decoration: none;
 		font-weight: 600;
 		transition: all 0.3s ease;
@@ -299,7 +263,7 @@
 
 	.login-link a:hover {
 		color: #fff;
-		text-shadow: 0 0 10px var(--ui-yellow);
+		text-shadow: 0 0 10px var(--navbar-accent, var(--ui-yellow));
 	}
 
 	.google-button {
@@ -337,42 +301,8 @@
 		height: 18px;
 	}
 
-	.features-list {
-		background: rgba(0, 0, 0, 0.2);
-		padding: 1.5rem;
-		border-radius: 1rem;
-		border: 1px solid rgba(135, 206, 235, 0.2);
-	}
-
-	.features-list h3 {
-		font-family: var(--font-heading);
-		color: var(--ui-yellow);
-		margin: 0 0 1rem 0;
-		font-size: 1.2rem;
-		font-weight: 800;
-		text-transform: uppercase;
-		letter-spacing: 0.5px;
-	}
-
-	.features-list ul {
-		list-style: none;
-		padding: 0;
-		margin: 0;
-	}
-
-	.features-list li {
-		font-family: var(--font-body);
-		color: var(--font-secondary);
-		opacity: 0.9;
-		padding: 0.5rem 0;
-		font-size: 0.95rem;
-		display: flex;
-		align-items: center;
-		gap: 0.5rem;
-	}
-
 	.alert {
-		padding: 1rem;
+		padding: var(--spacing-sm);
 		border-radius: 0.5rem;
 		margin-bottom: 1rem;
 		font-family: var(--font-body);
@@ -393,11 +323,11 @@
 
 	@media (max-width: 768px) {
 		.signup-container {
-			padding: 6rem 1rem 2rem;
+			padding: calc(var(--spacing-xxl) * 1.5) var(--spacing-sm) var(--spacing-lg);
 		}
 
 		.signup-card {
-			padding: 2rem 1.5rem;
+			padding: var(--card-padding) var(--spacing-md);
 		}
 
 		h1 {

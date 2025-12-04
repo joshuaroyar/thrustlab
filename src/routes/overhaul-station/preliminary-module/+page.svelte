@@ -1,271 +1,29 @@
 <script lang="ts">
-	import { onMount } from 'svelte';
 	import { goto } from '$app/navigation';
+	import { onMount } from 'svelte';
 	import { page } from '$app/stores';
-	
-	let mounted = $state(false);
-	let mouseX = $state(0);
-	let mouseY = $state(0);
+	import { fade, fly } from 'svelte/transition';
+	import ImageModal from '$lib/components/ImageModal.svelte';
 
-	let skyCanvas: HTMLCanvasElement;
-	let farCloudsCanvas: HTMLCanvasElement;
-	let midCloudsCanvas: HTMLCanvasElement;
-	let nearCloudsCanvas: HTMLCanvasElement;
+	let totalPages = 3;
+	$: currentPage = parseInt($page.url.searchParams.get('page') || '1');
 
-	const totalPages = 3;
-	
-	// Base drift speed
-	const BASE_DRIFT_SPEED = 0.61;
-
-	// Cloud data arrays as reactive state
-	let farClouds = $state([
-		{ x: -200, y: 200, w: 350, h: 120, color: 'rgba(255, 255, 255, 0.5)' },
-		{ x: 400, y: 300, w: 400, h: 140, color: 'rgba(255, 255, 255, 0.45)' },
-		{ x: 1200, y: 250, w: 420, h: 150, color: 'rgba(255, 255, 255, 0.48)' },
-		{ x: 2000, y: 180, w: 380, h: 130, color: 'rgba(255, 255, 255, 0.47)' }
-	]);
-
-	let midClouds = $state([
-		{ x: -100, y: 400, w: 300, h: 100, color: 'rgba(255, 255, 255, 0.65)' },
-		{ x: 500, y: 500, w: 320, h: 110, color: 'rgba(255, 255, 255, 0.62)' },
-		{ x: 1200, y: 450, w: 340, h: 115, color: 'rgba(255, 255, 255, 0.64)' },
-		{ x: 1900, y: 480, w: 310, h: 105, color: 'rgba(255, 255, 255, 0.63)' },
-		{ x: 2600, y: 420, w: 330, h: 112, color: 'rgba(255, 255, 255, 0.62)' }
-	]);
-
-	let nearClouds = $state([
-		{ x: -150, y: 700, w: 250, h: 80, color: 'rgba(255, 255, 255, 0.8)' },
-		{ x: 400, y: 750, w: 270, h: 85, color: 'rgba(255, 255, 255, 0.78)' },
-		{ x: 950, y: 800, w: 260, h: 82, color: 'rgba(255, 255, 255, 0.79)' },
-		{ x: 1500, y: 720, w: 280, h: 87, color: 'rgba(255, 255, 255, 0.77)' },
-		{ x: 2100, y: 780, w: 265, h: 84, color: 'rgba(255, 255, 255, 0.78)' },
-		{ x: 2700, y: 740, w: 275, h: 86, color: 'rgba(255, 255, 255, 0.8)' }
-	]);
-	
-	// Derived state to get current page from URL
-	let currentPage = $derived.by(() => {
-		const pageParam = $page.url.searchParams.get('page');
-		let pageNum = parseInt(pageParam || '1');
-		
-		// Ensure within valid range
-		if (pageNum < 1) pageNum = 1;
-		if (pageNum > totalPages) pageNum = totalPages;
-		
-		return pageNum;
-	});
-
-	onMount(() => {
-		mounted = true;
-
-		// Mouse tracking
-		const handleMouseMove = (e: MouseEvent) => {
-			mouseX = e.clientX;
-			mouseY = e.clientY;
-		};
-
-		window.addEventListener('mousemove', handleMouseMove);
-
-		// Initialize sky and sun (static elements)
-		initializeSkies();
-
-		// Start continuous animation loop
-		let animationId: number;
-		const animate = () => {
-			animateCloudLayers();
-			animationId = requestAnimationFrame(animate);
-		};
-		animate();
-
-		return () => {
-			window.removeEventListener('mousemove', handleMouseMove);
-			if (animationId) {
-				cancelAnimationFrame(animationId);
-			}
-		};
-	});
-
-	function initializeSkies() {
-		if (!skyCanvas) return;
-
-		const skyCtx = skyCanvas.getContext('2d');
-		if (skyCtx) {
-			const skyGradient = skyCtx.createLinearGradient(0, 0, 0, skyCanvas.height);
-			skyGradient.addColorStop(0, '#87CEEB');
-			skyGradient.addColorStop(0.5, '#B0E2FF');
-			skyGradient.addColorStop(1, '#E0F6FF');
-			skyCtx.fillStyle = skyGradient;
-			skyCtx.fillRect(0, 0, skyCanvas.width, skyCanvas.height);
-
-			const sunX = skyCanvas.width * 0.15;
-			const sunY = skyCanvas.height * 0.25;
-			const sunRadius = 70;
-
-			const sunGlow = skyCtx.createRadialGradient(sunX, sunY, sunRadius * 0.3, sunX, sunY, sunRadius * 2.5);
-			sunGlow.addColorStop(0, 'rgba(255, 240, 180, 0.5)');
-			sunGlow.addColorStop(0.5, 'rgba(255, 230, 150, 0.2)');
-			sunGlow.addColorStop(1, 'rgba(255, 220, 130, 0)');
-			skyCtx.fillStyle = sunGlow;
-			skyCtx.fillRect(sunX - sunRadius * 2.5, sunY - sunRadius * 2.5, sunRadius * 5, sunRadius * 5);
-
-			const sunGradient = skyCtx.createRadialGradient(sunX, sunY, 0, sunX, sunY, sunRadius);
-			sunGradient.addColorStop(0, '#FFFEF0');
-			sunGradient.addColorStop(0.4, '#FFF4C4');
-			sunGradient.addColorStop(0.8, '#FFE680');
-			sunGradient.addColorStop(1, '#FFD54F');
-			skyCtx.fillStyle = sunGradient;
-			skyCtx.beginPath();
-			skyCtx.arc(sunX, sunY, sunRadius, 0, Math.PI * 2);
-			skyCtx.fill();
-		}
+	function scrollToTop() {
+		window.scrollTo({ top: 0, behavior: 'smooth' });
 	}
 
-	function animateCloudLayers() {
-		if (!farCloudsCanvas || !midCloudsCanvas || !nearCloudsCanvas) return;
-
-		const farCtx = farCloudsCanvas.getContext('2d');
-		const midCtx = midCloudsCanvas.getContext('2d');
-		const nearCtx = nearCloudsCanvas.getContext('2d');
-
-		if (!farCtx || !midCtx || !nearCtx) return;
-
-		const centerX = window.innerWidth / 2;
-		const centerY = window.innerHeight / 2;
-		const deltaX = mouseX - centerX;
-		const deltaY = mouseY - centerY;
-
-		// Far clouds
-		const farLayerSpeed = 0.3;
-		const farMouseMultiplier = 15;
-		const farCursorOffsetX = -(deltaX / centerX) * farMouseMultiplier;
-		const farCursorOffsetY = -(deltaY / centerY) * farMouseMultiplier * 0.5;
-
-		farCtx.clearRect(0, 0, farCloudsCanvas.width, farCloudsCanvas.height);
-		
-		for (const cloud of farClouds) {
-			cloud.x += BASE_DRIFT_SPEED * farLayerSpeed;
-			
-			if (cloud.x - (cloud.w * 0.35) > farCloudsCanvas.width) {
-				cloud.x = -(cloud.w * 0.35);
-			}
-			
-			drawEnhancedCloud(
-				farCtx,
-				cloud.x + farCursorOffsetX,
-				cloud.y + farCursorOffsetY,
-				cloud.w,
-				cloud.h,
-				cloud.color,
-				20
-			);
-		}
-
-		// Mid clouds
-		const midLayerSpeed = 0.7;
-		const midMouseMultiplier = 30;
-		const midCursorOffsetX = -(deltaX / centerX) * midMouseMultiplier;
-		const midCursorOffsetY = -(deltaY / centerY) * midMouseMultiplier * 0.5;
-
-		midCtx.clearRect(0, 0, midCloudsCanvas.width, midCloudsCanvas.height);
-		
-		for (const cloud of midClouds) {
-			cloud.x += BASE_DRIFT_SPEED * midLayerSpeed;
-			
-			if (cloud.x - (cloud.w * 0.35) > midCloudsCanvas.width) {
-				cloud.x = -(cloud.w * 0.35);
-			}
-			
-			drawEnhancedCloud(
-				midCtx,
-				cloud.x + midCursorOffsetX,
-				cloud.y + midCursorOffsetY,
-				cloud.w,
-				cloud.h,
-				cloud.color,
-				20
-			);
-		}
-
-		// Near clouds
-		const nearLayerSpeed = 1.2;
-		const nearMouseMultiplier = 50;
-		const nearCursorOffsetX = -(deltaX / centerX) * nearMouseMultiplier;
-		const nearCursorOffsetY = -(deltaY / centerY) * nearMouseMultiplier * 0.5;
-
-		nearCtx.clearRect(0, 0, nearCloudsCanvas.width, nearCloudsCanvas.height);
-		
-		for (const cloud of nearClouds) {
-			cloud.x += BASE_DRIFT_SPEED * nearLayerSpeed;
-			
-			if (cloud.x - (cloud.w * 0.35) > nearCloudsCanvas.width) {
-				cloud.x = -(cloud.w * 0.35);
-			}
-			
-			drawEnhancedCloud(
-				nearCtx,
-				cloud.x + nearCursorOffsetX,
-				cloud.y + nearCursorOffsetY,
-				cloud.w,
-				cloud.h,
-				cloud.color,
-				20
-			);
-		}
-	}
-
-	function drawEnhancedCloud(
-		ctx: CanvasRenderingContext2D,
-		x: number,
-		y: number,
-		width: number,
-		height: number,
-		color: string,
-		blur: number
-	) {
-		const rgbaMatch = color.match(/rgba?\((\d+),\s*(\d+),\s*(\d+),?\s*([\d.]+)?\)/);
-		if (!rgbaMatch) return;
-
-		const [, r, g, b, a = '1'] = rgbaMatch;
-		const baseAlpha = parseFloat(a);
-		const boostedAlpha = Math.min(baseAlpha * 1.2, 0.95);
-
-		const puffs = [
-			{ x: x, y: y, radiusX: width * 0.35, radiusY: height * 0.5 },
-			{ x: x - width * 0.25, y: y + height * 0.1, radiusX: width * 0.28, radiusY: height * 0.42 },
-			{ x: x + width * 0.25, y: y + height * 0.15, radiusX: width * 0.3, radiusY: height * 0.45 },
-			{ x: x - width * 0.1, y: y - height * 0.2, radiusX: width * 0.25, radiusY: height * 0.38 },
-			{ x: x + width * 0.15, y: y - height * 0.15, radiusX: width * 0.22, radiusY: height * 0.35 }
-		];
-
-		ctx.save();
-		ctx.filter = 'none';
-
-		puffs.forEach(puff => {
-			const puffGradient = ctx.createRadialGradient(
-				puff.x, puff.y, 0,
-				puff.x, puff.y, Math.max(puff.radiusX, puff.radiusY)
-			);
-			puffGradient.addColorStop(0, `rgba(${r}, ${g}, ${b}, ${boostedAlpha})`);
-			puffGradient.addColorStop(0.6, `rgba(${r}, ${g}, ${b}, ${boostedAlpha * 0.7})`);
-			puffGradient.addColorStop(1, `rgba(${r}, ${g}, ${b}, 0)`);
-
-			ctx.fillStyle = puffGradient;
-			ctx.beginPath();
-			ctx.ellipse(puff.x, puff.y, puff.radiusX, puff.radiusY, 0, 0, Math.PI * 2);
-			ctx.fill();
-		});
-
-		ctx.restore();
-	}
-	
 	function goToPage(pageNum: number) {
 		if (pageNum >= 1 && pageNum <= totalPages) {
 			goto(`/overhaul-station/preliminary-module?page=${pageNum}`);
+			scrollToTop();
 		}
 	}
 	
 	function nextPage() {
 		if (currentPage < totalPages) {
 			goToPage(currentPage + 1);
+		} else {
+			goto('/overhaul-station/assembly-disassembly');
 		}
 	}
 	
@@ -276,46 +34,35 @@
 			goto('/overhaul-station');
 		}
 	}
+
+	function handleKeydown(event: KeyboardEvent) {
+		if (event.key === 'ArrowLeft') {
+			prevPage();
+		} else if (event.key === 'ArrowRight') {
+			nextPage();
+		}
+
+		onMount(() => {
+			document.body.classList.add('zone-overhaul');
+			return () => document.body.classList.remove('zone-overhaul');
+		});
+	}
 </script>
 
-<!-- Parallax Background System -->
-<div class="parallax-background-system">
-	<canvas 
-		bind:this={skyCanvas} 
-		class="parallax-layer sky-layer" 
-		width="2560" 
-		height="1440"
-	></canvas>
-	<canvas 
-		bind:this={farCloudsCanvas} 
-		class="parallax-layer far-clouds-layer" 
-		width="2560" 
-		height="1440"
-	></canvas>
-	<canvas 
-		bind:this={midCloudsCanvas} 
-		class="parallax-layer mid-clouds-layer" 
-		width="2560" 
-		height="1440"
-	></canvas>
-	<canvas 
-		bind:this={nearCloudsCanvas} 
-		class="parallax-layer near-clouds-layer" 
-		width="2560" 
-		height="1440"
-	></canvas>
-</div>
+<svelte:window on:keydown={handleKeydown} />
 
 <!-- Page Container -->
 <div class="page-container">
+	<ImageModal />
+
 	<!-- Header Section -->
 	<div class="header-section">
-		<h1 class="module-title">PRELIMINARY LABORATORY MODULE: GAS TURBINE ENGINE OVERHAUL</h1>
+		<h1 class="module-title gradient-animated">PRELIMINARY LABORATORY MODULE: GAS TURBINE ENGINE OVERHAUL</h1>
 	</div>
 
 	<!-- Content Sections - Page 1: Introduction -->
 	{#if currentPage === 1}
-	<div class="content-sections">
+	<div class="content-sections" in:fly={{ y: 20, duration: 400, delay: 200 }} out:fade={{ duration: 200 }}>
 		<section class="content-card">
 			<h2 class="section-title">
 				<span class="section-number">01</span>
@@ -327,11 +74,11 @@
 				</p>
 
 				<p class="content-text">
-					In service, the engine is inspected at routine periods based on manufacturers' recommendations and agreed between the operator and the relevant airworthiness authority. In the past, most engines had specified numbers of hours they could operate before they needed to be overhauled. This period became known as the time between overhauls (TBO). The length of time between overhauls varies widely with different types of engines. When a new type of engine enters service, its TBO is fairly short, but as condition monitoring, the engine's service record, and inspections prove the engine to be reliable, the TBO is generally extended. Many engines have proven to be so reliable that they are overhauled only when they need major maintenance. This concept is a form of "on condition" maintenance or overhaul.
+					In service, the engine is inspected at routine periods based on manufacturers' recommendations and agreed between the operator and the relevant airworthiness authority. In the past, most engines had specified numbers of hours they could operate before they needed to be overhauled. This period became known as the <strong>time between overhauls (TBO)</strong>. The length of time between overhauls varies widely with different types of engines. When a new type of engine enters service, its TBO is fairly short, but as condition monitoring, the engine's service record, and inspections prove the engine to be reliable, the TBO is generally extended. Many engines have proven to be so reliable that they are overhauled only when they need major maintenance. This concept is a form of "on condition" maintenance or overhaul.
 				</p>
 
 				<p class="content-text">
-					Modular construction is a concept that treats an engine as a set of separate modules assembled together. The inspection, line maintenance, and overhaul requirements of each module can be addressed separately. The modular concept reduces down time and expense for operators because maintenance and overhaul activities are spread over a longer period of time. In most cases, replacement of a module is considered to be a minor repair, requiring no FAA Form 337. On the other hand, a form 337 is required for the overhaul of an engine module since it is considered a major repair.
+					<b>Modular construction</b> is a concept that treats an engine as a set of separate modules assembled together. The inspection, line maintenance, and overhaul requirements of each module can be addressed separately. The modular concept reduces down time and expense for operators because maintenance and overhaul activities are spread over a longer period of time. In most cases, replacement of a module is considered to be a minor repair, requiring no FAA Form 337. On the other hand, a form 337 is required for the overhaul of an engine module since it is considered a major repair.
 				</p>
 
 				<p class="content-text">
@@ -355,7 +102,7 @@
 
 	<!-- Content Sections - Page 2: Overhaul Procedures -->
 	{#if currentPage === 2}
-	<div class="content-sections">
+	<div class="content-sections" in:fly={{ y: 20, duration: 400, delay: 200 }} out:fade={{ duration: 200 }}>
 		<section class="content-card">
 			<h2 class="section-title">
 				<span class="section-number">02</span>
@@ -381,6 +128,9 @@
 				</p>
 
 				<h3 class="subsection-title">INSPECTION</h3>
+				<div class="image-wrapper">
+					<img src="/images/overhaul-preliminary/img_1.png" alt="Typical overhaul workshop layout" />
+				</div>
 				<p class="content-text">
 					After cleaning, and prior to inspection, the surfaces of some parts, e.g. turbine discs, are etched. This process removes a small amount of material from the surface of the part, leaving an even matt finish which reveals surface defects that cannot normally be seen with the naked eye. The metal removal is normally achieved either by an electrolytic process in which the part forms the anode, or by immersing the part for a short time in a special acid bath. Both methods must be carefully controlled to avoid the removal of too much material.
 				</p>
@@ -388,10 +138,6 @@
 				<p class="content-text">
 					After the components have been cleaned they are visually and, when necessary, dimensionally inspected to establish general condition and then subjected to crack inspection. This may include binocular and magnetic or penetrant inspection techniques, used either alone or consecutively, depending on the components being inspected and the degree of inspection considered necessary.
 				</p>
-
-				<div class="image-wrapper">
-					<img src="/images/overhaul-preliminary/img_1.png" alt="Typical overhaul workshop layout" />
-				</div>
 
 				<h3 class="subsection-title">REPAIRS</h3>
 				<p class="content-text">
@@ -416,7 +162,7 @@
 
 	<!-- Content Sections - Page 3: Balancing, Assembly, Testing -->
 	{#if currentPage === 3}
-	<div class="content-sections">
+	<div class="content-sections" in:fly={{ y: 20, duration: 400, delay: 200 }} out:fade={{ duration: 200 }}>
 		<section class="content-card">
 			<h2 class="section-title">
 				<span class="section-number">03</span>
@@ -424,66 +170,56 @@
 			</h2>
 			<div class="section-content">
 				<h3 class="subsection-title">BALANCING</h3>
-				<p class="content-text">
-					Because of the high rotational speeds, any unbalance in the main rotating assembly of a gas turbine engine is capable of producing vibration and stresses which increase as the square of the rotational speed. Therefore very accurate balancing of the rotating assembly is necessary. The two main methods of measuring and correcting unbalance are single plane (static) balancing and two plane (dynamic) balancing. With single plane, the unbalance is only in one plane i.e., centrally through the component at 90 degrees to the axis. This is appropriate for components such as individual compressor or turbine discs. For compressor and/or turbine rotor assemblies possessing appreciable axial length, unbalance may be present at many positions along the axis. In general it is not possible to correct this combination of distributed unbalance in a single plane. However, if two correction planes are chosen, usually at axially opposed ends of the assembly, it is always possible to find a combination of two unbalance weights which are equivalent for the unbalances present in the assembled rotor, hence two plane balancing.
-				</p>
-
 				<div class="image-wrapper">
 					<img src="/images/overhaul-preliminary/img_2.png" alt="Dynamic balancing diagram" />
 				</div>
+				<p class="content-text">
+					Because of the high rotational speeds, any unbalance in the main rotating assembly of a gas turbine engine is capable of producing vibration and stresses which increase as the square of the rotational speed. Therefore very accurate balancing of the rotating assembly is necessary. The two main methods of measuring and correcting unbalance are single plane (static) balancing and two plane (dynamic) balancing. With single plane, the unbalance is only in one plane i.e., centrally through the component at 90 degrees to the axis. This is appropriate for components such as individual compressor or turbine discs. For compressor and/or turbine rotor assemblies possessing appreciable axial length, unbalance may be present at many positions along the axis. In general it is not possible to correct this combination of distributed unbalance in a single plane. However, if two correction planes are chosen, usually at axially opposed ends of the assembly, it is always possible to find a combination of two unbalance weights which are equivalent for the unbalances present in the assembled rotor, hence two plane balancing.
+				</p>
 
 				<p class="content-text">
 					The distribution of unbalance in the rotor has been reduced to an equivalent system of two unbalances 'A' and 'B'. The rotor is already in static balance because in this example 'A' and 'B' are equal and opposed. However, when the part is rotating, each weight produces its own centrifugal force in opposition to the other causing unbalance couples, with the tendency to turn the part end-over-end. This action is restricted by the bearings, with resultant stresses and vibration. It will be seen, therefore, that to bring the part to a state of dynamic balance, an equal amount of weight must be removed at 'A' and 'B' or added at 'P' and 'O'. When the couples set up by the centrifugal forces are equal, it is said that a part is dynamically balanced. Unbalance is expressed in units of ounce-inches, thus one ounce of excess weight displaced two inches from the axis of a rotor is two ounce inches of unbalance.
 				</p>
 
+				<div class="image-wrapper">
+					<img src="/images/overhaul-preliminary/img_3.png" alt="Dynamic balancing machine" />
+				</div>
 				<p class="content-text">
 					A typical dynamic balancing machine for indicating the magnitude and angular position of unbalance in each plane is shown below. Correction of unbalance may be achieved by one or a combination of the following basic methods; redistribution of weight, addition of weight and removal of weight.
 				</p>
 
-				<div class="image-wrapper">
-					<img src="/images/overhaul-preliminary/img_3.png" alt="Dynamic balancing machine" />
-				</div>
-
 				<h3 class="subsection-title">ASSEMBLING</h3>
-				<p class="content-text">
-					The engine can be built in the vertical or horizontal position, using a ram or stand. Assembling of the engine sub-assemblies or modules is done in separate areas, thus minimizing the build time on the build rams or stands.
-				</p>
-
 				<div class="image-wrapper">
 					<img src="/images/overhaul-preliminary/img_4.png" alt="Engine assembly" />
 				</div>
+				<p class="content-text">
+					The engine can be built in the vertical or horizontal position, using a ram or stand. Assembling of the engine sub-assemblies or modules is done in separate areas, thus minimizing the build time on the build rams or stands.
+				</p>
 
 				<p class="content-text">
 					During assembling, inspection checks are made. These checks can establish dimensions to enable axial and radial clearances to be calculated and adjustments to be made, or they can ascertain that vital fitting operations have been correctly effected. Dimensional checks are effected during disassembly to establish datums which must be repeated on subsequent re-assembly. To ensure that the nuts, bolts and setscrews throughout the engine and its accessories are uniformly tight, controlled torque tightening is applied, the torque loading figure is determined by the thread diameter and the differing coefficients of friction allied with thread finish i.e., silver or cadmium plating and the lubricant used.
 				</p>
 
 				<h3 class="subsection-title">TESTING</h3>
-				<p class="content-text">
-					On completion of assembly, every production and/or overhauled engine must be tested in a 'sea level' test cell i.e. a test cell in which the engine is run at ambient temperature and pressure conditions, the resultant performance figures being corrected to International Standard Atmosphere (I.S.A.) sea-level conditions. To ensure that the engine performance meets that guaranteed to the customer and the requirements of the Government licensing and purchasing authorities, each engine is tested to an acceptance test schedule.
-				</p>
-
 				<div class="image-wrapper">
 					<img src="/images/overhaul-preliminary/img_5.png" alt="Engine testing" />
 				</div>
+				<p class="content-text">
+					On completion of assembly, every production and/or overhauled engine must be tested in a 'sea level' test cell i.e. a test cell in which the engine is run at ambient temperature and pressure conditions, the resultant performance figures being corrected to International Standard Atmosphere (I.S.A.) sea-level conditions. To ensure that the engine performance meets that guaranteed to the customer and the requirements of the Government licensing and purchasing authorities, each engine is tested to an acceptance test schedule.
+				</p>
 			</div>
 		</section>
 	</div>
 	{/if}
 
-	<!-- Pagination Controls -->
-	<div class="pagination-controls">
-		<button 
-			class="pagination-button prev"
-			onclick={prevPage}
-			disabled={currentPage === 1 && true}
-			aria-label="Previous Page"
-		>
-			<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-				<polyline points="15 18 9 12 15 6"></polyline>
-			</svg>
-			<span>{currentPage === 1 ? 'Back' : 'Previous'}</span>
+	<!-- Bottom Navigation -->
+	<div class="bottom-nav">
+		<button onclick={prevPage} class="nav-link prev">
+			<span class="nav-arrow">←</span>
+			<span>Previous: {currentPage === 1 ? 'Overhaul Station' : `Page ${currentPage - 1}`}</span>
 		</button>
 
+		<!-- Page Numbers -->
 		<div class="page-numbers">
 			{#each Array(totalPages) as _, i}
 				<button
@@ -491,22 +227,16 @@
 					class:active={currentPage === i + 1}
 					onclick={() => goToPage(i + 1)}
 					aria-label={`Go to page ${i + 1}`}
+					aria-current={currentPage === i + 1 ? 'page' : undefined}
 				>
 					{i + 1}
 				</button>
 			{/each}
 		</div>
 
-		<button 
-			class="pagination-button next"
-			onclick={nextPage}
-			disabled={currentPage === totalPages}
-			aria-label="Next Page"
-		>
-			<span>Next</span>
-			<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-				<polyline points="9 18 15 12 9 6"></polyline>
-			</svg>
+		<button onclick={nextPage} class="nav-link next">
+			<span>Next: {currentPage === totalPages ? 'Assembly & Disassembly' : `Page ${currentPage + 1}`}</span>
+			<span class="nav-arrow">→</span>
 		</button>
 	</div>
 </div>
@@ -515,167 +245,158 @@
 	:global(body) {
 		margin: 0;
 		padding: 0;
-		overflow-x: hidden;
-	}
-
-	/* Parallax Background System */
-	.parallax-background-system {
-		position: fixed;
-		top: 0;
-		left: 0;
-		width: 100%;
-		height: 100%;
-		overflow: hidden;
-		pointer-events: none;
-		z-index: -1;
-	}
-
-	.parallax-layer {
-		position: absolute;
-		top: 0;
-		left: 0;
-		width: 100%;
-		height: 100%;
-		object-fit: cover;
-		will-change: transform;
-		pointer-events: none;
-		transform-origin: center center;
-	}
-
-	.sky-layer {
-		z-index: 1;
-	}
-
-	.far-clouds-layer {
-		z-index: 2;
-		transition: transform 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-		opacity: 0.95;
-	}
-
-	.mid-clouds-layer {
-		z-index: 3;
-		transition: transform 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-		opacity: 0.9;
-	}
-
-	.near-clouds-layer {
-		z-index: 4;
-		transition: transform 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-		opacity: 0.85;
+		background: transparent;
+		color: var(--font-primary, #E8F4FA);
+		font-family: var(--font-body), 'Open Sans', sans-serif;
 	}
 
 	.page-container {
-		max-width: 1100px;
-		margin: 0 auto;
-		padding: 6rem 2rem 4rem;
-		min-height: 100vh;
 		position: relative;
-		z-index: 1;
+		min-height: 100vh;
+		padding: var(--spacing-xxl) var(--container-side-padding) var(--spacing-xl);
+		max-width: 1200px;
+		margin: 0 auto;
 	}
 
 	/* Header Section */
 	.header-section {
-		background: rgba(255, 255, 255, 0.98);
-		backdrop-filter: blur(20px) saturate(180%);
-		-webkit-backdrop-filter: blur(20px) saturate(180%);
-		border-radius: 1.5rem;
-		padding: 3rem;
-		margin-bottom: 2rem;
-		box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1), 0 2px 8px rgba(0, 0, 0, 0.05);
-		border: 1px solid rgba(0, 0, 0, 0.1);
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		margin-bottom: 3rem;
+		gap: 1.5rem;
 	}
 
 	.module-title {
-		font-family: var(--font-heading);
-		font-size: clamp(1.8rem, 4vw, 2.5rem);
+		font-family: var(--font-heading), 'Poppins', sans-serif;
+		font-size: clamp(2.5rem, 6vw, 4.5rem);
 		font-weight: 900;
-		color: #0a2f35;
-		text-align: center;
 		margin: 0;
+		background: linear-gradient(
+			90deg,
+			var(--navbar-accent, var(--ui-yellow)) 0%,
+			var(--font-accent-cyan) 50%,
+			var(--navbar-accent, var(--ui-yellow)) 100%
+		);
+		background-size: 200% 100%;
+		-webkit-background-clip: text;
+		-webkit-text-fill-color: transparent;
+		background-clip: text;
+		color: transparent;
+		text-align: center;
 		text-transform: uppercase;
-		letter-spacing: 2px;
-		line-height: 1.3;
+		line-height: 1.1;
+		animation: gradient-flash var(--gradient-duration) ease-in-out infinite;
+		filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.2));
+		text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 	}
 
 	/* Content Sections */
 	.content-sections {
 		display: flex;
 		flex-direction: column;
-		gap: 2rem;
-		animation: fadeIn 0.5s ease-in-out;
-	}
-
-	@keyframes fadeIn {
-		from {
-			opacity: 0;
-			transform: translateY(20px);
-		}
-		to {
-			opacity: 1;
-			transform: translateY(0);
-		}
+		gap: 3rem;
+		margin-bottom: 4rem;
 	}
 
 	.content-card {
-		background: rgba(255, 255, 255, 0.98);
-		backdrop-filter: blur(20px) saturate(180%);
-		-webkit-backdrop-filter: blur(20px) saturate(180%);
-		border-radius: 1.5rem;
-		padding: 3rem;
-		box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1), 0 2px 8px rgba(0, 0, 0, 0.05);
-		border: 1px solid rgba(0, 0, 0, 0.1);
+		background: transparent;
+		border: none;
+		border-radius: 0;
+		padding: 0;
+		box-shadow: none;
+		overflow: visible;
 	}
 
 	.section-title {
-		font-family: var(--font-heading);
-		font-size: 2rem;
+		font-family: var(--font-heading), 'Poppins', sans-serif;
+		font-size: 1.5rem;
 		font-weight: 800;
-		color: #0a2f35;
-		margin: 0 0 2rem 0;
-		display: flex;
+		letter-spacing: 0.05em;
+		text-transform: uppercase;
+		color: #FFFFFF;
+		background: var(--ui-navy);
+		padding: var(--spacing-sm) var(--spacing-xxl) var(--spacing-sm) var(--container-side-padding);
+		border: none;
+		border-radius: 20px 20px 0 0;
+		box-shadow: none;
+		position: relative;
+		display: inline-flex;
 		align-items: center;
 		gap: 1rem;
-		text-transform: uppercase;
-		letter-spacing: 1px;
+		width: fit-content;
+		min-width: 40%;
+		margin-bottom: -2px;
+		z-index: 2;
+		clip-path: polygon(0 0, 92% 0, 100% 100%, 0% 100%);
 	}
 
 	.section-number {
-		display: inline-flex;
-		align-items: center;
-		justify-content: center;
-		width: 60px;
-		height: 60px;
-		background: linear-gradient(135deg, #1a5f6f, #0a2f35);
-		color: white;
-		border-radius: 50%;
-		font-size: 1.5rem;
-		font-weight: 900;
-		flex-shrink: 0;
-		box-shadow: 0 4px 12px rgba(26, 95, 111, 0.3);
+		display: none;
 	}
 
 	.section-content {
-		color: #333;
-		line-height: 1.8;
+		background: #FFFFFF;
+		border: 3px solid var(--ui-navy);
+		border-radius: 0 30px 30px 30px;
+		padding: var(--card-padding);
+		color: var(--font-primary);
+		position: relative;
+		z-index: 1;
+		min-height: 300px;
 	}
 
-	.subsection-title {
-		font-family: var(--font-heading);
-		font-size: 1.5rem;
-		font-weight: 700;
-		color: #1a5f6f;
-		margin: 2.5rem 0 1.5rem 0;
-		text-transform: uppercase;
-		letter-spacing: 0.5px;
+	.section-content::after {
+		content: "";
+		display: table;
+		clear: both;
 	}
 
 	.content-text {
-		font-family: var(--font-body);
-		font-size: 1.05rem;
-		line-height: 1.8;
-		color: #333;
-		margin: 1rem 0;
+		margin: 0 0 1.5rem 0;
+		color: var(--font-primary);
+		font-size: 1.15rem;
+		line-height: 1.9;
 		text-align: justify;
+	}
+
+	.subsection-title {
+		font-family: var(--font-heading), 'Poppins', sans-serif;
+		font-size: 1.3rem;
+		font-weight: 700;
+		color: var(--ui-dark-teal);
+		margin: 2rem 0 1rem 0;
+		padding-bottom: 0.5rem;
+		border-bottom: 2px solid rgba(var(--navbar-accent-rgb, 255, 217, 102), 0.3);
+		clear: both;
+	}
+
+	/* Image Wrapper - Side by Side Layout */
+	.image-wrapper {
+		float: right;
+		width: 45%;
+		margin: 0 0 1.5rem 2rem;
+		clear: right;
+		background: linear-gradient(135deg, rgba(93, 168, 203, 0.06), rgba(135, 206, 235, 0.04));
+		border: 3px solid rgba(93, 168, 203, 0.20);
+		border-radius: 16px;
+		padding: 1.5rem;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		transition: all 0.3s ease;
+	}
+
+	.image-wrapper:hover {
+		border-color: rgba(93, 168, 203, 0.35);
+		box-shadow: 0 8px 24px rgba(93, 168, 203, 0.15);
+	}
+
+	.image-wrapper img {
+		max-width: 100%;
+		height: auto;
+		border-radius: 12px;
+		box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
 	}
 
 	/* Video Container */
@@ -687,6 +408,7 @@
 		border-radius: 1rem;
 		overflow: hidden;
 		box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+		clear: both;
 	}
 
 	.video-container iframe {
@@ -698,154 +420,127 @@
 		border: none;
 	}
 
-	/* Image Styling */
-	.image-wrapper {
-		display: flex;
-		justify-content: center;
-		margin: 2rem 0;
-	}
-
-	.image-wrapper img {
-		max-width: 100%;
-		height: auto;
-		border-radius: 12px;
-		box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-		transition: all 0.3s ease;
-		border: 1px solid rgba(0, 0, 0, 0.1);
-	}
-
-	.image-wrapper img:hover {
-		transform: translateY(-4px);
-		box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
-	}
-
-	/* Pagination Controls */
-	.pagination-controls {
-		display: flex;
-		justify-content: space-between;
-		align-items: center;
-		margin-top: 3rem;
-		padding: 2rem 3rem;
-		background: rgba(255, 255, 255, 0.98);
-		backdrop-filter: blur(20px) saturate(180%);
-		-webkit-backdrop-filter: blur(20px) saturate(180%);
-		border-radius: 1.5rem;
-		box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1), 0 2px 8px rgba(0, 0, 0, 0.05);
-		border: 1px solid rgba(0, 0, 0, 0.1);
-		gap: 2rem;
-	}
-
-	.pagination-button {
+	/* Page Controls */
+	.page-numbers {
 		display: flex;
 		align-items: center;
 		gap: 0.5rem;
-		padding: 1rem 2rem;
-		background: #1a5f6f;
-		color: white;
-		border: none;
-		border-radius: 12px;
-		font-family: var(--font-body);
-		font-size: 1rem;
-		font-weight: 600;
-		cursor: pointer;
-		transition: all 0.3s ease;
-		box-shadow: 0 2px 8px rgba(26, 95, 111, 0.3);
-	}
-
-	.pagination-button:hover:not(:disabled) {
-		background: #0a2f35;
-		transform: translateY(-2px);
-		box-shadow: 0 4px 12px rgba(26, 95, 111, 0.4);
-	}
-
-	.pagination-button:disabled {
-		opacity: 0.4;
-		cursor: not-allowed;
-	}
-
-	.pagination-button svg {
-		flex-shrink: 0;
-	}
-
-	.page-numbers {
-		display: flex;
-		gap: 0.75rem;
 	}
 
 	.page-number {
-		width: 50px;
-		height: 50px;
-		border-radius: 50%;
-		border: 2px solid #1a5f6f;
-		background: transparent;
-		color: #1a5f6f;
-		font-family: var(--font-body);
-		font-size: 1.1rem;
-		font-weight: 700;
-		cursor: pointer;
-		transition: all 0.3s ease;
+		width: 40px;
+		height: 40px;
 		display: flex;
 		align-items: center;
 		justify-content: center;
+		background: transparent;
+		border: none;
+		border-radius: 50%;
+		color: var(--font-primary);
+		font-weight: 600;
+		font-size: 1.1rem;
+		cursor: pointer;
+		transition: all 0.2s ease;
 	}
 
 	.page-number:hover {
-		background: rgba(26, 95, 111, 0.1);
-		transform: scale(1.1);
+		background: rgba(255, 255, 255, 0.2);
 	}
 
 	.page-number.active {
-		background: #1a5f6f;
-		color: white;
-		box-shadow: 0 2px 8px rgba(26, 95, 111, 0.4);
+		background: var(--navbar-accent, var(--font-accent-yellow));
+		color: var(--ui-navy);
+		font-weight: 800;
 		transform: scale(1.1);
 	}
 
+	/* Bottom Navigation */
+	.bottom-nav {
+		display: grid;
+		grid-template-columns: 1fr auto 1fr;
+		align-items: center;
+		gap: 1.5rem;
+		margin-top: 3rem;
+		padding-top: 1.5rem;
+		border-top: 2px solid rgba(93, 168, 203, 0.15);
+	}
+
+	.nav-link {
+		display: flex;
+		align-items: center;
+		gap: 0.5rem;
+		padding: 0.8rem 1.5rem;
+		background: rgba(255, 255, 255, 0.06);
+		backdrop-filter: blur(10px);
+		border: 2px solid rgba(93, 168, 203, 0.18);
+		border-radius: 10px;
+		color: var(--font-primary);
+		font-weight: 600;
+		transition: all 0.3s ease;
+		width: fit-content;
+		min-width: 140px;
+		cursor: pointer;
+		box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+	}
+
+	.nav-link:not(:disabled):hover {
+		border-color: var(--overhaul-accent);
+		/* Keep background unchanged; set accent glow */
+		box-shadow: 0 6px 30px rgba(var(--overhaul-accent-rgb, 93, 168, 203), 0.25), 0 0 18px rgba(var(--overhaul-accent-rgb, 93, 168, 203), 0.18) inset;
+		transform: translateY(-2px);
+	}
+
+	.nav-link:hover .nav-arrow {
+		color: var(--overhaul-accent);
+	}
+
+	.nav-link:disabled {
+		opacity: 0.5;
+		cursor: not-allowed;
+	}
+
+	.nav-link.prev {
+		justify-self: start;
+	}
+
+	.nav-link.next {
+		justify-self: end;
+	}
+
+	.nav-arrow {
+		font-size: 1.25rem;
+		color: var(--overhaul-accent);
+	}
+
 	/* Responsive Design */
+	@media (max-width: 1024px) {
+		.image-wrapper {
+			float: none;
+			width: 100%;
+			margin: 2rem 0;
+		}
+	}
+
 	@media (max-width: 768px) {
-		.page-container {
-			padding: 5rem 1rem 3rem;
-		}
-
-		.header-section,
-		.content-card {
-			padding: 2rem 1.5rem;
-		}
-
-		.module-title {
-			font-size: 1.5rem;
+		.header-section {
+			flex-direction: column;
+			align-items: flex-start;
 		}
 
 		.section-title {
-			font-size: 1.5rem;
-			flex-direction: column;
-			text-align: center;
+			font-size: 1.25rem;
+			padding: var(--spacing-sm) var(--spacing-sm);
+			gap: 0.8rem;
 		}
 
-		.section-number {
-			width: 50px;
-			height: 50px;
-			font-size: 1.3rem;
+		.bottom-nav {
+			grid-template-columns: 1fr;
+			gap: 1rem;
 		}
 
-		.pagination-controls {
-			flex-direction: column;
-			padding: 1.5rem;
-			gap: 1.5rem;
-		}
-
-		.pagination-button {
+		.nav-link.prev, .nav-link.next {
+			justify-self: center;
 			width: 100%;
-			justify-content: center;
-		}
-
-		.page-numbers {
-			justify-content: center;
-		}
-
-		.page-number {
-			width: 44px;
-			height: 44px;
 		}
 	}
 </style>

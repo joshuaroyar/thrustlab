@@ -1,43 +1,42 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-
-	let heroRef: HTMLElement;
+	// SkyBackground logic inlined
+	
+	let { data } = $props();
 	let isHovering = $state(false);
-	let mounted = $state(false);
 
-	// Cloud Animation State
+	// Sky Background Variables
 	let skyCanvas: HTMLCanvasElement;
 	let farCloudsCanvas: HTMLCanvasElement;
 	let midCloudsCanvas: HTMLCanvasElement;
 	let nearCloudsCanvas: HTMLCanvasElement;
+	
 	let mouseX = $state(0);
 	let mouseY = $state(0);
 	const BASE_DRIFT_SPEED = 0.61;
 
 	let farClouds = $state([
-		{ x: -200, y: 100, w: 350, h: 120, color: 'rgba(255, 255, 255, 0.5)' },
-		{ x: 800, y: 400, w: 400, h: 140, color: 'rgba(255, 255, 255, 0.45)' },
-		{ x: 1600, y: 700, w: 360, h: 125, color: 'rgba(255, 255, 255, 0.46)' },
-		{ x: 2400, y: 1000, w: 420, h: 150, color: 'rgba(255, 255, 255, 0.48)' },
-		{ x: 400, y: 1300, w: 390, h: 135, color: 'rgba(255, 255, 255, 0.44)' }
+		{ x: -200, y: 200, w: 350, h: 120, color: 'rgba(255, 255, 255, 0.5)' },
+		{ x: 400, y: 300, w: 400, h: 140, color: 'rgba(255, 255, 255, 0.45)' },
+		{ x: 1200, y: 250, w: 420, h: 150, color: 'rgba(255, 255, 255, 0.48)' },
+		{ x: 2000, y: 180, w: 380, h: 130, color: 'rgba(255, 255, 255, 0.47)' }
 	]);
 
 	let midClouds = $state([
-		{ x: -100, y: 200, w: 300, h: 100, color: 'rgba(255, 255, 255, 0.65)' },
-		{ x: 600, y: 450, w: 310, h: 105, color: 'rgba(255, 255, 255, 0.63)' },
-		{ x: 1300, y: 700, w: 320, h: 110, color: 'rgba(255, 255, 255, 0.62)' },
-		{ x: 2000, y: 950, w: 330, h: 108, color: 'rgba(255, 255, 255, 0.64)' },
-		{ x: 2700, y: 1200, w: 340, h: 115, color: 'rgba(255, 255, 255, 0.64)' },
-		{ x: 300, y: 50, w: 315, h: 102, color: 'rgba(255, 255, 255, 0.61)' }
+		{ x: -100, y: 400, w: 300, h: 100, color: 'rgba(255, 255, 255, 0.65)' },
+		{ x: 500, y: 500, w: 320, h: 110, color: 'rgba(255, 255, 255, 0.62)' },
+		{ x: 1200, y: 450, w: 340, h: 115, color: 'rgba(255, 255, 255, 0.64)' },
+		{ x: 1900, y: 480, w: 310, h: 105, color: 'rgba(255, 255, 255, 0.63)' },
+		{ x: 2600, y: 420, w: 330, h: 112, color: 'rgba(255, 255, 255, 0.62)' }
 	]);
 
 	let nearClouds = $state([
-		{ x: -150, y: 150, w: 250, h: 80, color: 'rgba(255, 255, 255, 0.8)' },
-		{ x: 500, y: 350, w: 260, h: 82, color: 'rgba(255, 255, 255, 0.79)' },
-		{ x: 1100, y: 550, w: 270, h: 85, color: 'rgba(255, 255, 255, 0.78)' },
-		{ x: 1700, y: 750, w: 255, h: 78, color: 'rgba(255, 255, 255, 0.81)' },
-		{ x: 2300, y: 950, w: 260, h: 82, color: 'rgba(255, 255, 255, 0.79)' },
-		{ x: 2900, y: 1150, w: 275, h: 88, color: 'rgba(255, 255, 255, 0.76)' }
+		{ x: -150, y: 700, w: 250, h: 80, color: 'rgba(255, 255, 255, 0.8)' },
+		{ x: 400, y: 750, w: 270, h: 85, color: 'rgba(255, 255, 255, 0.78)' },
+		{ x: 950, y: 800, w: 260, h: 82, color: 'rgba(255, 255, 255, 0.79)' },
+		{ x: 1500, y: 720, w: 280, h: 87, color: 'rgba(255, 255, 255, 0.77)' },
+		{ x: 2100, y: 780, w: 265, h: 84, color: 'rgba(255, 255, 255, 0.78)' },
+		{ x: 2700, y: 740, w: 275, h: 86, color: 'rgba(255, 255, 255, 0.8)' }
 	]);
 
 	// Day/Night Cycle State
@@ -45,9 +44,26 @@
 	let stars: { x: number; y: number; size: number; alpha: number }[] = [];
 
 	onMount(() => {
-		mounted = true;
+		// Safety: Ensure scrolling is enabled on page load
+		if (typeof document !== 'undefined') {
+			// Remove any transition classes
+			document.body.classList.remove('page-transitioning');
+			
+			// Force enable scrolling by removing any inline styles
+			document.body.style.removeProperty('overflow');
+			document.documentElement.style.removeProperty('overflow');
+			
+			// Double-check by setting to auto explicitly
+			document.body.style.overflow = 'visible';
+			document.documentElement.style.overflow = 'visible';
+			
+			// Log for debugging
+			console.log('Scroll enabled on homepage mount');
+			console.log('Body overflow:', window.getComputedStyle(document.body).overflow);
+			console.log('HTML overflow:', window.getComputedStyle(document.documentElement).overflow);
+		}
 
-		// Generate stars
+		// Sky Background Initialization
 		stars = Array.from({ length: 100 }, () => ({
 			x: Math.random() * window.innerWidth,
 			y: Math.random() * window.innerHeight,
@@ -55,41 +71,29 @@
 			alpha: Math.random()
 		}));
 
-		// Mouse tracking for parallax
 		const handleMouseMove = (e: MouseEvent) => {
 			mouseX = e.clientX;
 			mouseY = e.clientY;
 		};
 		window.addEventListener('mousemove', handleMouseMove);
 
-		// Start continuous animation loop
 		let animationId: number;
 		const animate = () => {
-			// Time is now controlled by scroll
 			updateSky();
 			animateCloudLayers();
 			animationId = requestAnimationFrame(animate);
 		};
 		animate();
 
-		// Scroll handler for time-of-day animation
 		const handleScroll = () => {
 			const currentScroll = window.scrollY;
-
-			// Update time based on scroll position
 			const maxScroll = document.body.scrollHeight - window.innerHeight;
 			const scrollRatio = Math.min(Math.max(currentScroll / maxScroll, 0), 1);
-
-			// Map scroll (0 to 1) to time (24 down to 6.5)
-			// 0 -> 24 (Night)
-			// 0.33 -> ~18 (Evening)
-			// 0.66 -> ~12 (Day)
-			// 1.0 -> 6.5 (Dawn)
 			time = 24 - scrollRatio * 17.5;
 		};
 
 		window.addEventListener('scroll', handleScroll, { passive: true });
-		handleScroll(); // Initial call
+		handleScroll();
 
 		// Scroll-triggered animations
 		const observerOptions = {
@@ -112,15 +116,96 @@
 		}, 100);
 
 		return () => {
+			observer.disconnect();
+			
+			// Sky Background Cleanup
 			window.removeEventListener('scroll', handleScroll);
 			window.removeEventListener('mousemove', handleMouseMove);
 			if (animationId) {
 				cancelAnimationFrame(animationId);
 			}
-			observer.disconnect();
+
+			// Ensure scroll is re-enabled on cleanup
+			if (typeof document !== 'undefined') {
+				document.body.style.removeProperty('overflow');
+				document.documentElement.style.removeProperty('overflow');
+			}
 		};
 	});
 
+	const features = [
+		{
+			icon: '🎮',
+			title: 'Interactive 3D Simulations',
+			description: 'Manipulate and analyze engineering components in a real-time 3D environment.',
+			color: '#FFD966'
+		},
+		{
+			icon: '📚',
+			title: 'Educational Modules',
+			description: 'Dive into detailed tutorials on Gas Turbine and Turbofan Engine systems.',
+			color: '#87CEEB'
+		},
+		{
+			icon: '📊',
+			title: 'Instant Assessments',
+			description:
+				'Test your knowledge with integrated quizzes and track your performance over time.',
+			color: '#00CED1'
+		},
+		{
+			icon: '🤖',
+			title: 'AI-Powered Assistance',
+			description:
+				'Get expert guidance and technical support from our advanced AI assistant, JAJA.',
+			color: '#4CAF50'
+		}
+	];
+
+	const zones = [
+		{
+			title: 'HANGAR ZONE',
+			description:
+				'A learning space where students explore the history and evolution of gas turbine engines, including their types and developments over time.',
+			link: '/hangar-zone',
+			icon: '/icons/hangar-zone.png',
+			gradient: 'linear-gradient(135deg, #223A5E 0%, #74B3D4 100%)'
+		},
+		{
+			title: 'TURBOFAN ENGINE',
+			description:
+				'An immersive hub where students explore a fully rotatable 3D turbofan engine, interact with its components, and discover each section that powers modern flight.',
+			link: '/turbofan-engine',
+			icon: '/icons/turbofan-engine.png',
+			gradient: 'linear-gradient(135deg, #74B3D4 0%, #D75E2E 100%)'
+		},
+		{
+			title: 'OVERHAUL STATION',
+			description:
+				'A hands-on virtual workshop where students experience the assembly and disassembly of turbofan engine parts while learning the fundamentals of gas turbine engine overhaul.',
+			link: '/overhaul-station',
+			icon: '/icons/overhaul-station.png',
+			gradient: 'linear-gradient(135deg, #D75E2E 0%, #9B8AA4 100%)'
+		},
+		{
+			title: 'TEST BAY',
+			description:
+				'A checkpoint where students test their knowledge from the Hangar Zone, Turbofan Engine, and Overhaul Bay—time to prove your skills!',
+			link: '/test-bay',
+			icon: '/icons/test-bay.png',
+			gradient: 'linear-gradient(135deg, #9B8AA4 0%, #223A5E 100%)'
+		},
+		{
+			title: 'JAJA AI-ASSISTANT',
+			description:
+				'Your co-engineer specialized in turbofan engines—ready to answer your questions, guide your learning, and keep your curiosity soaring!',
+			link: '/jaja',
+			icon: '/icons/jaja.png',
+			gradient: 'linear-gradient(135deg, #223A5E 0%, #74B3D4 100%)'
+		}
+	];
+
+	// Sky Background Functions
 	function updateSky() {
 		if (!skyCanvas) return;
 		const ctx = skyCanvas.getContext('2d');
@@ -270,9 +355,6 @@
 		const deltaX = mouseX - centerX;
 		const deltaY = mouseY - centerY;
 
-		const scrollY = window.scrollY;
-		const virtualHeight = window.innerHeight + 300; // Height for wrapping clouds
-
 		// Far clouds
 		const farLayerSpeed = 0.3;
 		const farMouseMultiplier = 15;
@@ -286,15 +368,10 @@
 			if (cloud.x - cloud.w * 0.35 > farCloudsCanvas.width) {
 				cloud.x = -(cloud.w * 0.35);
 			}
-
-			let renderY = cloud.y - scrollY * 0.8; // 0.8 parallax for depth
-			while (renderY < -cloud.h) renderY += virtualHeight;
-			while (renderY > virtualHeight) renderY -= virtualHeight;
-
 			drawEnhancedCloud(
 				farCtx,
 				cloud.x + farCursorOffsetX,
-				renderY + farCursorOffsetY,
+				cloud.y + farCursorOffsetY,
 				cloud.w,
 				cloud.h,
 				cloud.color,
@@ -315,15 +392,10 @@
 			if (cloud.x - cloud.w * 0.35 > midCloudsCanvas.width) {
 				cloud.x = -(cloud.w * 0.35);
 			}
-
-			let renderY = cloud.y - scrollY * 0.9; // 0.9 parallax
-			while (renderY < -cloud.h) renderY += virtualHeight;
-			while (renderY > virtualHeight) renderY -= virtualHeight;
-
 			drawEnhancedCloud(
 				midCtx,
 				cloud.x + midCursorOffsetX,
-				renderY + midCursorOffsetY,
+				cloud.y + midCursorOffsetY,
 				cloud.w,
 				cloud.h,
 				cloud.color,
@@ -344,15 +416,10 @@
 			if (cloud.x - cloud.w * 0.35 > nearCloudsCanvas.width) {
 				cloud.x = -(cloud.w * 0.35);
 			}
-
-			let renderY = cloud.y - scrollY; // 1.0 speed (stuck to page)
-			while (renderY < -cloud.h) renderY += virtualHeight;
-			while (renderY > virtualHeight) renderY -= virtualHeight;
-
 			drawEnhancedCloud(
 				nearCtx,
 				cloud.x + nearCursorOffsetX,
-				renderY + nearCursorOffsetY,
+				cloud.y + nearCursorOffsetY,
 				cloud.w,
 				cloud.h,
 				cloud.color,
@@ -409,95 +476,21 @@
 
 		ctx.restore();
 	}
-
-	const features = [
-		{
-			icon: '🎮',
-			title: 'Interactive 3D Simulations',
-			description: 'Manipulate and analyze engineering components in a real-time 3D environment.',
-			color: '#FFD966'
-		},
-		{
-			icon: '📚',
-			title: 'Educational Modules',
-			description: 'Dive into detailed tutorials on Gas Turbine and Turbofan Engine systems.',
-			color: '#87CEEB'
-		},
-		{
-			icon: '📊',
-			title: 'Instant Assessments',
-			description:
-				'Test your knowledge with integrated quizzes and track your performance over time.',
-			color: '#00CED1'
-		},
-		{
-			icon: '🤖',
-			title: 'AI-Powered Assistance',
-			description:
-				'Get expert guidance and technical support from our advanced AI assistant, JAJA.',
-			color: '#4CAF50'
-		}
-	];
-
-	const zones = [
-		{
-			title: 'HANGAR ZONE',
-			description:
-				'A learning space where students explore the history and evolution of gas turbine engines, including their types and developments over time.',
-			link: '/hangar-zone',
-			icon: '/icons/hangar-zone.png',
-			gradient: 'linear-gradient(135deg, #223A5E 0%, #74B3D4 100%)'
-		},
-		{
-			title: 'TURBOFAN ENGINE',
-			description:
-				'An immersive hub where students explore a fully rotatable 3D turbofan engine, interact with its components, and discover each section that powers modern flight.',
-			link: '/turbofan-engine',
-			icon: '/icons/turbofan-engine.png',
-			gradient: 'linear-gradient(135deg, #74B3D4 0%, #D75E2E 100%)'
-		},
-		{
-			title: 'OVERHAUL STATION',
-			description:
-				'A hands-on virtual workshop where students experience the assembly and disassembly of turbofan engine parts while learning the fundamentals of gas turbine engine overhaul.',
-			link: '/overhaul-station',
-			icon: '/icons/overhaul-station.png',
-			gradient: 'linear-gradient(135deg, #D75E2E 0%, #9B8AA4 100%)'
-		},
-		{
-			title: 'TEST BAY',
-			description:
-				'A checkpoint where students test their knowledge from the Hangar Zone, Turbofan Engine, and Overhaul Bay—time to prove your skills!',
-			link: '/test-bay',
-			icon: '/icons/test-bay.png',
-			gradient: 'linear-gradient(135deg, #9B8AA4 0%, #223A5E 100%)'
-		},
-		{
-			title: 'JAJA AI-ASSISTANT',
-			description:
-				'Your co-engineer specialized in turbofan engines—ready to answer your questions, guide your learning, and keep your curiosity soaring!',
-			link: '/jaja',
-			icon: '/icons/jaja.png',
-			gradient: 'linear-gradient(135deg, #223A5E 0%, #74B3D4 100%)'
-		}
-	];
 </script>
 
 <div class="homepage">
-	<!-- Evening Sky Background -->
 	<div class="sky-background">
 		<canvas bind:this={skyCanvas} width="1920" height="1080" class="sky-canvas"></canvas>
 		<canvas bind:this={farCloudsCanvas} width="1920" height="1080" class="cloud-layer far"></canvas>
 		<canvas bind:this={midCloudsCanvas} width="1920" height="1080" class="cloud-layer mid"></canvas>
-		<canvas bind:this={nearCloudsCanvas} width="1920" height="1080" class="cloud-layer near"
-		></canvas>
+		<canvas bind:this={nearCloudsCanvas} width="1920" height="1080" class="cloud-layer near"></canvas>
 	</div>
 
 	<!-- Hero Section -->
-	<section class="hero" bind:this={heroRef}>
+	<section class="hero">
 		<div class="hero-content">
 			<h1 class="hero-title animate-in">
-				Welcome to <span class="gradient-text">ThrustLab</span>
+				Welcome to <span class="gradient-text gradient-animated">ThrustLab</span>
 			</h1>
 			<p class="hero-subtitle animate-in delay-1">Experience Learning at Full Thrust</p>
 			<p class="hero-description animate-in delay-2">
@@ -505,11 +498,21 @@
 				turbofan engines through immersive 3D interaction and real-time AI support.
 			</p>
 			<div class="hero-actions animate-in delay-3">
-				<a href="/sign-up" class="cta-button primary">
-					Get Started
-					<span class="button-shine"></span>
-				</a>
-				<a href="/login" class="cta-button secondary"> Log In </a>
+				{#if !data.user}
+					<a href="/sign-up" class="cta-button primary">
+						Get Started
+						<span class="button-shine"></span>
+					</a>
+					<a href="/login" class="cta-button secondary"> Log In </a>
+				{:else}
+					<a href="/dashboard" class="cta-button primary">
+						Go to Dashboard
+						<span class="button-shine"></span>
+					</a>
+					<a href="/jaja" class="cta-button secondary">
+						Ask JAJA
+					</a>
+				{/if}
 			</div>
 		</div>
 
@@ -706,20 +709,7 @@
 </div>
 
 <style>
-	:global(body) {
-		overflow-x: hidden;
-	}
-
-	/* Removed scroll-behavior: smooth from html for better scroll performance */
-	/* Smooth scrolling adds significant overhead when combined with canvas animations */
-
-	.homepage {
-		width: 100%;
-		overflow-x: hidden;
-		background: #0f172a;
-		position: relative;
-	}
-
+	/* Sky Background Styles */
 	.sky-background {
 		position: fixed;
 		top: 0;
@@ -737,7 +727,6 @@
 		left: 0;
 		width: 100%;
 		height: 100%;
-		object-fit: cover;
 	}
 
 	.cloud-layer {
@@ -746,7 +735,6 @@
 		left: 0;
 		width: 100%;
 		height: 100%;
-		object-fit: cover;
 		opacity: 0.9;
 	}
 
@@ -761,6 +749,12 @@
 	.near {
 		z-index: 3;
 		opacity: 0.9;
+	}
+
+	.homepage {
+		width: 100%;
+		overflow-x: hidden;
+		position: relative;
 	}
 
 	/* Hero Section */
@@ -778,25 +772,11 @@
 		z-index: 10;
 		text-align: center;
 		max-width: 900px;
-		padding: 2rem;
+		padding: var(--spacing-lg);
 	}
 
 	/* Unified Animated Gradient for All Main Headings */
-	@keyframes gradient-flash {
-		0%,
-		100% {
-			background-position: 0% 50%;
-		}
-		25% {
-			background-position: 50% 50%;
-		}
-		50% {
-			background-position: 100% 50%;
-		}
-		75% {
-			background-position: 50% 50%;
-		}
-	}
+	/* gradient-flash moved to src/app.css for global reuse */
 
 	.hero-title {
 		font-family: var(--font-heading);
@@ -811,15 +791,15 @@
 	.gradient-text {
 		background: linear-gradient(
 			90deg,
-			var(--ui-yellow) 0%,
+			var(--navbar-accent, var(--ui-yellow)) 0%,
 			var(--font-accent-cyan) 50%,
-			var(--ui-yellow) 100%
+			var(--navbar-accent, var(--ui-yellow)) 100%
 		);
 		background-size: 200% 100%;
 		-webkit-background-clip: text;
 		-webkit-text-fill-color: transparent;
 		background-clip: text;
-		animation: gradient-flash 3.5s ease-in-out infinite;
+		animation: gradient-flash var(--gradient-duration) ease-in-out infinite;
 	}
 
 	.hero-subtitle {
@@ -827,7 +807,7 @@
 		font-size: clamp(1.2rem, 3vw, 1.8rem);
 		margin: 0 0 1.5rem 0;
 		font-weight: 400;
-		color: var(--ui-yellow);
+		color: var(--navbar-accent, var(--ui-yellow));
 		text-shadow: 0 2px 8px rgba(0, 0, 0, 0.7);
 	}
 
@@ -894,21 +874,21 @@
 	}
 
 	.cta-button.primary {
-		background: linear-gradient(135deg, var(--ui-yellow) 0%, #ffe66d 100%);
+		background: linear-gradient(135deg, var(--navbar-accent, var(--ui-yellow)) 0%, #ffe66d 100%);
 		color: #000000;
-		border: 3px solid var(--ui-yellow);
+		border: 3px solid var(--navbar-accent, var(--ui-yellow));
 		box-shadow:
-			0 6px 20px rgba(255, 217, 102, 0.5),
-			0 0 40px rgba(255, 217, 102, 0.2);
+			0 6px 20px rgba(var(--navbar-accent-rgb, 255, 217, 102), 0.5),
+			0 0 40px rgba(var(--navbar-accent-rgb, 255, 217, 102), 0.2);
 		font-weight: 700;
 	}
 
 	.cta-button.primary:hover {
-		background: linear-gradient(135deg, #ffe66d 0%, var(--ui-yellow) 100%);
+		background: linear-gradient(135deg, #ffe66d 0%, var(--navbar-accent, var(--ui-yellow)) 100%);
 		transform: translateY(-5px) scale(1.05);
 		box-shadow:
-			0 12px 35px rgba(255, 217, 102, 0.7),
-			0 0 60px rgba(255, 217, 102, 0.4);
+			0 12px 35px rgba(var(--navbar-accent-rgb, 255, 217, 102), 0.7),
+			0 0 60px rgba(var(--navbar-accent-rgb, 255, 217, 102), 0.4);
 		border-color: #ffe66d;
 	}
 
@@ -994,7 +974,7 @@
 
 	/* Features Section */
 	.features-section {
-		padding: 6rem 2rem;
+		padding: calc(var(--spacing-xxl) * 1.5) var(--container-side-padding);
 		background: transparent;
 		position: relative;
 		z-index: 1;
@@ -1017,15 +997,15 @@
 		line-height: 1.2;
 		background: linear-gradient(
 			90deg,
-			var(--ui-yellow) 0%,
+			var(--navbar-accent, var(--ui-yellow)) 0%,
 			var(--font-accent-cyan) 50%,
-			var(--ui-yellow) 100%
+			var(--navbar-accent, var(--ui-yellow)) 100%
 		);
 		background-size: 200% 100%;
 		-webkit-background-clip: text;
 		-webkit-text-fill-color: transparent;
 		background-clip: text;
-		animation: gradient-flash 3.5s ease-in-out infinite;
+		animation: gradient-flash var(--gradient-duration) ease-in-out infinite;
 		filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.8));
 		will-change: background-position;
 	}
@@ -1042,7 +1022,7 @@
 		background: rgba(10, 47, 53, 0.4); /* Dark Teal with transparency */
 		backdrop-filter: blur(20px) saturate(180%);
 		-webkit-backdrop-filter: blur(20px) saturate(180%);
-		padding: 2.5rem;
+		padding: var(--card-padding);
 		border-radius: 1.5rem;
 		box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
 		border: 1px solid rgba(135, 206, 235, 0.3); /* Light Blue border */
@@ -1121,15 +1101,15 @@
 		margin: 0 0 1rem 0;
 		background: linear-gradient(
 			90deg,
-			var(--ui-yellow) 0%,
+			var(--navbar-accent, var(--ui-yellow)) 0%,
 			var(--font-accent-cyan) 50%,
-			var(--ui-yellow) 100%
+			var(--navbar-accent, var(--ui-yellow)) 100%
 		);
 		background-size: 200% 100%;
 		-webkit-background-clip: text;
 		-webkit-text-fill-color: transparent;
 		background-clip: text;
-		animation: gradient-flash 3.5s ease-in-out infinite;
+		animation: gradient-flash var(--gradient-duration) ease-in-out infinite;
 		filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.8));
 	}
 
@@ -1165,7 +1145,7 @@
 		height: 100%;
 		background: radial-gradient(
 			600px circle at var(--mouse-x, 50%) var(--mouse-y, 50%),
-			rgba(255, 217, 102, 0.2),
+			rgba(var(--navbar-accent-rgb, 255, 217, 102), 0.2),
 			transparent 40%
 		);
 		opacity: 0;
@@ -1179,7 +1159,7 @@
 
 	/* Zones Section */
 	.zones-section {
-		padding: 6rem 2rem;
+		padding: calc(var(--spacing-xxl) * 1.5) var(--container-side-padding);
 		background: transparent;
 		position: relative;
 		z-index: 1;
@@ -1198,7 +1178,7 @@
 
 	.zone-card {
 		position: relative;
-		padding: 2rem 1.5rem;
+		padding: var(--spacing-lg) var(--spacing-md);
 		border-radius: 1.5rem;
 		color: var(--font-primary);
 		text-decoration: none;
@@ -1260,9 +1240,9 @@
 
 	.zone-card:hover {
 		transform: scale(1.05) translateY(-10px);
-		box-shadow: 0 12px 40px rgba(255, 217, 102, 0.4); /* Yellow glow */
+		box-shadow: 0 12px 40px rgba(var(--navbar-accent-rgb, 255, 217, 102), 0.4); /* Zone glow */
 		background: rgba(28, 46, 58, 0.6) !important;
-		border: 1px solid var(--ui-yellow);
+		border: 1px solid var(--navbar-accent, var(--ui-yellow));
 	}
 
 	.zone-icon {
@@ -1275,7 +1255,7 @@
 
 	.zone-card:hover .zone-icon {
 		transform: scale(1.2) rotate(10deg);
-		filter: drop-shadow(0 4px 12px rgba(255, 217, 102, 0.6));
+		filter: drop-shadow(0 4px 12px rgba(var(--navbar-accent-rgb, 255, 217, 102), 0.6));
 	}
 
 	.zone-card h3 {
@@ -1286,15 +1266,15 @@
 		line-height: 1.3;
 		background: linear-gradient(
 			90deg,
-			var(--ui-yellow) 0%,
+			var(--navbar-accent, var(--ui-yellow)) 0%,
 			var(--font-accent-yellow) 50%,
-			var(--ui-yellow) 100%
+			var(--navbar-accent, var(--ui-yellow)) 100%
 		);
 		background-size: 200% 100%;
 		-webkit-background-clip: text;
 		-webkit-text-fill-color: transparent;
 		background-clip: text;
-		animation: gradient-flash 3s ease-in-out infinite;
+		animation: gradient-flash var(--gradient-duration) ease-in-out infinite;
 		filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.8));
 	}
 
@@ -1322,7 +1302,7 @@
 	/* CTA Section */
 	/* Researchers Section */
 	.researchers-section {
-		padding: 6rem 2rem 4rem;
+		padding: calc(var(--spacing-xxl) * 1.5) var(--container-side-padding) var(--spacing-xxl);
 		background: transparent;
 		position: relative;
 		z-index: 1;
@@ -1341,7 +1321,7 @@
 	.header-line {
 		width: 100px;
 		height: 4px;
-		background: linear-gradient(90deg, transparent, var(--ui-yellow), transparent);
+		background: linear-gradient(90deg, transparent, var(--navbar-accent, var(--ui-yellow)), transparent);
 		margin: 0 auto 2rem;
 		border-radius: 2px;
 		animation: pulse-glow 2s ease-in-out infinite;
@@ -1368,8 +1348,8 @@
 	.overview-content {
 		max-width: 1000px;
 		margin: 0 auto;
-		padding: 3rem;
-		text-align: center;
+		padding: var(--spacing-xl);
+		text-align: justify;
 		/* Glassmorphism Effect with UI colors */
 		background: rgba(10, 47, 53, 0.5); /* Dark Teal */
 		backdrop-filter: blur(20px) saturate(180%);
@@ -1450,12 +1430,12 @@
 		backface-visibility: hidden;
 		background: linear-gradient(135deg, rgba(0, 0, 0, 0.4) 0%, rgba(0, 0, 0, 0.2) 100%);
 		border-radius: 20px;
-		padding: 2rem 1.5rem;
+		padding: var(--spacing-lg) var(--spacing-md);
 		display: flex;
 		flex-direction: column;
 		align-items: center;
 		justify-content: center;
-		gap: 1.5rem;
+		gap: var(--spacing-md);
 		border: 2px solid rgba(135, 206, 235, 0.2);
 		transition: all 0.4s ease;
 		overflow: hidden;
@@ -1468,16 +1448,16 @@
 		left: -50%;
 		width: 200%;
 		height: 200%;
-		background: radial-gradient(circle, rgba(255, 217, 102, 0.1) 0%, transparent 70%);
+		background: radial-gradient(circle, rgba(var(--navbar-accent-rgb, 255, 217, 102), 0.1) 0%, transparent 70%);
 		opacity: 0;
 		transition: opacity 0.4s ease;
 	}
 
 	.researcher-card:hover .card-front {
-		border-color: var(--ui-yellow);
+		border-color: var(--navbar-accent, var(--ui-yellow));
 		background: linear-gradient(135deg, rgba(0, 0, 0, 0.6) 0%, rgba(0, 0, 0, 0.3) 100%);
 		box-shadow:
-			0 20px 60px rgba(255, 217, 102, 0.3),
+			0 20px 60px rgba(var(--navbar-accent-rgb, 255, 217, 102), 0.3),
 			0 0 80px rgba(135, 206, 235, 0.2);
 	}
 
@@ -1501,7 +1481,7 @@
 		width: 180px;
 		height: 180px;
 		border-radius: 50%;
-		background: radial-gradient(circle, var(--ui-yellow) 0%, transparent 70%);
+		background: radial-gradient(circle, var(--navbar-accent, var(--ui-yellow)) 0%, transparent 70%);
 		opacity: 0;
 		transition: opacity 0.4s ease;
 		z-index: 0;
@@ -1537,10 +1517,10 @@
 	}
 
 	.researcher-card:hover .photo-wrapper img {
-		border-color: var(--ui-yellow);
+		border-color: var(--navbar-accent, var(--ui-yellow));
 		box-shadow:
-			0 12px 50px rgba(255, 217, 102, 0.5),
-			0 0 60px rgba(255, 217, 102, 0.3);
+			0 12px 50px rgba(var(--navbar-accent-rgb, 255, 217, 102), 0.5),
+			0 0 60px rgba(var(--navbar-accent-rgb, 255, 217, 102), 0.3);
 		transform: scale(1.05);
 	}
 
@@ -1562,24 +1542,24 @@
 		-webkit-background-clip: text;
 		-webkit-text-fill-color: transparent;
 		background-clip: text;
-		animation: gradient-flash 4s ease-in-out infinite;
+		animation: gradient-flash var(--gradient-duration) ease-in-out infinite;
 		filter: drop-shadow(0 2px 10px rgba(0, 0, 0, 0.8));
 	}
 
 	.researcher-card:hover .card-info h3 {
 		background: linear-gradient(
 			90deg,
-			var(--ui-yellow) 0%,
+			var(--navbar-accent, var(--ui-yellow)) 0%,
 			var(--font-accent-yellow) 50%,
-			var(--ui-yellow) 100%
+			var(--navbar-accent, var(--ui-yellow)) 100%
 		);
 		background-size: 200% 100%;
 		-webkit-background-clip: text;
 		-webkit-text-fill-color: transparent;
 		background-clip: text;
-		animation: gradient-flash 2.5s ease-in-out infinite;
-		filter: drop-shadow(0 2px 10px rgba(255, 217, 102, 0.6))
-			drop-shadow(0 0 20px rgba(255, 217, 102, 0.4));
+		animation: gradient-flash var(--gradient-duration) ease-in-out infinite;
+		filter: drop-shadow(0 2px 10px rgba(var(--navbar-accent-rgb, 255, 217, 102), 0.6))
+			drop-shadow(0 0 20px rgba(var(--navbar-accent-rgb, 255, 217, 102), 0.4));
 	}
 
 	.role-badge {
@@ -1598,10 +1578,10 @@
 	}
 
 	.researcher-card:hover .role-badge {
-		background: rgba(255, 217, 102, 0.2);
-		border-color: var(--ui-yellow);
-		color: var(--ui-yellow);
-		box-shadow: 0 0 20px rgba(255, 217, 102, 0.3);
+		background: rgba(var(--navbar-accent-rgb, 255, 217, 102), 0.2);
+		border-color: var(--navbar-accent, var(--ui-yellow));
+		color: var(--navbar-accent, var(--ui-yellow));
+		box-shadow: 0 0 20px rgba(var(--navbar-accent-rgb, 255, 217, 102), 0.3);
 	}
 
 	/* Info Bar */
@@ -1611,8 +1591,8 @@
 		display: flex;
 		justify-content: center;
 		align-items: center;
-		gap: 3rem;
-		padding: 2rem 0;
+		gap: var(--spacing-xl);
+		padding: var(--spacing-lg) 0;
 	}
 
 	.info-item {
@@ -1724,7 +1704,7 @@
 		}
 
 		.overview-content {
-			padding: 2rem 1.5rem;
+			padding: var(--spacing-lg) var(--spacing-md);
 		}
 
 		.overview-content p {
@@ -1732,7 +1712,7 @@
 		}
 
 		.researchers-section {
-			padding: 8rem 2rem 6rem;
+			padding: calc(var(--spacing-xxl) * 2) var(--container-side-padding) calc(var(--spacing-xxl) * 1.5);
 		}
 
 		.section-header {
@@ -1742,7 +1722,7 @@
 		.info-bar {
 			flex-direction: column;
 			gap: 2rem;
-			padding: 2rem 0;
+			padding: var(--spacing-lg) 0;
 		}
 
 		.info-divider {
@@ -1761,9 +1741,9 @@
 			align-items: center;
 		}
 
-		.zone-card {
-			min-height: auto;
-			padding: 2.5rem 2rem;
+			.zone-card {
+				min-height: auto;
+				padding: var(--card-padding) var(--container-side-padding);
 		}
 
 		.zone-icon {

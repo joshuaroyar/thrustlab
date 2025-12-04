@@ -2,6 +2,6 @@
 	import SkyBackground from '$lib/components/SkyBackground.svelte';
 </script>
 
-<SkyBackground day={true} />
+<SkyBackground night={true} />
 
 <slot />

@@ -14,8 +14,10 @@
 
 		window.addEventListener('keydown', handleKeyPress);
 
+		document.body.classList.add('zone-turbofan');
 		return () => {
 			window.removeEventListener('keydown', handleKeyPress);
+			document.body.classList.remove('zone-turbofan');
 		};
 	});
 
@@ -107,6 +109,19 @@
 								<strong>Reset View:</strong> Press the Reset button to return the engine to its original position.
 							</div>
 						</div>
+
+						<div class="instruction-item">
+							<div class="instruction-icon">
+								<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path><line x1="7" y1="7" x2="7.01" y2="7"></line></svg>
+							</div>
+							<div class="instruction-text">
+								<strong>Toggle Labels:</strong> Turn component labels on or off to reduce clutter or check details.
+							</div>
+						</div>
+					</div>
+
+					<div class="jaja-tip">
+						<p><strong>Tip from JAJA:</strong> Take your time, click around, and discover every part of the engine—learning is just a click away!</p>
 					</div>
 
 					<div class="click-hint">
@@ -126,13 +141,13 @@
 		display: flex;
 		align-items: center;
 		justify-content: center;
-		padding: 2rem;
+		padding: var(--spacing-lg);
 		position: relative;
 	}
 
 	.instructions-overlay {
 		width: 100%;
-		max-width: 800px;
+		max-width: 600px;
 		position: relative;
 	}
 
@@ -174,7 +189,7 @@
 		backdrop-filter: blur(20px) saturate(180%);
 		-webkit-backdrop-filter: blur(20px) saturate(180%);
 		border-radius: 2rem;
-		padding: 2.5rem 2rem;
+		padding: var(--card-padding) var(--container-side-padding);
 		border: 2px solid rgba(135, 206, 235, 0.4);
 		box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
 		cursor: pointer;
@@ -184,8 +199,8 @@
 
 	.instructions-container:hover {
 		transform: scale(1.02);
-		border-color: var(--ui-yellow);
-		box-shadow: 0 25px 70px rgba(255, 217, 102, 0.3);
+		border-color: var(--navbar-accent, var(--ui-yellow));
+		box-shadow: 0 25px 70px rgba(var(--navbar-accent-rgb, 255, 217, 102), 0.3);
 	}
 
 	@keyframes fadeIn {
@@ -205,13 +220,24 @@
 
 	.instructions-title {
 		font-family: var(--font-heading);
-		font-size: clamp(1.5rem, 3vw, 2.5rem);
+		font-size: clamp(2.5rem, 6vw, 4.5rem);
 		font-weight: 900;
-		color: var(--font-accent-yellow);
 		text-align: center;
 		margin: 0 0 1rem 0;
+		background: linear-gradient(
+			90deg,
+				var(--navbar-accent, var(--ui-yellow)) 0%,
+			var(--font-accent-cyan) 50%,
+			var(--navbar-accent, var(--ui-yellow)) 100%
+		);
+		background-size: 200% 100%;
+		-webkit-background-clip: text;
+		-webkit-text-fill-color: transparent;
+		background-clip: text;
+		animation: gradient-flash var(--gradient-duration) ease-in-out infinite;
 		text-shadow: 0 3px 12px rgba(0, 0, 0, 0.8);
 	}
+
 
 	.instructions-subtitle {
 		font-family: var(--font-body);
@@ -233,7 +259,7 @@
 		display: flex;
 		align-items: flex-start;
 		gap: 1rem;
-		padding: 1rem;
+		padding: var(--spacing-sm);
 		background: rgba(28, 62, 74, 0.5);
 		border-radius: 1rem;
 		border: 1px solid rgba(135, 206, 235, 0.2);
@@ -266,6 +292,25 @@
 		margin-bottom: 0.25rem;
 	}
 
+	.jaja-tip {
+		background: rgba(0, 212, 255, 0.1);
+		border-left: 4px solid #00d4ff;
+		padding: var(--spacing-sm);
+		margin: 1.5rem 0;
+		border-radius: 0 8px 8px 0;
+	}
+
+	.jaja-tip p {
+		margin: 0;
+		color: var(--font-secondary);
+		font-size: 1rem;
+		line-height: 1.5;
+	}
+
+	.jaja-tip strong {
+		color: #00d4ff;
+	}
+
 	.click-hint {
 		text-align: center;
 		margin-top: 2rem;
@@ -295,7 +340,7 @@
 
 	@media (max-width: 768px) {
 		.instructions-container {
-			padding: 3rem 2rem;
+			padding: var(--spacing-xl) var(--container-side-padding);
 		}
 
 		.instruction-item {

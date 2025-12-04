@@ -124,7 +124,7 @@
 		z-index: 10;
 		max-width: 1200px;
 		margin: 0 auto;
-		padding: 6rem 2rem 2rem;
+		padding: calc(var(--spacing-xxl) * 1.5) var(--container-side-padding) var(--spacing-lg);
 		min-height: 100vh;
 		color: var(--font-primary);
 	}
@@ -137,7 +137,7 @@
 		border-radius: 24px;
 		box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.1);
 		transition: transform 0.3s ease, box-shadow 0.3s ease;
-		padding: 2rem;
+		padding: var(--spacing-lg);
 	}
 
 	.glass-panel:hover {
@@ -185,7 +185,7 @@
 
 	@media (max-width: 768px) {
 		.dashboard-container {
-			padding: 5rem 1rem 1rem;
+			padding: calc(var(--spacing-xxl) * 1.25) var(--spacing-sm) var(--spacing-sm);
 		}
 
 		.welcome-text h1 {
@@ -193,7 +193,7 @@
 		}
 
 		.glass-panel {
-			padding: 1.5rem;
+			padding: var(--spacing-md);
 		}
 	}
 
@@ -383,7 +383,7 @@
 
 	/* Alerts */
 	.alert {
-		padding: 1rem 1.5rem;
+		padding: var(--spacing-sm) var(--spacing-md);
 		margin-bottom: 2rem;
 		font-weight: 500;
 	}

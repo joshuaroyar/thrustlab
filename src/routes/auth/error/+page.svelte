@@ -30,7 +30,7 @@
 		color: #e74c3c;
 		font-weight: bold;
 		background: rgba(231, 76, 60, 0.1);
-		padding: 0.5rem;
+		padding: var(--spacing-xs);
 		border-radius: 0.5rem;
 		margin-bottom: 1rem;
 	}
@@ -42,13 +42,13 @@
 		justify-content: center;
 		align-items: center;
 		min-height: 100vh;
-		padding: 1rem;
+		padding: var(--spacing-sm);
 	}
 
 	.error-card {
 		background: rgba(255, 255, 255, 0.95);
 		backdrop-filter: blur(10px);
-		padding: 3rem;
+		padding: var(--spacing-xl);
 		border-radius: 1.5rem;
 		text-align: center;
 		box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
@@ -67,7 +67,7 @@
 	p {
 		font-family: var(--font-body, sans-serif);
 		color: #333;
-		margin-bottom: 2rem;
+		margin-bottom: var(--spacing-lg);
 		line-height: 1.6;
 	}
 
@@ -76,7 +76,7 @@
 		background: #1a5f6f;
 		color: white;
 		text-decoration: none;
-		padding: 0.8rem 2rem;
+		padding: var(--spacing-xs) var(--spacing-xxl);
 		border-radius: 2rem;
 		font-family: var(--font-body, sans-serif);
 		font-weight: 600;

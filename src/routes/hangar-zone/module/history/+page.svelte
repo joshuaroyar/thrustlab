@@ -1,9 +1,11 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
 	import { page } from '$app/stores';
+	import { fade, fly } from 'svelte/transition';
 	import { searchQuery, showSearchModal, performSearch } from '$lib/stores/searchStore';
 	import { MODULE_CONTENT } from '$lib/data/searchContent';
 	import SearchModal from '$lib/components/SearchModal.svelte';
+	import ImageModal from '$lib/components/ImageModal.svelte';
 	
 	const totalPages = 4;
 	
@@ -21,9 +23,14 @@
 		}
 	}
 	
+	function scrollToTop() {
+		window.scrollTo({ top: 0, behavior: 'smooth' });
+	}
+
 	function goToPage(pageNum: number) {
 		if (pageNum >= 1 && pageNum <= totalPages) {
 			goto(`/hangar-zone/module/history?page=${pageNum}`);
+			scrollToTop();
 		}
 	}
 	
@@ -42,15 +49,32 @@
 			goto('/hangar-zone');
 		}
 	}
+
+	function handleKeydown(event: KeyboardEvent) {
+		if (event.key === 'ArrowLeft') {
+			prevPage();
+		} else if (event.key === 'ArrowRight') {
+			nextPage();
+		}
+	}
+
+	import { onMount } from 'svelte';
+
+	onMount(() => {
+		document.body.classList.add('zone-hangar');
+		return () => document.body.classList.remove('zone-hangar');
+	});
 </script>
 
-<!-- Page Container -->
+<svelte:window on:keydown={handleKeydown} />
+
 <div class="page-container">
 	<SearchModal />
+	<ImageModal />
 	
 	<!-- Header Section -->
 	<div class="header-section">
-		<h1 class="module-title">LEARNING MODULE 01: HISTORY OF GAS TURBINE ENGINES</h1>
+		<h1 class="module-title gradient-animated">LEARNING MODULE 01: HISTORY OF GAS TURBINE ENGINES</h1>
 		<div class="search-container">
 			<input 
 				type="text" 
@@ -70,7 +94,7 @@
 
 	<!-- Content Sections - Page 1: Principle & Early History -->
 	{#if currentPage === 1}
-	<div class="content-sections">
+	<div class="content-sections" in:fly={{ y: 20, duration: 400, delay: 200 }} out:fade={{ duration: 200 }}>
 		<!-- Section 1: Principle of Jet Propulsion -->
 		<section class="content-card">
 			<h2 class="section-title">
@@ -82,9 +106,9 @@
 					<img src="/images/hangar-zone/history/1.png" alt="Principle of Jet Propulsion" />
 				</div>
 				<ul class="bullet-list">
-					<li>Isaac Newton's Third Law of Motion states that for every force acting on a body, there is an opposite and equal reaction.</li>
-					<li>Jet propulsion is the force which is generated in the opposite direction to that of a discharge of fluid under pressure, escaping through an opening.</li>
-					<li>Whatever form the device utilizes for jet propulsion, it is essentially a reaction engine that operates according to Sir Isaac Newton's Third Law of Motion.</li>
+					<li><strong>Isaac Newton's Third Law of Motion</strong> states that for every force acting on a body, there is an opposite and equal reaction.</li>
+					<li><strong>Jet propulsion</strong> is the force which is generated in the opposite direction to that of a discharge of fluid under pressure, escaping through an opening.</li>
+					<li>Whatever form the device utilizes for jet propulsion, it is essentially a reaction engine that operates according to <strong>Sir Isaac Newton's Third Law of Motion</strong>.</li>
 				</ul>
 			</div>
 		</section>
@@ -119,8 +143,8 @@
 				<div class="timeline-item">
 					<div class="timeline-date">1900</div>
 					<div class="timeline-content">
-						<p>The history of mechanical jet propulsion began in 1900, when <strong>Dr. Sanford Moss</strong> applied some of his concepts in the development of the turbo-supercharger. This unique supercharger consisted of a small turbine wheel that was driven by exhaust gases. The turbine was then used to drive a supercharger.</p>
-						<p>Research done by Dr. Moss influenced Frank Whittle of England in the development of what became the first successful turbojet engine.</p>
+						<p>The history of mechanical jet propulsion began in 1900, when <strong>Dr. Sanford Moss</strong> applied some of his concepts in the development of the <strong>turbo-supercharger</strong>. This unique supercharger consisted of a small turbine wheel that was driven by exhaust gases. The turbine was then used to drive a supercharger.</p>
+						<p>Research done by Dr. Moss influenced <strong>Frank Whittle</strong> of England in the development of what became the first successful turbojet engine.</p>
 					</div>
 				</div>
 			</div>
@@ -130,7 +154,7 @@
 
 	<!-- Content Sections - Page 2: Modern Development (1930-1941) -->
 	{#if currentPage === 2}
-	<div class="content-sections">
+	<div class="content-sections" in:fly={{ y: 20, duration: 400, delay: 200 }} out:fade={{ duration: 200 }}>
 		<section class="content-card">
 			<h2 class="section-title">
 				<span class="section-number">03</span>
@@ -180,7 +204,7 @@
 
 	<!-- Content Sections - Page 3: Propulsion Devices & Basic Operation -->
 	{#if currentPage === 3}
-	<div class="content-sections">
+	<div class="content-sections" in:fly={{ y: 20, duration: 400, delay: 200 }} out:fade={{ duration: 200 }}>
 		<!-- Section 4: Propulsion Devices -->
 		<section class="content-card">
 			<h2 class="section-title">
@@ -243,7 +267,7 @@
 
 	<!-- Content Sections - Page 4: Types of Jet Engines -->
 	{#if currentPage === 4}
-	<div class="content-sections">
+	<div class="content-sections" in:fly={{ y: 20, duration: 400, delay: 200 }} out:fade={{ duration: 200 }}>
 		<section class="content-card">
 			<h2 class="section-title">
 				<span class="section-number">06</span>
@@ -328,19 +352,11 @@
 	</div>
 	{/if}
 
-	<!-- Pagination Controls -->
-	<div class="pagination-controls">
-		<!-- Previous Button -->
-		<button 
-			class="pagination-button prev" 
-			on:click={prevPage}
-			disabled={currentPage === 1}
-			aria-label="Previous Page"
-		>
-			<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-				<path d="M15 18l-6-6 6-6"/>
-			</svg>
-			<span>Previous</span>
+	<!-- Bottom Navigation -->
+	<div class="bottom-nav">
+		<button on:click={prevPage} class="nav-link prev">
+			<span class="nav-arrow">←</span>
+			<span>Previous: {currentPage === 1 ? 'Hangar Zone' : `Page ${currentPage - 1}`}</span>
 		</button>
 
 		<!-- Page Numbers -->
@@ -358,26 +374,6 @@
 			{/each}
 		</div>
 
-		<!-- Next Button -->
-		<button 
-			class="pagination-button next" 
-			on:click={nextPage}
-			disabled={currentPage === totalPages}
-			aria-label="Next Page"
-		>
-			<span>Next</span>
-			<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-				<path d="M9 18l6-6-6-6"/>
-			</svg>
-		</button>
-	</div>
-
-	<!-- Bottom Navigation -->
-	<div class="bottom-nav">
-		<button on:click={prevPage} class="nav-link prev">
-			<span class="nav-arrow">←</span>
-			<span>Previous: {currentPage === 1 ? 'Hangar Zone' : `Page ${currentPage - 1}`}</span>
-		</button>
 		<button on:click={nextPage} class="nav-link next">
 			<span>Next: {currentPage === totalPages ? 'Types of Gas Turbine Engines' : `Page ${currentPage + 1}`}</span>
 			<span class="nav-arrow">→</span>
@@ -397,7 +393,7 @@
 	.page-container {
 		position: relative;
 		min-height: 100vh;
-		padding: 6rem 2rem 4rem;
+		padding: var(--spacing-xxl) var(--container-side-padding) var(--spacing-xl);
 		max-width: 1200px;
 		margin: 0 auto;
 	}
@@ -405,150 +401,145 @@
 	/* Header Section */
 	.header-section {
 		display: flex;
-		justify-content: space-between;
+		flex-direction: column;
 		align-items: center;
 		margin-bottom: 3rem;
-		gap: 2rem;
-		flex-wrap: wrap;
+		gap: 1.5rem;
 	}
 
 	.module-title {
 		font-family: var(--font-heading), 'Poppins', sans-serif;
-		font-size: clamp(1.5rem, 4vw, 2.5rem);
-		font-weight: 700;
+		font-size: clamp(2.5rem, 6vw, 4.5rem);
+		font-weight: 900;
 		margin: 0;
-		color: #0A1628;
-		text-align: left;
-		flex: 1;
+		background: linear-gradient(
+			90deg,
+			var(--navbar-accent, var(--ui-yellow)) 0%,
+			var(--font-accent-cyan) 50%,
+			var(--navbar-accent, var(--ui-yellow)) 100%
+		);
+		background-size: 200% 100%;
+		-webkit-background-clip: text;
+		-webkit-text-fill-color: transparent;
+		background-clip: text;
+		color: transparent;
+		text-align: center;
+		text-transform: uppercase;
+		line-height: 1.1;
+		animation: gradient-flash var(--gradient-duration) ease-in-out infinite;
+		filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.2));
 	}
 
 	/* Search Container */
 	.search-container {
+		align-self: flex-end;
 		display: flex;
 		align-items: center;
-		background: rgba(255, 255, 255, 0.1);
-		backdrop-filter: blur(10px);
-		border: 2px solid rgba(0, 206, 209, 0.3);
-		border-radius: 25px;
+		background: #FFFFFF;
+		border: 2px solid #1a2b47;
+		border-radius: 30px;
 		padding: 0.5rem 1rem;
-		min-width: 280px;
+		min-width: 300px;
 		transition: all 0.3s ease;
 	}
 
 	.search-container:focus-within {
-		border-color: var(--font-accent-cyan, #00CED1);
-		box-shadow: 0 0 20px rgba(0, 206, 209, 0.3);
+		box-shadow: 0 0 0 3px rgba(26, 43, 71, 0.2);
 	}
 
 	.search-input {
 		background: transparent;
 		border: none;
 		outline: none;
-		color: var(--font-primary, #E8F4FA);
+		color: #1a2b47;
 		font-size: 1rem;
 		flex: 1;
-		padding: 0.5rem;
+		padding: 0.2rem;
+		font-family: var(--font-body), 'Open Sans', sans-serif;
 	}
 
 	.search-input::placeholder {
-		color: rgba(232, 244, 250, 0.5);
+		color: #8899a6;
 	}
 
 	.search-button {
 		background: transparent;
 		border: none;
-		color: var(--font-accent-cyan, #00CED1);
+		color: #1a2b47;
 		cursor: pointer;
-		padding: 0.5rem;
+		padding: 0.2rem;
 		display: flex;
 		align-items: center;
 		justify-content: center;
-		transition: color 0.3s ease;
-	}
-
-	.search-button:hover {
-		color: var(--ui-yellow, #FFD966);
 	}
 
 	/* Content Sections */
 	.content-sections {
 		display: flex;
 		flex-direction: column;
-		gap: 2rem;
-		margin-bottom: 3rem;
+		gap: 3rem;
+		margin-bottom: 4rem;
 	}
 
 	.content-card {
-		background: rgba(255, 255, 255, 0.95);
-		backdrop-filter: blur(15px);
-		border: 2px solid rgba(0, 206, 209, 0.3);
-		border-radius: 24px;
+		background: transparent;
+		border: none;
+		border-radius: 0;
 		padding: 0;
-		transition: all 0.4s ease;
-		overflow: hidden;
-		box-shadow: 0 4px 24px rgba(0, 0, 0, 0.15);
+		box-shadow: none;
+		overflow: visible;
 	}
 
 	.content-card:hover {
-		border-color: rgba(0, 206, 209, 0.6);
-		box-shadow: 0 12px 48px rgba(0, 206, 209, 0.2), 
-		            0 0 60px rgba(0, 206, 209, 0.1);
-		transform: translateY(-6px);
+		transform: none;
+		box-shadow: none;
 	}
 
 	.section-title {
 		font-family: var(--font-heading), 'Poppins', sans-serif;
-		font-size: 1.75rem;
-		font-weight: 700;
+		font-size: 1.5rem;
+		font-weight: 800;
 		letter-spacing: 0.05em;
 		text-transform: uppercase;
-		color: #0A1628;
-		background: linear-gradient(135deg, rgba(0, 206, 209, 0.12) 0%, rgba(255, 255, 255, 0.95) 50%);
-		padding: 1.5rem 2rem;
-		border-bottom: 3px solid var(--font-accent-cyan, #00CED1);
-		box-shadow: 0 2px 8px rgba(0, 206, 209, 0.15);
+		color: #FFFFFF;
+		background: #1a2b47;
+		padding: var(--spacing-sm) var(--spacing-xxl) var(--spacing-sm) var(--container-side-padding);
+		border: none;
+		border-radius: 20px 20px 0 0;
+		box-shadow: none;
 		position: relative;
-		display: flex;
+		display: inline-flex;
 		align-items: center;
-		gap: 1.5rem;
+		gap: 1rem;
+		width: fit-content;
+		min-width: 40%;
+		margin-bottom: -2px;
+		z-index: 2;
+		clip-path: polygon(0 0, 92% 0, 100% 100%, 0% 100%);
 	}
 
 	.section-title::before {
-		content: '';
-		position: absolute;
-		left: 0;
-		top: 0;
-		height: 100%;
-		width: 4px;
-		background: linear-gradient(180deg, var(--ui-yellow, #FFD966), var(--font-accent-cyan, #00CED1));
+		display: none;
 	}
 
 	.section-number {
-		display: inline-flex;
-		align-items: center;
-		justify-content: center;
-		min-width: 50px;
-		height: 50px;
-		background: linear-gradient(135deg, var(--font-accent-cyan, #00CED1), var(--ui-light-blue, #87CEEB));
-		border-radius: 12px;
-		font-size: 1.25rem;
-		font-weight: 900;
-		color: var(--ui-dark-blue, #0A1628);
-		box-shadow: 0 4px 12px rgba(0, 206, 209, 0.4);
-		text-shadow: none;
-		-webkit-text-fill-color: var(--ui-dark-blue, #0A1628);
+		display: none; /* Hide number as per image, or keep if desired. Image doesn't show numbers in the header explicitly but maybe they are there? I'll hide for now to match the clean look or keep it subtle. The image has "LEARNING MODULE 01" but the sections are "PRINCIPLE OF JET PROPULSION". I'll hide the number circle. */
 	}
 
 	.section-content {
-		color: #1a2332;
-		line-height: 2;
-		padding: 2.5rem;
-		font-size: 1.05rem;
+		background: #FFFFFF;
+		border: 3px solid #1a2b47;
+		border-radius: 0 30px 30px 30px;
+		padding: var(--card-padding);
+		color: #1a2b47;
+		position: relative;
+		z-index: 1;
+		min-height: 300px;
 	}
 
 	.section-content p {
 		color: #2d3f66;
-		margin-bottom: 1.5rem;
+		margin-bottom: 1.25rem;
 	}
 
 	.section-content strong {
@@ -558,25 +549,37 @@
 
 	/* Image Placeholder */
 	.image-placeholder {
-		background: linear-gradient(135deg, rgba(0, 206, 209, 0.08), rgba(135, 206, 235, 0.05));
-		border: 3px solid rgba(0, 206, 209, 0.25);
+		background: linear-gradient(135deg, rgba(27, 53, 88, 0.08), rgba(135, 206, 235, 0.05));
+		border: 3px solid rgba(27, 53, 88, 0.25);
 		border-radius: 16px;
-		padding: 2.5rem;
-		margin: 2.5rem 0;
-		min-height: 250px;
+		padding: 1.5rem; /* Reduced padding */
+		margin: 0 0 1.5rem 2rem; /* Adjusted margin for float */
+		min-height: 150px; /* Reduced height */
 		display: flex;
 		align-items: center;
 		justify-content: center;
 		overflow: hidden;
 		transition: all 0.3s ease;
 		position: relative;
+		float: right; /* Float right for side-by-side */
+		width: 40%; /* Reduced width */
+		clear: right;
+	}
+
+	/* Clearfix for containers with floated images */
+	.section-content::after,
+	.timeline-content::after,
+	.subsection::after {
+		content: "";
+		display: table;
+		clear: both;
 	}
 
 	.image-placeholder::before {
 		position: absolute;
 		top: 1rem;
 		left: 1.5rem;
-		font-size: 0.9rem;
+		font-size: 0.85rem;
 		color: #00838F;
 		font-weight: 600;
 		opacity: 0.7;
@@ -586,8 +589,8 @@
 	}
 
 	.image-placeholder:hover {
-		border-color: rgba(0, 206, 209, 0.5);
-		box-shadow: 0 8px 24px rgba(0, 206, 209, 0.2);
+		border-color: rgba(27, 53, 88, 0.5);
+		box-shadow: 0 8px 24px rgba(27, 53, 88, 0.2);
 	}
 
 	.image-placeholder img {
@@ -601,33 +604,37 @@
 	.image-row {
 		display: grid;
 		grid-template-columns: repeat(2, 1fr);
-		gap: 2rem;
-		margin: 2rem 0;
+		gap: 1rem; /* Reduced gap */
+		margin: 0 0 1.5rem 2rem;
+		float: right;
+		width: 45%;
+		clear: right;
 	}
 
 	.image-row img {
-		width: 100%;
-		max-width: 100%;
+		width: auto;
+		max-width: 90%;
 		height: auto;
 		border-radius: 12px;
 		box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
 		border: 2px solid rgba(0, 206, 209, 0.2);
 		transition: all 0.3s ease;
+		justify-self: center;
 	}
 
 	.image-row img:hover {
 		transform: scale(1.02);
-		box-shadow: 0 8px 32px rgba(0, 206, 209, 0.3);
-		border-color: rgba(0, 206, 209, 0.4);
+		box-shadow: 0 8px 32px rgba(27, 53, 88, 0.3);
+		border-color: rgba(27, 53, 88, 0.4);
 	}
 
 	/* Two Column Layout - Text and Diagram */
 	.two-column-layout {
 		display: grid;
 		grid-template-columns: 1fr 1fr;
-		gap: 3rem;
+		gap: 2rem; /* Reduced gap */
 		align-items: start;
-		margin: 2rem 0;
+		margin: 1.5rem 0;
 	}
 
 	.text-column {
@@ -643,34 +650,34 @@
 	}
 
 	.diagram-column img {
-		width: 100%;
-		max-width: 100%;
+		width: auto;
+		max-width: 90%;
 		height: auto;
 		border-radius: 12px;
 		box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
-		border: 2px solid rgba(0, 206, 209, 0.2);
+		border: 2px solid rgba(27, 53, 88, 0.2);
 		transition: all 0.3s ease;
 	}
 
 	.diagram-column img:hover {
 		transform: scale(1.02);
-		box-shadow: 0 8px 32px rgba(0, 206, 209, 0.3);
-		border-color: rgba(0, 206, 209, 0.4);
+		box-shadow: 0 8px 32px rgba(27, 53, 88, 0.3);
+		border-color: rgba(27, 53, 88, 0.4);
 	}
 
 	/* Bullet List */
 	.bullet-list {
 		list-style: none;
 		padding: 0;
-		margin: 2rem 0;
+		margin: 1.5rem 0;
 	}
 
 	.bullet-list li {
 		position: relative;
-		padding-left: 2.5rem;
-		margin-bottom: 1.5rem;
-		font-size: 1.05rem;
-		line-height: 1.9;
+		padding-left: 2rem; /* Reduced padding */
+		margin-bottom: 1rem; /* Reduced margin */
+		font-size: 1rem; /* Reduced font size */
+		line-height: 1.7;
 		color: #2d3f66;
 	}
 
@@ -678,42 +685,40 @@
 		content: "▸";
 		position: absolute;
 		left: 0;
-		top: 0.1rem;
+		top: 0;
 		color: var(--font-accent-cyan, #00CED1);
-		font-size: 1.4rem;
+		font-size: 1.2rem; /* Reduced size */
 		font-weight: bold;
-		text-shadow: 0 0 10px rgba(0, 206, 209, 0.3);
+		text-shadow: 0 0 10px rgba(27, 53, 88, 0.3);
 	}
 
 	/* Timeline */
 	.timeline-item {
 		display: grid;
-		grid-template-columns: 120px 1fr;
-		gap: 2rem;
-		margin-bottom: 2rem;
-		padding-bottom: 2rem;
-		border-bottom: 1px solid rgba(0, 206, 209, 0.2);
-	}
-
-	.timeline-item:last-child {
+		grid-template-columns: 100px 1fr; /* Reduced column width */
+		gap: 1.5rem;
+	margin-bottom: 1.5rem;
+	padding-bottom: 1.5rem;
+	border-bottom: 1px solid rgba(27, 53, 88, 0.2);
+}	.timeline-item:last-child {
 		border-bottom: none;
 	}
 
 	.timeline-date {
 		font-family: var(--font-heading), 'Poppins', sans-serif;
-		font-size: 1.25rem;
+		font-size: 1.1rem; /* Reduced font size */
 		font-weight: 700;
 		color: #0A1628;
-		padding: 0.5rem 1rem;
-		background: linear-gradient(135deg, rgba(255, 217, 102, 0.3), rgba(255, 217, 102, 0.15));
-		border-left: 4px solid #FFD966;
+		padding: 0.4rem 0.8rem;
+		background: linear-gradient(135deg, rgba(var(--navbar-accent-rgb, 255, 217, 102), 0.3), rgba(var(--navbar-accent-rgb, 255, 217, 102), 0.15));
+		border-left: 4px solid var(--navbar-accent, var(--ui-yellow));
 		border-radius: 8px;
 		height: fit-content;
-		box-shadow: 0 2px 8px rgba(255, 217, 102, 0.2);
+		box-shadow: 0 2px 8px rgba(var(--navbar-accent-rgb, 255, 217, 102), 0.2);
 	}
 
 	.timeline-content p {
-		margin: 0 0 1rem 0;
+		margin: 0 0 0.8rem 0;
 		color: #2d3f66;
 	}
 
@@ -721,19 +726,17 @@
 		font-weight: 600;
 		color: #00838F;
 		font-style: italic;
-		background: rgba(0, 206, 209, 0.1);
+		background: rgba(27, 53, 88, 0.1);
 		padding: 0.25rem 0.5rem;
 		border-radius: 4px;
 	}
 
 	/* Subsections */
 	.subsection {
-		margin-bottom: 2rem;
-		padding-bottom: 2rem;
-		border-bottom: 1px solid rgba(0, 206, 209, 0.1);
-	}
-
-	.subsection:last-child {
+	margin-bottom: 1.5rem;
+	padding-bottom: 1.5rem;
+	border-bottom: 1px solid rgba(27, 53, 88, 0.1);
+}	.subsection:last-child {
 		border-bottom: none;
 		margin-bottom: 0;
 		padding-bottom: 0;
@@ -741,12 +744,12 @@
 
 	.subsection-title {
 		font-family: var(--font-heading), 'Poppins', sans-serif;
-		font-size: 1.25rem;
+		font-size: 1.15rem; /* Reduced font size */
 		font-weight: 600;
 		color: #0A1628;
-		margin: 0 0 1rem 0;
-		padding-bottom: 0.5rem;
-		border-bottom: 2px solid rgba(255, 217, 102, 0.3);
+		margin: 0 0 0.8rem 0;
+		padding-bottom: 0.4rem;
+		border-bottom: 2px solid rgba(var(--navbar-accent-rgb, 255, 217, 102), 0.3);
 	}
 
 	/* Numbered List */
@@ -759,11 +762,11 @@
 
 	.numbered-list li {
 		position: relative;
-		padding-left: 3rem;
-		margin-bottom: 1.5rem;
+		padding-left: 2.5rem;
+		margin-bottom: 1rem;
 		counter-increment: item;
-		font-size: 1.05rem;
-		line-height: 1.9;
+		font-size: 1rem;
+		line-height: 1.7;
 		color: #2d3f66;
 	}
 
@@ -772,27 +775,27 @@
 		position: absolute;
 		left: 0;
 		top: 0;
-		width: 2rem;
-		height: 2rem;
-		background: linear-gradient(135deg, var(--font-accent-cyan, #00CED1), var(--ui-light-blue, #87CEEB));
+		width: 1.75rem; /* Reduced size */
+		height: 1.75rem; /* Reduced size */
+		background: linear-gradient(135deg, var(--hangar-accent), var(--ui-light-blue));
 		color: #0A1628;
 		border-radius: 50%;
 		display: flex;
 		align-items: center;
 		justify-content: center;
 		font-weight: 700;
-		font-size: 0.875rem;
-		box-shadow: 0 2px 8px rgba(0, 206, 209, 0.3);
+		font-size: 0.8rem;
+		box-shadow: 0 2px 8px rgba(27, 53, 88, 0.3);
 	}
 
 	/* Engine Types */
 	.engine-type {
-		margin-bottom: 2.5rem;
-		padding: 1.5rem 2rem;
-		background: linear-gradient(135deg, rgba(0, 206, 209, 0.08), rgba(135, 206, 235, 0.05));
+		margin-bottom: 2rem;
+		padding: 1.25rem 1.5rem; /* Reduced padding */
+		background: linear-gradient(135deg, rgba(27, 53, 88, 0.08), rgba(135, 206, 235, 0.05));
 		border-radius: 12px;
-		border-left: 5px solid var(--font-accent-cyan, #00CED1);
-		box-shadow: 0 2px 8px rgba(0, 206, 209, 0.1);
+		border-left: 5px solid var(--hangar-accent);
+		box-shadow: 0 2px 8px rgba(27, 53, 88, 0.1);
 	}
 
 	.engine-type:last-child {
@@ -801,56 +804,15 @@
 
 	.engine-type-title {
 		font-family: var(--font-heading), 'Poppins', sans-serif;
-		font-size: 1.25rem;
+		font-size: 1.15rem; /* Reduced font size */
 		font-weight: 700;
 		color: #0A1628;
-		margin: 0 0 1rem 0;
+		margin: 0 0 0.8rem 0;
 		text-transform: uppercase;
 		letter-spacing: 1px;
 	}
 
-	/* Pagination Controls */
-	.pagination-controls {
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		gap: 1.5rem;
-		margin: 3rem 0;
-		flex-wrap: wrap;
-	}
-
-	.pagination-button {
-		display: flex;
-		align-items: center;
-		gap: 0.5rem;
-		padding: 0.75rem 1.5rem;
-		background: rgba(255, 255, 255, 0.9);
-		backdrop-filter: blur(10px);
-		border: 2px solid rgba(0, 206, 209, 0.3);
-		border-radius: 12px;
-		color: #0A1628;
-		font-weight: 600;
-		font-size: 1rem;
-		cursor: pointer;
-		transition: all 0.3s ease;
-		box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-	}
-
-	.pagination-button:not(:disabled):hover {
-		border-color: var(--font-accent-cyan, #00CED1);
-		background: rgba(0, 206, 209, 0.15);
-		box-shadow: 0 4px 20px rgba(0, 206, 209, 0.3);
-		transform: translateY(-2px);
-	}
-
-	.pagination-button:disabled {
-		opacity: 0.5;
-		cursor: not-allowed;
-	}
-
-	.pagination-button svg {
-		color: var(--font-accent-cyan, #00CED1);
-	}
+	/* Page Controls */
 
 	.page-numbers {
 		display: flex;
@@ -859,72 +821,72 @@
 	}
 
 	.page-number {
-		width: 48px;
-		height: 48px;
+		width: 40px;
+		height: 40px;
 		display: flex;
 		align-items: center;
 		justify-content: center;
-		background: rgba(255, 255, 255, 0.9);
-		backdrop-filter: blur(10px);
-		border: 2px solid rgba(0, 206, 209, 0.3);
+		background: transparent;
+		border: none;
 		border-radius: 50%;
-		color: #0A1628;
+		color: #FFFFFF; /* White text for visibility */
 		font-weight: 600;
-		font-size: 1rem;
+		font-size: 1.1rem;
 		cursor: pointer;
-		box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-		transition: all 0.3s ease;
+		transition: all 0.2s ease;
 	}
 
 	.page-number:hover {
-		border-color: var(--font-accent-cyan, #00CED1);
-		background: rgba(0, 206, 209, 0.15);
-		transform: scale(1.1);
-		box-shadow: 0 4px 12px rgba(0, 206, 209, 0.3);
+		background: rgba(255, 255, 255, 0.2);
+		color: #FFFFFF;
 	}
 
 	.page-number.active {
-		background: linear-gradient(135deg, var(--font-accent-cyan, #00CED1), var(--ui-light-blue, #87CEEB));
-		border-color: var(--font-accent-cyan, #00CED1);
+		background: var(--navbar-accent, var(--font-accent-yellow));
 		color: #FFFFFF;
-		box-shadow: 0 4px 20px rgba(0, 206, 209, 0.5);
-		transform: scale(1.15);
-		font-weight: 700;
+		font-weight: 800;
+		transform: scale(1.1);
+		box-shadow: none;
 	}
 
 	/* Bottom Navigation */
 	.bottom-nav {
-		display: flex;
-		justify-content: space-between;
-		gap: 2rem;
-		margin-top: 4rem;
-		padding-top: 2rem;
-		border-top: 2px solid rgba(0, 206, 209, 0.2);
-		flex-wrap: wrap;
+		display: grid;
+		grid-template-columns: 1fr auto 1fr;
+		align-items: center;
+		gap: 1.5rem;
+		margin-top: 3rem;
+		padding-top: 1.5rem;
+		border-top: 2px solid rgba(27, 53, 88, 0.2);
 	}
-
+	
 	.nav-link {
 		display: flex;
 		align-items: center;
 		gap: 0.5rem;
-		padding: 1rem 2rem;
+		padding: 0.8rem 1.5rem;
 		background: rgba(255, 255, 255, 0.9);
-		backdrop-filter: blur(10px);
-		border: 2px solid rgba(0, 206, 209, 0.3);
-		border-radius: 12px;
+	backdrop-filter: blur(10px);
+	border: 2px solid rgba(27, 53, 88, 0.3);
+	border-radius: 10px;
 		color: #0A1628;
 		font-weight: 600;
 		transition: all 0.3s ease;
-		min-width: 200px;
+		width: fit-content;
+		min-width: 140px;
 		cursor: pointer;
 		box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 	}
 
 	.nav-link:not(:disabled):hover {
 		border-color: var(--font-accent-cyan, #00CED1);
-		background: rgba(0, 206, 209, 0.15);
-		box-shadow: 0 4px 20px rgba(0, 206, 209, 0.3);
+		/* Do not change background on hover; instead add a colored glow */
+		box-shadow: 0 6px 30px rgba(var(--hangar-accent-rgb, 27, 53, 88), 0.25), 0 0 18px rgba(var(--hangar-accent-rgb, 27, 53, 88), 0.18) inset;
 		transform: translateY(-2px);
+	}
+
+	.nav-link:hover .nav-arrow {
+		color: var(--hangar-accent, #1b3558);
 	}
 
 	.nav-link:disabled {
@@ -933,16 +895,15 @@
 	}
 
 	.nav-link.prev {
-		justify-content: flex-start;
+		justify-self: start;
 	}
 
 	.nav-link.next {
-		justify-content: flex-end;
-		margin-left: auto;
+		justify-self: end;
 	}
 
 	.nav-arrow {
-		font-size: 1.5rem;
+		font-size: 1.25rem;
 		color: var(--font-accent-cyan, #00CED1);
 	}
 
@@ -950,12 +911,19 @@
 	@media (max-width: 1024px) {
 		.two-column-layout {
 			grid-template-columns: 1fr;
-			gap: 2rem;
+			gap: 1.5rem;
+		}
+
+		.image-row,
+		.image-placeholder {
+			float: none;
+			width: 100%;
+			margin: 2rem 0;
 		}
 
 		.image-row {
 			grid-template-columns: 1fr;
-			gap: 1.5rem;
+			gap: 1rem;
 		}
 	}
 
@@ -970,20 +938,20 @@
 		}
 
 		.section-title {
-			font-size: 1.35rem;
-			padding: 1.25rem 1.5rem;
-			gap: 1rem;
+			font-size: 1.25rem;
+			padding: var(--spacing-sm) var(--spacing-sm);
+			gap: 0.8rem;
 		}
 
 		.section-number {
-			min-width: 40px;
-			height: 40px;
-			font-size: 1rem;
+			min-width: 36px;
+			height: 36px;
+			font-size: 0.9rem;
 		}
 
 		.timeline-item {
 			grid-template-columns: 1fr;
-			gap: 1rem;
+			gap: 0.8rem;
 		}
 
 		.timeline-date {
@@ -992,40 +960,23 @@
 
 		.two-column-layout {
 			grid-template-columns: 1fr;
-			gap: 1.5rem;
+			gap: 1.25rem;
 		}
 
 		.image-row {
 			grid-template-columns: 1fr;
-			gap: 1rem;
-		}
-
-		.pagination-controls {
-			gap: 1rem;
-		}
-
-		.pagination-button {
-			padding: 0.6rem 1rem;
-			font-size: 0.9rem;
-		}
-
-		.pagination-button span {
-			display: none;
-		}
-
-		.pagination-button svg {
-			margin: 0;
+			gap: 0.8rem;
 		}
 
 		.page-number {
-			width: 40px;
-			height: 40px;
-			font-size: 0.9rem;
+			width: 36px;
+			height: 36px;
+			font-size: 0.85rem;
 		}
 
 		.bottom-nav {
 			flex-direction: column;
-			gap: 1rem;
+			gap: 0.8rem;
 		}
 
 		.nav-link.next {
@@ -1035,7 +986,7 @@
 		.nav-link {
 			min-width: auto;
 			width: 100%;
-			font-size: 0.95rem;
+			font-size: 0.9rem;
 		}
 	}
 </style>

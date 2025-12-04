@@ -549,9 +549,9 @@
 	/* Instructions Banner */
 	.instructions-banner {
 		background: linear-gradient(135deg, rgba(255, 204, 0, 0.15), rgba(135, 206, 235, 0.15));
-		border: 2px solid var(--ui-yellow);
+		border: 2px solid var(--navbar-accent, var(--ui-yellow));
 		border-radius: 1rem;
-		padding: 1.5rem;
+		padding: var(--spacing-md);
 		position: relative;
 		animation: slideDown 0.3s ease;
 	}
@@ -569,7 +569,7 @@
 
 	.instructions-content h3 {
 		font-family: var(--font-heading);
-		color: var(--ui-yellow);
+		color: var(--navbar-accent, var(--ui-yellow));
 		margin: 0 0 1rem 0;
 		font-size: 1.25rem;
 	}
@@ -587,10 +587,10 @@
 		background: rgba(0, 0, 0, 0.5);
 		padding: 0.25rem 0.5rem;
 		border-radius: 0.25rem;
-		border: 1px solid var(--ui-yellow);
+		border: 1px solid var(--navbar-accent, var(--ui-yellow));
 		font-family: var(--font-heading);
 		font-weight: 700;
-		color: var(--ui-yellow);
+		color: var(--navbar-accent, var(--ui-yellow));
 		margin-right: 0.5rem;
 	}
 
@@ -605,8 +605,8 @@
 		top: 1rem;
 		right: 1rem;
 		background: rgba(0, 0, 0, 0.5);
-		border: 2px solid var(--ui-yellow);
-		color: var(--ui-yellow);
+		border: 2px solid var(--navbar-accent, var(--ui-yellow));
+		color: var(--navbar-accent, var(--ui-yellow));
 		width: 2rem;
 		height: 2rem;
 		border-radius: 50%;
@@ -619,7 +619,7 @@
 	}
 
 	.close-instructions:hover {
-		background: var(--ui-yellow);
+		background: var(--navbar-accent, var(--ui-yellow));
 		color: var(--bg-dark);
 		transform: rotate(90deg);
 	}
@@ -658,7 +658,7 @@
 
 	.score-badge {
 		background: rgba(0, 0, 0, 0.8);
-		border: 2px solid var(--ui-yellow);
+		border: 2px solid var(--navbar-accent, var(--ui-yellow));
 		border-radius: 0.75rem;
 		padding: 0.75rem 1.25rem;
 		display: flex;
@@ -681,7 +681,7 @@
 		font-family: var(--font-heading);
 		font-size: 2rem;
 		font-weight: 900;
-		color: var(--ui-yellow);
+		color: var(--navbar-accent, var(--ui-yellow));
 		line-height: 1;
 	}
 
@@ -731,14 +731,14 @@
 		background: rgba(0, 0, 0, 0.3);
 		border: 2px solid rgba(135, 206, 235, 0.3);
 		border-radius: 1rem;
-		padding: 1.5rem;
+		padding: var(--spacing-md);
 	}
 
 	.shelf-title {
 		font-family: var(--font-heading);
 		font-size: 1.5rem;
 		font-weight: 800;
-		color: var(--ui-yellow);
+		color: var(--navbar-accent, var(--ui-yellow));
 		margin: 0 0 1.5rem 0;
 		text-align: center;
 	}
@@ -761,7 +761,7 @@
 	}
 
 	.component-card:hover {
-		border-color: var(--ui-yellow);
+		border-color: var(--navbar-accent, var(--ui-yellow));
 		transform: translateY(-4px);
 		box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
 	}
@@ -784,7 +784,7 @@
 	}
 
 	.component-info {
-		padding: 1rem;
+		padding: var(--spacing-sm);
 		text-align: center;
 	}
 
@@ -815,7 +815,7 @@
 		display: flex;
 		align-items: center;
 		gap: 0.5rem;
-		padding: 0.75rem 1.5rem;
+		padding: var(--spacing-xs) var(--spacing-md);
 		border: none;
 		border-radius: 0.75rem;
 		font-family: var(--font-heading);
@@ -827,7 +827,7 @@
 	}
 
 	.reset-btn {
-		background: linear-gradient(135deg, var(--ui-yellow), var(--font-accent-yellow));
+		background: linear-gradient(135deg, var(--navbar-accent, var(--ui-yellow)), var(--font-accent-yellow));
 		color: var(--bg-dark);
 	}
 
@@ -865,7 +865,7 @@
 
 	/* Save Message */
 	.save-message {
-		padding: 1rem 1.5rem;
+		padding: var(--spacing-sm) var(--spacing-md);
 		border-radius: 0.75rem;
 		font-family: var(--font-heading);
 		font-weight: 700;

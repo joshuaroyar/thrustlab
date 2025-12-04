@@ -1,8 +1,18 @@
-<!-- Page Content -->
+<script lang="ts">
+	import { onMount } from 'svelte';
+
+	onMount(() => {
+		document.body.classList.add('zone-hangar');
+		return () => {
+			document.body.classList.remove('zone-hangar');
+		};
+	});
+</script>
+
 <div class="page-container">
 	
 	<div class="hero-section">
-		<h1 class="gradient-title">Hangar Zone</h1>
+		<h1 class="gradient-title gradient-animated">Hangar Zone</h1>
 		<p class="description">
 			Welcome to the Hangar Zone, a learning space where students journey through the history and evolution of gas turbine engines. Here, they'll discover how these powerful machines have developed over time—from early designs to the advanced engines that power today's aircraft—building a strong foundation for deeper exploration ahead.
 		</p>
@@ -10,17 +20,31 @@
 
 	<div class="modules-container">
 		<a href="/hangar-zone/module/history" class="module-card">
-			<div class="module-number">01</div>
-			<h2>LEARNING MODULE 01:</h2>
-			<h3>HISTORY OF GAS TURBINE ENGINES</h3>
-			<div class="arrow">→</div>
+			<div class="card-content">
+				<span class="sub-label">LEARNING</span>
+				<span class="main-label">MODULE 01:</span>
+				<h3 class="module-title-text gradient-animated">HISTORY OF<br>GAS TURBINE<br>ENGINES</h3>
+			</div>
+			<div class="arrow-icon">
+				<svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+					<line x1="5" y1="12" x2="19" y2="12"></line>
+					<polyline points="12 5 19 12 12 19"></polyline>
+				</svg>
+			</div>
 		</a>
 
 		<a href="/hangar-zone/module/types" class="module-card">
-			<div class="module-number">02</div>
-			<h2>LEARNING MODULE 02:</h2>
-			<h3>TYPES OF GAS TURBINE ENGINES</h3>
-			<div class="arrow">→</div>
+			<div class="card-content">
+				<span class="sub-label">LEARNING</span>
+				<span class="main-label">MODULE 02:</span>
+				<h3 class="module-title-text gradient-animated">TYPES OF GAS<br>TURBINE<br>ENGINES</h3>
+			</div>
+			<div class="arrow-icon">
+				<svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+					<line x1="5" y1="12" x2="19" y2="12"></line>
+					<polyline points="12 5 19 12 12 19"></polyline>
+				</svg>
+			</div>
 		</a>
 	</div>
 </div>
@@ -31,7 +55,7 @@
 		position: relative;
 		z-index: 5;
 		min-height: 100vh;
-		padding: 8rem 2rem 4rem;
+		padding: var(--spacing-xxl) var(--container-side-padding) var(--spacing-xl); /* use variable */
 		max-width: 1400px;
 		margin: 0 auto;
 	}
@@ -39,221 +63,165 @@
 	/* Hero Section */
 	.hero-section {
 		text-align: center;
-		margin-bottom: 4rem;
+		margin-bottom: 3rem;
 		padding: 0 1rem;
 	}
 
 	.gradient-title {
 		font-family: var(--font-heading), 'Poppins', sans-serif;
-		font-size: clamp(3rem, 6vw, 5rem);
+		font-size: clamp(2.5rem, 6vw, 4.5rem);
 		font-weight: 900;
-		margin: 0 0 2rem 0;
-		background: linear-gradient(
-			90deg,
-			var(--ui-yellow) 0%,
-			var(--font-accent-cyan) 20%,
-			var(--ui-light-blue) 40%,
-			var(--font-accent-yellow) 60%,
-			var(--ui-yellow) 80%,
-			var(--font-accent-cyan) 100%
-		);
-		background-size: 300% 100%;
-		-webkit-background-clip: text;
-		-webkit-text-fill-color: transparent;
-		background-clip: text;
-		animation: gradient-flash 4s ease-in-out infinite;
+		margin: 0 0 1.5rem 0;
+		/* Gradient animation moved to .gradient-animated (opt-in) */
+		background: transparent;
+		color: var(--font-secondary);
 		filter: drop-shadow(0 4px 20px rgba(0, 0, 0, 0.9));
 		letter-spacing: -1px;
 	}
 
-	@keyframes gradient-flash {
-		0%, 100% {
-			background-position: 0% 50%;
-		}
-		25% {
-			background-position: 50% 50%;
-		}
-		50% {
-			background-position: 100% 50%;
-		}
-		75% {
-			background-position: 50% 50%;
-		}
-	}
+	/* gradient-flash moved to src/app.css for global reuse */
 
 	.description {
-		font-family: var(--font-body), 'Inter', sans-serif;
-		font-size: clamp(1.1rem, 2vw, 1.4rem);
+		font-family: 'Poppins', var(--font-body), sans-serif;
+		font-size: clamp(1.1rem, 2vw, 1.3rem);
 		line-height: 1.8;
-		color: var(--font-primary);
-		max-width: 900px;
+		color: var(--font-secondary);
+		max-width: 800px;
 		margin: 0 auto;
-		background: #FFFFFF;
-		padding: 2rem 3rem;
-		border-radius: 20px;
-		box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-		border: 1px solid rgba(135, 206, 235, 0.3);
+		background: transparent;
+		padding: 0;
+		border-radius: 0;
+		box-shadow: none;
+		border: none;
 		text-align: justify;
 	}
 
 	/* Modules Container */
 	.modules-container {
 		display: grid;
-		grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
-		gap: 3rem;
-		margin-top: 4rem;
+		grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+		gap: var(--card-padding-mobile);
+		margin-top: 3rem;
+		max-width: 800px;
+		margin-left: auto;
+		margin-right: auto;
 	}
 
 	.module-card {
 		position: relative;
-		background: #FFFFFF;
-		border: 3px solid rgba(135, 206, 235, 0.4);
-		border-radius: 25px;
-		padding: 3rem 2.5rem;
+		border-radius: 30px;
+		padding: var(--card-padding);
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		justify-content: center;
+		min-height: 300px;
 		text-decoration: none;
-		color: var(--font-primary);
 		transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 		overflow: hidden;
 		cursor: pointer;
-		box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+		box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
 		text-align: center;
-	}
-
-	.module-card::before {
-		content: '';
-		position: absolute;
-		top: 0;
-		left: -100%;
-		width: 100%;
-		height: 100%;
-		background: linear-gradient(90deg, transparent, rgba(255, 217, 102, 0.2), transparent);
-		transition: left 0.6s ease;
-	}
-
-	.module-card:hover::before {
-		left: 100%;
+		border: none;
+		background-color: #1a2b47; /* Dark Blue for both */
+		color: #FFFFFF;
 	}
 
 	.module-card:hover {
-		transform: translateY(-10px) scale(1.02);
-		border-color: var(--ui-yellow);
-		box-shadow: 0 20px 60px rgba(255, 217, 102, 0.4), 0 0 40px rgba(135, 206, 235, 0.3);
-		background: #FFFFFF;
+		transform: translateY(-8px);
+		box-shadow: 0 16px 48px rgba(0, 0, 0, 0.3);
+		background-color: #2c4a7c; /* Lighter blue on hover */
 	}
 
-	.module-number {
+	.card-content {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: 0.5rem;
+		z-index: 2;
+	}
+
+	.sub-label {
 		font-family: var(--font-heading), 'Poppins', sans-serif;
-		font-size: 4rem;
-		font-weight: 900;
-		color: var(--bg-secondary);
-		margin: 0 0 1rem 0;
-		text-shadow: 0 2px 10px rgba(215, 94, 46, 0.2);
-	}
-
-	.module-card h2 {
-		font-family: var(--font-body), 'Inter', sans-serif;
-		font-size: 1rem;
-		font-weight: 600;
-		color: var(--ui-dark-teal);
-		margin: 0 0 0.5rem 0;
-		letter-spacing: 2px;
-		text-transform: uppercase;
-	}
-
-	.module-card h3 {
-		font-family: var(--font-heading), 'Poppins', sans-serif;
-		font-size: clamp(1.5rem, 3vw, 2rem);
+		font-size: 1.6rem;
 		font-weight: 800;
-		margin: 0;
-		line-height: 1.3;
 		text-transform: uppercase;
-		letter-spacing: 0.5px;
-		background: linear-gradient(
-			90deg,
-			var(--font-primary) 0%,
-			var(--ui-light-blue) 50%,
-			var(--font-primary) 100%
-		);
-		background-size: 200% 100%;
-		-webkit-background-clip: text;
-		-webkit-text-fill-color: transparent;
-		background-clip: text;
-		animation: gradient-flash 3.5s ease-in-out infinite;
-		filter: none;
+		letter-spacing: 1px;
+		line-height: 1.2;
 	}
 
-	.module-card:hover h3 {
-		background: linear-gradient(
-			90deg,
-			var(--ui-yellow) 0%,
-			var(--font-accent-yellow) 50%,
-			var(--ui-yellow) 100%
-		);
-		background-size: 200% 100%;
-		-webkit-background-clip: text;
-		-webkit-text-fill-color: transparent;
-		background-clip: text;
-		animation: gradient-flash 2.5s ease-in-out infinite;
-		filter: none;
+	.main-label {
+		font-family: var(--font-heading), 'Poppins', sans-serif;
+		font-size: 2.2rem;
+		font-weight: 800;
+		text-transform: uppercase;
+		letter-spacing: 1px;
+		margin-bottom: 0.5rem;
+		line-height: 1.2;
 	}
 
-	.arrow {
+	.module-title-text {
+		font-family: var(--font-heading), 'Poppins', sans-serif;
+		font-size: 2.2rem;
+		font-weight: 800;
+		text-transform: uppercase;
+		letter-spacing: 1px;
+		line-height: 1.2;
+		margin: 0;
+	}
+
+	.arrow-icon {
 		position: absolute;
-		bottom: 2rem;
-		right: 2.5rem;
-		font-size: 3rem;
-		color: var(--ui-light-blue);
-		transition: all 0.3s ease;
+		bottom: var(--card-padding-mobile);
+		right: var(--card-padding-mobile);
+		color: var(--navbar-accent, var(--ui-yellow)); /* Arrow color uses per-page navbar accent */
+		transition: transform 0.3s ease;
+		z-index: 2;
 	}
 
-	.module-card:hover .arrow {
-		color: var(--ui-yellow);
+	.module-card:hover .arrow-icon {
 		transform: translateX(10px);
 	}
 
 	/* Responsive Design */
 	@media (max-width: 768px) {
 		.page-container {
-			padding: 6rem 1.5rem 3rem;
+			padding: calc(var(--spacing-xxl) * 1.25) var(--container-side-padding) var(--spacing-xl);
 		}
 
 		.modules-container {
 			grid-template-columns: 1fr;
-			gap: 2rem;
+			gap: var(--card-padding-mobile);
 		}
 
 		.module-card {
-			padding: 2.5rem 2rem;
+			padding: var(--card-padding-mobile);
+			min-height: 300px;
 		}
 
 		.description {
-			padding: 1.5rem 2rem;
-			font-size: 1rem;
+			padding: var(--spacing-sm) var(--card-padding-mobile);
+			font-size: 0.95rem;
 		}
 
-		.module-number {
-			font-size: 3rem;
+		.sub-label {
+			font-size: 1.4rem;
 		}
 
-		.arrow {
-			bottom: 1.5rem;
-			right: 2rem;
-			font-size: 2.5rem;
+		.main-label,
+		.module-title-text {
+			font-size: 1.8rem;
 		}
 	}
 
 	@media (max-width: 480px) {
 		.gradient-title {
-			font-size: 2.5rem;
+			font-size: 2rem;
 		}
 
 		.description {
-			padding: 1.5rem;
-			font-size: 0.95rem;
-		}
-
-		.module-card {
-			padding: 2rem 1.5rem;
+			padding: var(--spacing-sm);
+			font-size: 0.9rem;
 		}
 	}
 </style>

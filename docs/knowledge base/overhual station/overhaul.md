@@ -1,6 +1,6 @@
 📍 OVERHAUL STATION TAB
 OVERHAUL STATION
-Step into the Overhaul Bay, where hands-on learning takes flight. In this interactive zone, students dive into the intricate process of assembling and disassembling turbofan engine components—gaining a deeper understanding of each part’s role and the essential principles of gas turbine engine overhaul. It’s where theory meets practice, transforming knowledge into real-world technical skill.
+Step into the Overhaul Station, where hands-on learning takes flight. In this interactive zone, students dive into the intricate process of assembling and disassembling turbofan engine components—gaining a deeper understanding of each part’s role and the essential principles of gas turbine engine overhaul. It’s where theory meets practice, transforming knowledge into real-world technical skill.
 
 
 

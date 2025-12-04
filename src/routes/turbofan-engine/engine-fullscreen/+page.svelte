@@ -23,8 +23,10 @@
 
 		window.addEventListener('keydown', handleKeyPress);
 
+		document.body.classList.add('zone-turbofan');
 		return () => {
 			window.removeEventListener('keydown', handleKeyPress);
+			document.body.classList.remove('zone-turbofan');
 		};
 	});
 
@@ -153,7 +155,7 @@
 		min-height: 100vh;
 		display: flex;
 		flex-direction: column;
-		padding: 1rem;
+		padding: var(--spacing-sm);
 		position: relative;
 	}
 
@@ -199,15 +201,15 @@
 	}
 
 	.back-button {
-		background: rgba(255, 217, 102, 0.9);
-		border-color: var(--ui-yellow);
+		background: rgba(var(--navbar-accent-rgb, 255, 217, 102), 0.9);
+		border-color: var(--navbar-accent, var(--ui-yellow));
 		color: #000000;
 	}
 
 	.back-button:hover {
-		background: var(--ui-yellow);
-		border-color: #ffe66d;
-		box-shadow: 0 6px 20px rgba(255, 217, 102, 0.5);
+		background: var(--navbar-accent, var(--ui-yellow));
+		border-color: rgba(var(--navbar-accent-rgb, 255, 217, 102), 0.95);
+		box-shadow: 0 6px 20px rgba(var(--navbar-accent-rgb, 255, 217, 102), 0.45);
 	}
 
 	.exit-fullscreen {
@@ -286,7 +288,7 @@
 
 	.footer-info {
 		text-align: center;
-		padding: 1rem;
+		padding: var(--spacing-sm);
 		background: rgba(10, 47, 53, 0.7);
 		backdrop-filter: blur(10px);
 		-webkit-backdrop-filter: blur(10px);
@@ -295,27 +297,39 @@
 	}
 
 	.footer-info p {
-		font-family: var(--font-body);
-		font-size: 1rem;
-		color: var(--font-secondary);
+		font-family: var(--font-heading);
+		font-size: clamp(1.4rem, 3vw, 2rem);
+		font-weight: 900;
 		margin: 0;
+		background: linear-gradient(
+			90deg,
+			var(--navbar-accent, var(--ui-yellow)) 0%,
+			var(--font-accent-cyan) 50%,
+			var(--navbar-accent, var(--ui-yellow)) 100%
+		);
+		background-size: 200% 100%;
+		-webkit-background-clip: text;
+		-webkit-text-fill-color: transparent;
+		background-clip: text;
+		animation: gradient-flash var(--gradient-duration) ease-in-out infinite;
 	}
+
 
 	kbd {
 		display: inline-block;
 		padding: 0.25rem 0.5rem;
-		background: rgba(255, 217, 102, 0.3);
-		border: 1px solid var(--ui-yellow);
+		background: rgba(var(--navbar-accent-rgb, 255, 217, 102), 0.3);
+		border: 1px solid var(--navbar-accent, var(--ui-yellow));
 		border-radius: 0.25rem;
 		font-family: var(--font-mono);
 		font-weight: 700;
-		color: var(--font-accent-yellow);
+		color: var(--navbar-accent, var(--ui-yellow));
 		margin: 0 0.25rem;
 	}
 
 	@media (max-width: 768px) {
-		.fullscreen-page {
-			padding: 0.5rem;
+		    .fullscreen-page {
+			    padding: var(--spacing-xs);
 		}
 
 		.header-controls {

@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 
-	let { day = false, evening = false, night = false, useRealTime = false } = $props<{ day?: boolean; evening?: boolean; night?: boolean; useRealTime?: boolean }>();
+	let { day = false, evening = false, night = false, dawn = false, useRealTime = false } = $props<{ day?: boolean; evening?: boolean; night?: boolean; dawn?: boolean; useRealTime?: boolean }>();
 
 	let skyCanvas: HTMLCanvasElement;
 	let farCloudsCanvas: HTMLCanvasElement;
@@ -80,6 +80,10 @@
 			}
 			if (night) {
 				time = 24;
+				return;
+			}
+			if (dawn) {
+				time = 6.5;
 				return;
 			}
 
@@ -425,7 +429,6 @@
 		left: 0;
 		width: 100%;
 		height: 100%;
-		object-fit: cover;
 	}
 
 	.cloud-layer {
@@ -434,7 +437,6 @@
 		left: 0;
 		width: 100%;
 		height: 100%;
-		object-fit: cover;
 		opacity: 0.9;
 	}
 

@@ -20,7 +20,7 @@
 			</div>
 		</div>
 
-		<h1 class="error-code animate-slide-left">{errorCode}</h1>
+		<h1 class="error-code gradient-animated animate-slide-left">{errorCode}</h1>
 		<h2 class="error-title animate-slide-right">Flight Path Not Found!</h2>
 		<p class="error-description animate-fade">
 			{#if errorCode === 404}
@@ -77,27 +77,14 @@
 </div>
 
 <style>
-	@keyframes gradient-flash {
-		0%, 100% {
-			background-position: 0% 50%;
-		}
-		25% {
-			background-position: 50% 50%;
-		}
-		50% {
-			background-position: 100% 50%;
-		}
-		75% {
-			background-position: 50% 50%;
-		}
-	}
+	/* gradient-flash moved to src/app.css for global reuse */
 
 	.error-page {
 		min-height: calc(100vh - 64px);
 		display: flex;
 		align-items: center;
 		justify-content: center;
-		padding: 2rem;
+		padding: var(--container-side-padding);
 		position: relative;
 		overflow: hidden;
 	}
@@ -113,7 +100,7 @@
 	.airplane-container {
 		position: relative;
 		display: inline-block;
-		margin-bottom: 2rem;
+		margin-bottom: var(--card-padding-mobile);
 		animation: fly 4s ease-in-out infinite;
 	}
 
@@ -150,7 +137,7 @@
 		height: 4px;
 		background: linear-gradient(
 			90deg,
-			rgba(255, 217, 102, 0.6) 0%,
+			rgba(var(--navbar-accent-rgb), 0.6) 0%,
 			rgba(0, 206, 209, 0.4) 50%,
 			transparent 100%
 		);
@@ -180,20 +167,8 @@
 		font-size: 8rem;
 		font-weight: 900;
 		margin: 0;
-		background: linear-gradient(
-			90deg,
-			var(--ui-yellow) 0%,
-			var(--font-accent-cyan) 20%,
-			var(--ui-light-blue) 40%,
-			var(--font-accent-yellow) 60%,
-			var(--ui-yellow) 80%,
-			var(--font-accent-cyan) 100%
-		);
-		background-size: 300% 100%;
-		-webkit-background-clip: text;
-		-webkit-text-fill-color: transparent;
-		background-clip: text;
-		animation: gradient-flash 4s ease-in-out infinite;
+		color: var(--font-primary);
+		/* Gradient is opt-in via `.gradient-animated` utility */
 		filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.3));
 		line-height: 1;
 	}
@@ -218,10 +193,10 @@
 
 	.error-actions {
 		display: flex;
-		gap: 1.5rem;
+		gap: var(--spacing-md);
 		justify-content: center;
 		flex-wrap: wrap;
-		margin-bottom: 3rem;
+		margin-bottom: var(--spacing-xxl);
 	}
 
 	.btn-primary,
@@ -229,7 +204,7 @@
 		display: inline-flex;
 		align-items: center;
 		gap: 0.75rem;
-		padding: 1rem 2rem;
+		padding: var(--spacing-sm) var(--spacing-xxl);
 		border-radius: 50px;
 		font-family: 'Roboto', sans-serif;
 		font-size: 1rem;
@@ -242,12 +217,12 @@
 	.btn-primary {
 		background: linear-gradient(
 			135deg,
-			var(--ui-yellow) 0%,
+			var(--navbar-accent, var(--ui-yellow)) 0%,
 			var(--font-accent-cyan) 100%
 		);
 		color: var(--font-primary);
 		box-shadow: 0 4px 20px rgba(0, 206, 209, 0.4);
-		border: 2px solid rgba(255, 217, 102, 0.3);
+		border: 2px solid rgba(var(--navbar-accent-rgb), 0.3);
 	}
 
 	.btn-primary:hover {
@@ -266,8 +241,8 @@
 	.btn-secondary:hover {
 		transform: translateY(-3px);
 		background: rgba(255, 255, 255, 0.9);
-		border-color: var(--ui-yellow);
-		box-shadow: 0 4px 20px rgba(255, 217, 102, 0.4);
+		border-color: var(--navbar-accent, var(--ui-yellow));
+		box-shadow: 0 4px 20px rgba(var(--navbar-accent-rgb), 0.4);
 	}
 
 	.error-hints {
@@ -282,7 +257,7 @@
 		display: flex;
 		align-items: center;
 		gap: 0.75rem;
-		padding: 1rem 1.5rem;
+		padding: var(--spacing-sm) var(--spacing-md);
 		background: rgba(255, 255, 255, 0.7);
 		border: 2px solid rgba(0, 206, 209, 0.3);
 		border-radius: 50px;
@@ -295,9 +270,9 @@
 
 	.hint:hover {
 		background: rgba(255, 255, 255, 0.9);
-		border-color: var(--ui-yellow);
+		border-color: var(--navbar-accent, var(--ui-yellow));
 		transform: translateY(-2px);
-		box-shadow: 0 4px 12px rgba(255, 217, 102, 0.3);
+		box-shadow: 0 4px 12px rgba(var(--navbar-accent-rgb), 0.3);
 	}
 
 	.hint-icon {
@@ -316,7 +291,7 @@
 		left: 50%;
 		width: 300px;
 		height: 300px;
-		border: 2px dashed rgba(255, 217, 102, 0.3);
+		border: 2px dashed rgba(var(--navbar-accent-rgb), 0.3);
 		border-radius: 50%;
 		animation: circle-flight 25s linear infinite;
 	}

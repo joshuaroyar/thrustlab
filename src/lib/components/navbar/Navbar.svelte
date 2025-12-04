@@ -7,21 +7,12 @@
 	let mobileMenuOpen = $state(false);
 	let hamburgerMenuOpen = $state(false);
 	let isScrolled = $state(false);
-	let scrollProgress = $state(0); // 0 = day, 0.5 = evening, 1 = night
-	let navbarBgColor = $state('rgba(135, 206, 235, 0.15)'); // Default day theme
+	// Use the page's accent color for the navbar background (fallback to sky blue)
+	let navbarBgColor = $state('rgba(var(--navbar-accent-rgb, 135, 206, 235), 0.7)');
 
 	onMount(() => {
 		const handleScroll = () => {
 			isScrolled = window.scrollY > 50;
-			
-			// Calculate scroll progress (0 to 1)
-			const scrollHeight = document.documentElement.scrollHeight - window.innerHeight;
-			const currentScroll = window.scrollY;
-			const progress = Math.min(currentScroll / scrollHeight, 1);
-			scrollProgress = progress;
-			
-			// Update navbar background color based on scroll progress
-			updateNavbarColor(progress);
 		};
 
 		window.addEventListener('scroll', handleScroll);
@@ -29,50 +20,6 @@
 		
 		return () => window.removeEventListener('scroll', handleScroll);
 	});
-
-	function updateNavbarColor(progress: number) {
-		let bgColor;
-		
-		if (progress < 0.25) {
-			// Day theme (sky blue tones)
-			const t = progress / 0.25;
-			bgColor = interpolateRGBA(
-				{ r: 135, g: 206, b: 235, a: 0.15 }, // Light sky blue
-				{ r: 255, g: 140, b: 100, a: 0.15 }, // Orange
-				t
-			);
-		} else if (progress < 0.5) {
-			// Evening theme (orange to deep blue tones)
-			const t = (progress - 0.25) / 0.25;
-			bgColor = interpolateRGBA(
-				{ r: 255, g: 140, b: 100, a: 0.15 }, // Orange
-				{ r: 26, g: 40, b: 71, a: 0.15 },    // Deep blue
-				t
-			);
-		} else if (progress < 0.75) {
-			// Night theme (dark blue/navy tones)
-			bgColor = 'rgba(10, 22, 40, 0.15)'; // Deep navy
-		} else {
-			// Midnight theme (purple tones)
-			const t = (progress - 0.75) / 0.25;
-			bgColor = interpolateRGBA(
-				{ r: 10, g: 22, b: 40, a: 0.15 },    // Deep navy
-				{ r: 45, g: 27, b: 75, a: 0.15 },    // Deep purple
-				t
-			);
-		}
-		
-		navbarBgColor = bgColor;
-	}
-
-	function interpolateRGBA(color1: {r: number, g: number, b: number, a: number}, color2: {r: number, g: number, b: number, a: number}, t: number): string {
-		const r = Math.round(color1.r + (color2.r - color1.r) * t);
-		const g = Math.round(color1.g + (color2.g - color1.g) * t);
-		const b = Math.round(color1.b + (color2.b - color1.b) * t);
-		const a = color1.a + (color2.a - color1.a) * t;
-		
-		return `rgba(${r}, ${g}, ${b}, ${a})`;
-	}
 
 	function toggleMobileMenu() {
 		mobileMenuOpen = !mobileMenuOpen;
@@ -301,13 +248,14 @@
 	}
 
 	.navbar-container {
-		max-width: 1280px;
+		max-width: 100%;
 		margin: 0 auto;
 		display: flex;
 		align-items: center;
-		justify-content: space-between;
-		padding: 0.5rem 1.5rem;
-		height: 100px;
+		/* Keep items left-to-right but push the menu to the far right */
+		justify-content: flex-start;
+		padding: var(--spacing-xs) var(--container-side-padding);
+		height: 5rem; /* Reduced from 100px */
 		position: relative;
 		gap: 1rem;
 	}
@@ -328,7 +276,7 @@
 	}
 
 	.hamburger-menu-button:hover {
-		background-color: rgba(255, 217, 102, 0.2);
+		background-color: rgba(var(--navbar-accent-rgb, 255, 217, 102), 0.2);
 	}
 
 	.hamburger-menu-button .menu-icon {
@@ -349,7 +297,7 @@
 	}
 
 	.navbar-logo {
-		height: 10rem;
+		height: 8rem; /* Increased from 4rem */
 		width: auto;
 		display: block;
 		transition: all 0.3s ease;
@@ -358,41 +306,42 @@
 
 	.logo-link:hover .navbar-logo {
 		transform: scale(1.05);
-		filter: drop-shadow(0 4px 8px rgba(255, 217, 102, 0.6));
+		filter: drop-shadow(0 4px 8px rgba(var(--navbar-accent-rgb, 255, 217, 102), 0.6));
 	}
 
 	/* Responsive logo sizing */
 	@media (max-width: 1200px) {
 		.navbar-logo {
-			height: 8rem;
+			height: 5rem; /* Increased from 3.5rem */
 		}
 	}
 
 	@media (max-width: 1024px) {
 		.navbar-logo {
-			height: 6rem;
+			height: 4.5rem; /* Increased from 3rem */
 		}
 	}
 
 	@media (max-width: 768px) {
 		.navbar-logo {
-			height: 5.5rem;
+			height: 3.5rem; /* Increased from 2.5rem */
 		}
 	}
 
 	@media (max-width: 480px) {
 		.navbar-logo {
-			height: 4.5rem;
+			height: 3rem; /* Increased from 2rem */
 		}
 	}
 
 	.navbar-menu {
 		display: none;
 		align-items: center;
-		justify-content: center;
-		gap: 0.5rem;
-		flex: 1;
-		margin: 0 1rem;
+		justify-content: flex-end; /* ensure links align to the right inside this container */
+		gap: 0.75rem;
+		/* push the whole menu container to the far right while keeping logo at left */
+		margin-left: auto;
+		flex: 0 0 auto;
 	}
 
 	@media (min-width: 768px) {
@@ -431,16 +380,19 @@
 		}
 	}
 
+	/* Use per-page navbar accent defined on the page container (default to ui-yellow) */
 	.nav-link:hover {
-		background-color: rgba(255, 217, 102, 0.2); /* Yellow with opacity */
+		background-color: transparent; /* Do not fill background on hover */
 		color: #FFFFFF;
+		box-shadow: 0 6px 30px rgba(var(--navbar-accent-rgb, 255, 217, 102), 0.25), 0 0 18px rgba(var(--navbar-accent-rgb, 255, 217, 102), 0.18);
 	}
 
 	.nav-link.active {
-		background-color: var(--ui-yellow); /* Yellow */
-		color: #000000; /* Black for maximum contrast */
+		background-color: var(--navbar-accent, var(--ui-yellow)); /* Per-page accent */
+		color: #FFFFFF;
 		font-weight: 600;
 		text-shadow: none;
+		box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
 	}
 
 	.mobile-menu-button {
@@ -476,7 +428,7 @@
 	.mobile-menu {
 		display: flex;
 		flex-direction: column;
-		padding: 1rem;
+		padding: var(--spacing-sm);
 		/* Glassmorphism Effect */
 		background: var(--navbar-bg-color, rgba(135, 206, 235, 0.12));
 		backdrop-filter: blur(20px) saturate(180%);
@@ -507,15 +459,17 @@
 	}
 
 	.mobile-nav-link:hover {
-		background-color: rgba(255, 217, 102, 0.2); /* Yellow with opacity */
+		background-color: transparent; /* Do not fill mobile background on hover */
 		color: #FFFFFF;
+		box-shadow: 0 6px 30px rgba(var(--navbar-accent-rgb, 255, 217, 102), 0.25), 0 0 18px rgba(var(--navbar-accent-rgb, 255, 217, 102), 0.18);
 	}
 
 	.mobile-nav-link.active {
-		background-color: var(--ui-yellow); /* Yellow */
-		color: #000000; /* Black for maximum contrast */
+		background-color: var(--navbar-accent, var(--ui-yellow)); /* Per-page accent */
+		color: #FFFFFF;
 		font-weight: 600;
 		text-shadow: none;
+		box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
 	}
 
 	.logout-button {
@@ -543,6 +497,7 @@
 	@media (min-width: 768px) {
 		.hamburger-menu-button {
 			display: flex;
+			margin-left: 0;
 		}
 
 		.hamburger-dropdown {
@@ -584,12 +539,13 @@
 	}
 
 	.hamburger-nav-link:hover {
-		background-color: rgba(255, 217, 102, 0.2);
+		background-color: transparent; /* Do not fill background on hover; use glow instead */
 		color: #FFFFFF;
+		box-shadow: 0 6px 30px rgba(var(--navbar-accent-rgb, 255, 217, 102), 0.25), 0 0 18px rgba(var(--navbar-accent-rgb, 255, 217, 102), 0.18);
 	}
 
 	.hamburger-nav-link.active {
-		background-color: var(--ui-yellow);
+		background-color: var(--navbar-accent, var(--ui-yellow));
 		color: #000000;
 		font-weight: 600;
 		text-shadow: none;

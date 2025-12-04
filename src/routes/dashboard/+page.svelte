@@ -201,6 +201,12 @@
 					</div>
 					<span>Overhaul Station</span>
 				</a>
+				<a href="/jaja" class="action-card">
+					<div class="action-icon">
+						<img src="/icons/jaja.png" alt="Ask JAJA" />
+					</div>
+					<span>Ask JAJA</span>
+				</a>
 				<a href="/profile" class="action-card">
 					<div class="action-icon">
 						<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -346,7 +352,7 @@
 		z-index: 10;
 		max-width: 1400px;
 		margin: 0 auto;
-		padding: 6rem 2rem 2rem;
+		padding: calc(var(--spacing-xxl) * 1.5) var(--container-side-padding) var(--spacing-lg);
 		min-height: 100vh;
 		color: var(--font-primary);
 	}
@@ -384,11 +390,9 @@
 	}
 
 	.username {
-		background: linear-gradient(120deg, #84fab0, #8fd3f4);
-		-webkit-background-clip: text;
-		background-clip: text;
-		-webkit-text-fill-color: transparent;
-		filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
+		color: #223a5e;
+		font-weight: 700;
+		text-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
 	}
 
 	.date-display {
@@ -409,7 +413,7 @@
 	}
 
 	.stat-card {
-		padding: 1.5rem;
+		padding: var(--spacing-md);
 		display: flex;
 		align-items: center;
 		gap: 1.5rem;
@@ -495,7 +499,7 @@
 
 	@media (max-width: 768px) {
 		.dashboard-container {
-			padding: 5rem 1rem 1rem;
+			padding: calc(var(--spacing-xxl) * 1.25) var(--spacing-sm) var(--spacing-sm);
 		}
 
 		.dashboard-header {
@@ -513,7 +517,7 @@
 		}
 
 		.stat-card {
-			padding: 1rem;
+			padding: var(--spacing-sm);
 		}
 
 		.actions-grid {
@@ -523,7 +527,7 @@
 
 	/* Recent Activity */
 	.recent-activity {
-		padding: 2rem;
+		padding: var(--spacing-lg);
 	}
 
 	.section-header {
@@ -559,7 +563,7 @@
 	.activity-item {
 		display: flex;
 		align-items: center;
-		padding: 1rem;
+		padding: var(--spacing-sm);
 		background: rgba(255, 255, 255, 0.4);
 		border-radius: 16px;
 		border: 1px solid rgba(255, 255, 255, 0.3);
@@ -632,7 +636,7 @@
 
 	/* Quick Actions */
 	.quick-actions {
-		padding: 2rem;
+		padding: var(--spacing-lg);
 	}
 
 	.quick-actions h2 {
@@ -649,7 +653,7 @@
 
 	.action-card {
 		background: rgba(255, 255, 255, 0.4);
-		padding: 1.5rem;
+		padding: var(--spacing-md);
 		border-radius: 16px;
 		display: flex;
 		flex-direction: column;
@@ -717,7 +721,7 @@
 		display: flex;
 		align-items: center;
 		justify-content: center;
-		padding: 2rem;
+		padding: var(--spacing-lg);
 	}
 
 	.modal-content {
@@ -759,7 +763,7 @@
 	}
 
 	.modal-body {
-		padding: 2rem;
+		padding: var(--spacing-lg);
 	}
 
 	.test-summary {
@@ -833,7 +837,7 @@
 
 	.loading-state {
 		text-align: center;
-		padding: 2rem;
+		padding: var(--spacing-lg);
 		color: #666;
 	}
 
@@ -871,7 +875,7 @@
 
 	.feedback-item {
 		background: white;
-		padding: 1rem;
+		padding: var(--spacing-sm);
 		border-radius: 12px;
 		margin-bottom: 1rem;
 		border: 1px solid #f1f5f9;
@@ -899,7 +903,7 @@
 	}
 
 	.question-item {
-		padding: 1rem;
+		padding: var(--spacing-sm);
 		border-radius: 12px;
 		margin-bottom: 1rem;
 		border: 1px solid #e2e8f0;

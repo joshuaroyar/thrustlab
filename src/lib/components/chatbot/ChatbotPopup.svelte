@@ -173,20 +173,7 @@
 		font-style: italic;
 	}
 	
-	@keyframes gradient-flash {
-		0%, 100% {
-			background-position: 0% 50%;
-		}
-		25% {
-			background-position: 50% 50%;
-		}
-		50% {
-			background-position: 100% 50%;
-		}
-		75% {
-			background-position: 50% 50%;
-		}
-	}
+	/* gradient-flash moved to src/app.css for global reuse */
 
 	.chat-fab {
 		position: fixed;
@@ -221,7 +208,7 @@
 
 	@keyframes pulse {
 		0%, 100% {
-			box-shadow: 0 8px 24px rgba(255, 217, 102, 0.4);
+			box-shadow: 0 8px 24px rgba(var(--navbar-accent-rgb, 255, 217, 102), 0.4);
 		}
 		50% {
 			box-shadow: 0 8px 32px rgba(0, 206, 209, 0.6);
@@ -270,7 +257,7 @@
 
 	.chat-header {
 		background: rgba(10, 47, 53, 0.95);
-		padding: 1.25rem 1.5rem;
+		padding: var(--spacing-md) var(--spacing-lg);
 		display: flex;
 		justify-content: space-between;
 		align-items: center;
@@ -355,7 +342,7 @@
 
 	.chat-messages {
 		flex: 1;
-		padding: 1.5rem;
+		padding: var(--spacing-md);
 		overflow-y: auto;
 		background: transparent;
 		min-height: 300px;
@@ -421,7 +408,7 @@
 	}
 
 	.message-bubble {
-		padding: 0.875rem 1.125rem;
+		padding: var(--spacing-sm) var(--spacing-md);
 		border-radius: 1rem;
 		max-width: 75%;
 		box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
@@ -438,7 +425,7 @@
 	.user-bubble {
 		background: linear-gradient(
 			135deg,
-			var(--ui-yellow) 0%,
+			var(--navbar-accent, var(--ui-yellow)) 0%,
 			var(--font-accent-cyan) 100%
 		);
 		color: #000000;
@@ -460,7 +447,7 @@
 	}
 
 	.chat-input-wrapper {
-		padding: 1rem 1.5rem;
+		padding: var(--spacing-sm) var(--spacing-md);
 		background: rgba(10, 47, 53, 0.95);
 		backdrop-filter: blur(8px);
 		border-top: 1px solid rgba(135, 206, 235, 0.2);
@@ -471,7 +458,7 @@
 
 	.chat-input {
 		flex: 1;
-		padding: 0.75rem 1rem;
+		padding: var(--spacing-xs) var(--spacing-sm);
 		border: 1px solid rgba(135, 206, 235, 0.3);
 		border-radius: 50px;
 		font-family: var(--font-body);
@@ -495,12 +482,12 @@
 	.send-button {
 		background: linear-gradient(
 			135deg,
-			var(--ui-yellow) 0%,
+			var(--navbar-accent, var(--ui-yellow)) 0%,
 			var(--font-accent-cyan) 100%
 		);
 		color: #000000;
 		border: none;
-		padding: 0.75rem;
+		padding: var(--spacing-xs);
 		border-radius: 50%;
 		width: 44px;
 		height: 44px;

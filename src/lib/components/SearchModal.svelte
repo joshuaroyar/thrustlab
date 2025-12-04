@@ -97,7 +97,7 @@
 		display: flex;
 		justify-content: space-between;
 		align-items: center;
-		padding: 1.5rem 2rem;
+		padding: var(--spacing-md) var(--spacing-lg);
 		border-bottom: 1px solid #e5e7eb;
 	}
 
@@ -129,7 +129,7 @@
 	}
 
 	.modal-content {
-		padding: 1.5rem 2rem;
+		padding: var(--spacing-md) var(--spacing-lg);
 		overflow-y: auto;
 		flex: 1;
 	}
@@ -137,7 +137,7 @@
 	.loading,
 	.no-results {
 		text-align: center;
-		padding: 3rem 2rem;
+		padding: var(--spacing-xl) var(--spacing-lg);
 		color: #6b7280;
 	}
 
@@ -166,7 +166,7 @@
 		background: #f9fafb;
 		border: 1px solid #e5e7eb;
 		border-radius: 8px;
-		padding: 1.25rem;
+		padding: var(--spacing-sm);
 		cursor: pointer;
 		transition: all 0.2s;
 		text-align: left;
@@ -241,7 +241,7 @@
 		}
 
 		.modal-header {
-			padding: 1rem 1.25rem;
+			padding: var(--spacing-sm) var(--spacing-sm);
 		}
 
 		.modal-header h2 {
@@ -249,7 +249,7 @@
 		}
 
 		.modal-content {
-			padding: 1rem 1.25rem;
+			padding: var(--spacing-sm) var(--spacing-sm);
 		}
 
 		.result-header {
