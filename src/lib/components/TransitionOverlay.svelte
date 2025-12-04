@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { onMount } from 'svelte';
+	import { onMount, onDestroy } from 'svelte';
 	import { isTransitioning } from '$lib/stores/pageTransition';
 	import { fade } from 'svelte/transition';
 	import { cubicOut } from 'svelte/easing';
@@ -8,12 +8,36 @@
 
 	$effect(() => {
 		show = $isTransitioning;
+		
+		// Sync body class with transition state
+		if (typeof document !== 'undefined') {
+			if ($isTransitioning) {
+				document.body.classList.add('page-transitioning');
+				console.log('Scroll locked - page transitioning');
+			} else {
+				document.body.classList.remove('page-transitioning');
+				// Force enable scrolling
+				document.body.style.removeProperty('overflow');
+				document.documentElement.style.removeProperty('overflow');
+				console.log('Scroll unlocked - transition complete');
+			}
+		}
 	});
 
 	onMount(() => {
 		// Ensure transitioning state is reset on mount
 		isTransitioning.set(false);
 		console.log('TransitionOverlay mounted - transition state reset');
+	});
+
+	onDestroy(() => {
+		// Safety cleanup: ensure scroll is re-enabled
+		if (typeof document !== 'undefined') {
+			document.body.classList.remove('page-transitioning');
+			document.body.style.removeProperty('overflow');
+			document.documentElement.style.removeProperty('overflow');
+			console.log('TransitionOverlay destroyed - scroll unlocked');
+		}
 	});
 </script>
 

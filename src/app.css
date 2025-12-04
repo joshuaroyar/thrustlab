@@ -306,9 +306,9 @@ main {
 }
 
 body.page-transitioning {
-	overflow: hidden;
+	overflow: hidden !important;
 	/* Safety: Auto-remove overflow restriction after animation completes */
-	animation: resetOverflow 0s 1.5s forwards;
+	animation: resetOverflow 0s 1s forwards;
 }
 
 body.page-transitioning * {
@@ -318,7 +318,7 @@ body.page-transitioning * {
 /* Safety animation to reset overflow if class is not removed properly */
 @keyframes resetOverflow {
 	to {
-		overflow: visible;
+		overflow: visible !important;
 	}
 }
 

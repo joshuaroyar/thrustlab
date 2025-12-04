@@ -8,7 +8,23 @@
 	onMount(() => {
 		mounted = true;
 		document.body.classList.add('zone-overhaul');
-		return () => document.body.classList.remove('zone-overhaul');
+		
+		// Safety: Ensure scrolling is enabled when page loads
+		if (typeof document !== 'undefined') {
+			document.body.classList.remove('page-transitioning');
+			document.body.style.removeProperty('overflow');
+			document.documentElement.style.removeProperty('overflow');
+			console.log('Overhaul Station mounted - scroll enabled');
+		}
+		
+		return () => {
+			document.body.classList.remove('zone-overhaul');
+			// Safety: Ensure scroll remains enabled on cleanup
+			if (typeof document !== 'undefined') {
+				document.body.style.removeProperty('overflow');
+				document.documentElement.style.removeProperty('overflow');
+			}
+		};
 	});
 </script>
 

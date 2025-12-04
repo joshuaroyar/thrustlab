@@ -7,6 +7,7 @@
 	import Navbar from '$lib/components/navbar/Navbar.svelte';
 	import ChatbotPopup from '$lib/components/chatbot/ChatbotPopup.svelte';
 	import ImageModal from '$lib/components/ImageModal.svelte';
+	import TransitionOverlay from '$lib/components/TransitionOverlay.svelte';
 	import type { LayoutData } from './$types';
 	import type { AuthChangeEvent, Session } from '@supabase/supabase-js';
 
@@ -63,6 +64,14 @@
 	});
 
 	onMount(() => {
+		// Safety: Ensure scrolling is enabled on layout mount
+		if (typeof document !== 'undefined') {
+			document.body.classList.remove('page-transitioning');
+			document.body.style.removeProperty('overflow');
+			document.documentElement.style.removeProperty('overflow');
+			console.log('Layout mounted - scroll enabled');
+		}
+
 		const { data: { subscription } } = supabase.auth.onAuthStateChange((event: AuthChangeEvent, _session: Session | null) => {
 			if (_session?.expires_at !== session?.expires_at) {
 				invalidate('supabase:auth');
@@ -89,6 +98,13 @@
 		return () => {
 			subscription.unsubscribe();
 			observer.disconnect();
+			
+			// Safety cleanup: ensure scroll is re-enabled
+			if (typeof document !== 'undefined') {
+				document.body.classList.remove('page-transitioning');
+				document.body.style.removeProperty('overflow');
+				document.documentElement.style.removeProperty('overflow');
+			}
 		};
 	});
 </script>
@@ -115,6 +131,8 @@
 {/if}
 
 <ImageModal />
+
+<TransitionOverlay />
 
 <style>
 	:global(body) {
