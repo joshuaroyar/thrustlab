@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
     import ImageGrid from '$lib/components/ImageGrid.svelte';
+	import MarkdownRenderer from '$lib/components/MarkdownRenderer.svelte';
 	import { goto } from '$app/navigation';
 	import { fade, fly } from 'svelte/transition';
 	import ModelViewer from '$lib/components/ModelViewer.svelte';
@@ -221,7 +222,12 @@
 							<img src="/icons/jaja.png" alt="Jaja" />
 						</div>
 						<div class="jaja-bubble">
-							<p>JAJA'S TIP: CLICK THE <span class="zoom-icon-inline"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#D35400" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line><line x1="11" y1="8" x2="11" y2="14"></line><line x1="8" y1="11" x2="14" y2="11"></line></svg></span> TO GET A CLOSER LOOK!</p>
+							<div class="jaja-text">
+								<MarkdownRenderer content={"**Tip from JAJA:** Click the **zoom** icon to get a closer look!"} />
+							</div>
+							<div class="zoom-icon-inline" aria-hidden="true">
+								<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#D35400" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line><line x1="11" y1="8" x2="11" y2="14"></line><line x1="8" y1="11" x2="14" y2="11"></line></svg>
+							</div>
 						</div>
 					</div>
 				</div>
@@ -1626,6 +1632,18 @@
 		letter-spacing: normal;
 		display: flex;
 		align-items: center;
+	}
+
+	/* Ensure MarkdownRenderer output doesn't add unexpected margins inside the bubble */
+	.jaja-bubble :global(.markdown-body) {
+		margin: 0;
+	}
+
+	.jaja-text :global(.markdown-body) {
+		color: inherit;
+		font-family: inherit;
+		font-weight: inherit;
+		line-height: 1.2;
 	}
 
 	.jaja-bubble p {

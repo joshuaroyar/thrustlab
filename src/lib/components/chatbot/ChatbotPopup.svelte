@@ -3,6 +3,7 @@
 	import type { UIMessage } from 'ai';
 	import { fly, fade } from 'svelte/transition';
 	import { parseMarkdown } from '$lib/utils/formatting';
+	import MarkdownRenderer from '$lib/components/MarkdownRenderer.svelte';
 
 	type Citation = { source: string; preview: string };
 	type JajaMessage = UIMessage<unknown, { citations: Citation[] }>;
@@ -139,7 +140,7 @@
 										{@const partText = extractTextFromPart(part)}
 										{#if partText}
 											{#if message.role === 'assistant'}
-												{@html parseMarkdown(partText)}
+												<MarkdownRenderer content={partText} />
 											{:else}
 												<p>{partText}</p>
 											{/if}
@@ -464,6 +465,20 @@
 	:global(.message-bubble li) {
 		margin: 0.25rem 0;
 		line-height: 1.4;
+	}
+
+	:global(.message-bubble ul) {
+		list-style-type: disc;
+		list-style-position: outside;
+		margin: 0.5rem 0;
+		padding-left: 1.5rem;
+	}
+
+	:global(.message-bubble ol) {
+		list-style-type: decimal;
+		list-style-position: outside;
+		margin: 0.5rem 0;
+		padding-left: 1.5rem;
 	}
 
 	:global(.message-bubble br) {
