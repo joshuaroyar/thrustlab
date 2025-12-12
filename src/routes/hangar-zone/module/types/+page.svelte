@@ -252,9 +252,6 @@
 			<div class="section-content">
 				<div class="two-column-layout">
 					<div class="left-column">
-						<div class="small-icon">
-							<ImageGrid images={[{ src: '/images/hangar-zone/types/11.png', alt: 'Turboprop Icon' }]} columns={1} height="120px" />
-						</div>
 						<ul class="bullet-list">
 							<li>Most turboshaft engine incorporates a free power turbine.</li>
 							<li>Single spool, turboshaft engine has a reverse flow combustion chamber system allowing it to be shorter, stiffer, and lighter. It does however add the requirement for a centrifugal compressor to be used in the high-pressure stage. This throws the air out radially so that it can enter the combustion chamber in the correct direction.</li>
@@ -264,7 +261,7 @@
 						<ImageGrid images={[
 							{ src: '/images/hangar-zone/types/9_1.png', alt: 'Airflow Diagram 1' },
 							{ src: '/images/hangar-zone/types/9_2.png', alt: 'Airflow Diagram 2' }
-						]} columns={1} height="260px" />
+						]} columns={2} height="220px" gap="1rem" />
 					</div>
 				</div>
 				<div class="two-column-layout">
@@ -615,19 +612,6 @@
 		display: flex;
 		flex-direction: column;
 		gap: 1rem;
-	}
-
-	/* Small icon sizes */
-	.small-icon {
-		width: 80px;
-		min-width: 80px;
-		display: block;
-	}
-
-	.small-icon :global(img) {
-		width: 80px;
-		height: auto;
-		object-fit: contain;
 	}
 
 	/* Stacked image sizes for right column */

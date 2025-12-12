@@ -238,17 +238,20 @@
 		class="modal-backdrop" 
 		transition:fade={{ duration: 200 }} 
 		aria-label="Close feedback modal"
+		role="button"
 		tabindex="0"
 		onclick={closeFeedback}
 		onkeydown={(e) => { if(e.key === 'Escape' || e.key === 'Enter') closeFeedback(); }}
 	>
-		<div
-			class="modal-content glass-panel"
-			transition:scale={{ duration: 300, start: 0.95, easing: quintOut }}
-			onclick={(e) => e.stopPropagation()}
-			role="document"
-			onkeydown={(e) => e.stopPropagation()}
-		>
+			<section
+				class="modal-content glass-panel"
+				transition:scale={{ duration: 300, start: 0.95, easing: quintOut }}
+				onclick={(e) => e.stopPropagation()}
+				onkeydown={(e) => { if(e.key === 'Escape') closeFeedback(); }}
+				role="dialog"
+				aria-modal="true"
+				tabindex="0"
+			>
 			<div class="modal-header">
 				<h2>Assessment Feedback</h2>
 				<button class="close-btn" onclick={closeFeedback}>&times;</button>
@@ -338,9 +341,9 @@
 					{/if}
 				</div>
 			</div>
+		</section>
 		</div>
-	</div>
-{/if}
+	{/if}
 
 <style>
 	:global(body) {

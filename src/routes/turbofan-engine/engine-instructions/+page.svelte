@@ -235,7 +235,7 @@
 		-webkit-text-fill-color: transparent;
 		background-clip: text;
 		animation: gradient-flash var(--gradient-duration) ease-in-out infinite;
-		text-shadow: 0 3px 12px rgba(0, 0, 0, 0.8);
+		text-shadow: 0 3px 12px rgba(0, 0, 0, 0.2);
 	}
 
 

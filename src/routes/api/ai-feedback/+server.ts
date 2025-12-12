@@ -18,7 +18,6 @@ export const POST = async ({ request }) => {
     try {
         const { object } = await generateObject({
             model: groq('openai/gpt-oss-120b'),
-            mode: 'json',
             schema: z.object({
                 feedback: z.array(z.object({
                     questionText: z.string(),

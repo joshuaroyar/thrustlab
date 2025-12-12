@@ -13,7 +13,7 @@
 
 	const TITLE_MAP: Record<string, string> = {
 		'/': 'ThrustLab | Home',
-		'/dashboard': 'ThrustLab | Mission Dashboard',
+		'/dashboard': 'ThrustLab | Dashboard',
 		'/login': 'ThrustLab | Login',
 		'/sign-up': 'ThrustLab | Join ThrustLab',
 		'/profile': 'ThrustLab | Pilot Profile',
@@ -22,9 +22,9 @@
 		'/overhaul-station/assembly-disassembly': 'ThrustLab | Assembly & Disassembly',
 		'/overhaul-station/preliminary-module': 'ThrustLab | Preliminary Module',
 		'/test-bay': 'ThrustLab | Test Bay',
-		'/turbofan-engine': 'ThrustLab | 3D Turbofan'
+		'/turbofan-engine': 'ThrustLab | Turbofan Engine'
 	};
-	const DEFAULT_TITLE = 'ThrustLab | Turbofan Training Hub';
+	const DEFAULT_TITLE = 'ThrustLab';
 
 	function formatPathToTitle(pathname: string) {
 		if (!pathname || pathname === '/') return TITLE_MAP['/'];
@@ -42,6 +42,8 @@
 	let isTestBayPage = $derived(page.url.pathname === '/test-bay');
 	// Check if we're on the JAJA fullscreen page to hide the popup
 	let isJajaPage = $derived(page.url.pathname === '/jaja');
+	// Check if we're on the assembly disassembly page to hide the popup
+	let isAssemblyDisassemblyPage = $derived(page.url.pathname === '/overhaul-station/assembly-disassembly');
 	// Check if we're on the home page for transparent navbar and JAJA icon
 	let isHomePage = $derived(page.url.pathname === '/');
 
@@ -126,7 +128,7 @@
 	{@render children()}
 </main>
 
-{#if !isTestBayPage && !isJajaPage}
+{#if !isTestBayPage && !isJajaPage && !isAssemblyDisassemblyPage}
 	<ChatbotPopup />
 {/if}
 

@@ -131,7 +131,7 @@
 
 		{#key cameraResetTrigger}
 			<ModelViewer
-				modelPath="/models/Turbofan (Caseless).glb"
+				modelPath="/models/Turbofan.glb"
 				canvasClass="fullscreen-canvas"
 				cameraPosition={{ alpha: Math.PI / 2, beta: Math.PI / 3, radius: 8 }}
 				enableHighlight={true}

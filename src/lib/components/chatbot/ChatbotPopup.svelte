@@ -2,6 +2,7 @@
 	import { Chat } from '@ai-sdk/svelte';
 	import type { UIMessage } from 'ai';
 	import { fly, fade } from 'svelte/transition';
+	import { parseMarkdown } from '$lib/utils/formatting';
 
 	type Citation = { source: string; preview: string };
 	type JajaMessage = UIMessage<unknown, { citations: Citation[] }>;
@@ -19,7 +20,7 @@
 			parts: [
 				{
 					type: 'text',
-					text: "Hi! I'm JAJA - your AI co-engineer bot for learning inside ThrustLab! Fuel your curiosity, ask me anything!"
+					text: "Hi! I'm JAJA - your AI co-engineer bot for learning inside ThrustLab!"
 				}
 			]
 		}
@@ -48,6 +49,8 @@
 		}
 		return '';
 	};
+
+	// `parseMarkdown` is provided by src/lib/utils/formatting.ts
 
 	async function handleSubmit(event: SubmitEvent) {
 		event.preventDefault();
@@ -122,24 +125,32 @@
 			<div class="chat-body">
 				<div class="chat-messages" bind:this={chatContainer}>
 					{#each chat.messages as message (message.id)}
-						<div class="message {message.role === 'user' ? 'user-message' : 'ai-message'}" in:fly={{ y: 10, duration: 300 }}>
-							{#if message.role === 'assistant'}
-								<div class="message-avatar">
-									<img src="/icons/jaja.png" alt="JAJA Avatar" class="avatar-img" />
+						{@const partTexts = message.parts.map((p) => extractTextFromPart(p))}
+						{@const hasText = partTexts.join('').trim().length > 0}
+						{#if hasText}
+							<div class="message {message.role === 'user' ? 'user-message' : 'ai-message'}" in:fly={{ y: 10, duration: 300 }}>
+								{#if message.role === 'assistant'}
+									<div class="message-avatar">
+										<img src="/icons/jaja.png" alt="JAJA Avatar" class="avatar-img" />
+									</div>
+								{/if}
+								<div class="message-bubble {message.role === 'user' ? 'user-bubble' : 'ai-bubble'}">
+									{#each message.parts as part}
+										{@const partText = extractTextFromPart(part)}
+										{#if partText}
+											{#if message.role === 'assistant'}
+												{@html parseMarkdown(partText)}
+											{:else}
+												<p>{partText}</p>
+											{/if}
+										{/if}
+									{/each}
 								</div>
-							{/if}
-							<div class="message-bubble {message.role === 'user' ? 'user-bubble' : 'ai-bubble'}">
-								{#each message.parts as part}
-									{@const partText = extractTextFromPart(part)}
-									{#if partText}
-										<p>{partText}</p>
-									{/if}
-								{/each}
+								{#if message.role === 'user'}
+									<div class="message-avatar user-avatar">👤</div>
+								{/if}
 							</div>
-							{#if message.role === 'user'}
-								<div class="message-avatar user-avatar">👤</div>
-							{/if}
-						</div>
+						{/if}
 					{/each}
 					
 					{#if chat.status === 'streaming'}
@@ -227,9 +238,7 @@
 		right: 2rem;
 		width: 400px;
 		max-height: 600px;
-		background: rgba(10, 47, 53, 0.85);
-		backdrop-filter: blur(20px) saturate(180%);
-		-webkit-backdrop-filter: blur(20px) saturate(180%);
+		background: var(--navbar-bg-color, #0A2F35);
 		border-radius: 1.5rem;
 		border: 2px solid rgba(135, 206, 235, 0.3);
 		box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
@@ -256,7 +265,7 @@
 	}
 
 	.chat-header {
-		background: rgba(10, 47, 53, 0.95);
+		background: var(--navbar-bg-color, #0A2F35);
 		padding: var(--spacing-md) var(--spacing-lg);
 		display: flex;
 		justify-content: space-between;
@@ -415,20 +424,15 @@
 	}
 
 	.ai-bubble {
-		background: rgba(28, 62, 74, 0.8);
-		backdrop-filter: blur(8px);
+		background: var(--navbar-bg-color, #1C3E4A);
 		border: 1px solid rgba(135, 206, 235, 0.2);
 		border-top-left-radius: 0.25rem;
 		color: var(--font-secondary);
 	}
 
 	.user-bubble {
-		background: linear-gradient(
-			135deg,
-			var(--navbar-accent, var(--ui-yellow)) 0%,
-			var(--font-accent-cyan) 100%
-		);
-		color: #000000;
+		background: var(--navbar-bg-color, #1C3E4A);
+		color: var(--font-secondary);
 		border-top-right-radius: 0.25rem;
 		order: 1;
 		font-weight: 600;
@@ -446,10 +450,31 @@
 		color: var(--font-secondary);
 	}
 
+	/* Formatted content styles */
+	:global(.message-bubble strong) {
+		font-weight: 700;
+		color: var(--font-accent-yellow);
+	}
+
+	:global(.message-bubble ul) {
+		margin: 0.5rem 0;
+		padding-left: 1.5rem;
+	}
+
+	:global(.message-bubble li) {
+		margin: 0.25rem 0;
+		line-height: 1.4;
+	}
+
+	:global(.message-bubble br) {
+		display: block;
+		margin: 0.5rem 0;
+		content: '';
+	}
+
 	.chat-input-wrapper {
 		padding: var(--spacing-sm) var(--spacing-md);
-		background: rgba(10, 47, 53, 0.95);
-		backdrop-filter: blur(8px);
+		background: var(--navbar-bg-color, #0A2F35);
 		border-top: 1px solid rgba(135, 206, 235, 0.2);
 		display: flex;
 		gap: 0.75rem;
@@ -464,7 +489,7 @@
 		font-family: var(--font-body);
 		font-size: 0.9rem;
 		transition: all 0.3s ease;
-		background: rgba(0, 0, 0, 0.3);
+		background: rgba(0, 0, 0, 0.4);
 		color: var(--font-secondary);
 	}
 
@@ -476,7 +501,7 @@
 		outline: none;
 		border-color: var(--font-accent-cyan);
 		box-shadow: 0 0 0 2px rgba(0, 206, 209, 0.2);
-		background: rgba(0, 0, 0, 0.5);
+		background: rgba(0, 0, 0, 0.6);
 	}
 
 	.send-button {

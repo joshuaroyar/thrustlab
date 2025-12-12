@@ -1,4 +1,4 @@
-<script>
+<script lang="ts">
     import { marked } from 'marked';
     import DOMPurify from 'isomorphic-dompurify';
     import hljs from 'highlight.js';
@@ -6,7 +6,7 @@
     // Import a theme (VS Code Dark style)
     import 'highlight.js/styles/vs2015.css'; 
 
-    export let content = '';
+    export let content: string | Promise<string> = '';
 
     // Configure marked to use highlight.js for code blocks
     const renderer = new marked.Renderer();
@@ -17,13 +17,24 @@
         const highlighted = validLang 
         ? hljs.highlight(text, { language: lang }).value 
         : hljs.highlightAuto(text).value;
-        
+    
         return `<pre><code class="hljs ${lang || ''}">${highlighted}</code></pre>`;
     };
 
     marked.setOptions({ renderer });
 
-    $: htmlContent = DOMPurify.sanitize(marked.parse(content));
+    let htmlContent = '';
+
+    $: (async () => {
+        try {
+            const resolved: string = typeof content === 'string' ? content : await content;
+            const parsed = await Promise.resolve(marked.parse(resolved || ''));
+            htmlContent = DOMPurify.sanitize(parsed as string);
+        } catch (e) {
+            htmlContent = DOMPurify.sanitize('');
+            console.error('MarkdownRenderer parse error', e);
+        }
+    })();
 </script>
 
 <div class="markdown-body prose dark:prose-invert max-w-none">

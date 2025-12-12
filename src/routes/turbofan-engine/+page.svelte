@@ -186,7 +186,7 @@
 				<div class="section-content">
 					<div class="model-wrapper" style="width: 100%; height: 450px; position: relative;">
 						<ModelViewer
-							modelPath="/models/Turbofan (Caseless).glb"
+							modelPath="/models/Turbofan.glb"
 							partDescriptions={turbofanParts}
 							cameraPosition={{ alpha: Math.PI / 2, beta: Math.PI / 2.5, radius: 8 }}
 							autoLoad={true}
@@ -1614,16 +1614,16 @@
 
 	.jaja-bubble {
 		background: #FFFFFF;
-		border: 4px solid var(--turbofan-accent); /* Orange border */
+		border: 4px solid var(--turbofan-accent);
 		border-radius: 12px;
 		padding: 0.8rem var(--card-padding-mobile);
 		position: relative;
 		box-shadow: 4px 4px 0px rgba(0,0,0,0.1);
-		font-family: 'Courier New', Courier, monospace; /* Pixel-like font */
-		font-weight: 900;
+		font-family: var(--font-body);
+		font-weight: 600;
 		color: #1a2b47;
-		text-transform: uppercase;
-		letter-spacing: 1px;
+		text-transform: none;
+		letter-spacing: normal;
 		display: flex;
 		align-items: center;
 	}
