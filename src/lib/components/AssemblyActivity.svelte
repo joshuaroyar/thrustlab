@@ -6,7 +6,7 @@
 	let Engine: any, Scene: any, ArcRotateCamera: any, Vector3: any;
 	let HemisphericLight: any, SceneLoader: any, Color4: any, Color3: any;
 	let AbstractMesh: any, MeshBuilder: any, GizmoManager: any;
-	let PointerEventTypes: any, UtilityLayerRenderer: any;
+	let PointerEventTypes: any, UtilityLayerRenderer: any, PointerDragBehavior: any;
 
 	interface Component {
 		id: string;
@@ -23,7 +23,7 @@
 			correctOrder: 0
 		},
 		{
-			id: 'compressor',
+			id: 'compression',
 			name: 'Compression Section',
 			modelPath: '/models/assembly-disassembly/Compression Section (Gray).glb',
 			correctOrder: 1
@@ -48,9 +48,33 @@
 		}
 	];
 
+	let shuffledComponents = $state<Component[]>([]);
+
+	function shuffleInPlace<T>(arr: T[]) {
+		for (let i = arr.length - 1; i > 0; i--) {
+			const j = Math.floor(Math.random() * (i + 1));
+			[arr[i], arr[j]] = [arr[j], arr[i]];
+		}
+		return arr;
+	}
+
+	// Correct sequence (aligns with component ids)
+	const SEQUENCE = ['intake', 'compression', 'combustion', 'turbine', 'exhaust'];
+	const trayPositions = new Map<string, any>();
+	// Tracks all placed meshes (used for camera framing + deletion)
+	const placedMap = new Map<string, any>();
+	// Tracks the current left-to-right order (derived from X positions)
+	let placedOrder: string[] = [];
+	// Store reference scales from full turbofan model for perfect fit
+	const referenceScales = new Map<string, {scale: any, bounds: any, position?: any}>();
+
+	const CASING_PADDING_X = 0.3; // Padding to prevent components from extending outside
+	const PUSH_AWAY_Z = 2.5;
+
 	let canvas: HTMLCanvasElement;
 	let engine: any = null;
 	let scene: any = null;
+	let camera: any = null;
 	let gizmoManager: any = null;
 	let ground: any = null;
 	let casingMesh: any = null;
@@ -64,6 +88,43 @@
 	let isSavingScore = $state(false);
 	let saveMessage = $state<{ type: 'success' | 'error'; text: string } | null>(null);
 
+	// Precompute tray positions so pieces can be sent back when dropped incorrectly
+	function initTrayPositions() {
+		if (trayPositions.size > 0) return;
+		const startX = -18;
+		const gap = 6;
+		SEQUENCE.forEach((id, idx) => {
+			trayPositions.set(id, new Vector3(startX + gap * idx, 0, -12));
+		});
+	}
+
+	function getMeshBounds(mesh: any) {
+		return mesh.getHierarchyBoundingVectors();
+	}
+
+	function boundsIntersect(aMin: any, aMax: any, bMin: any, bMax: any) {
+		return (
+			aMin.x <= bMax.x && aMax.x >= bMin.x &&
+			aMin.y <= bMax.y && aMax.y >= bMin.y &&
+			aMin.z <= bMax.z && aMax.z >= bMin.z
+		);
+	}
+
+	function rememberLastValid(mesh: any) {
+		mesh.metadata = mesh.metadata || {};
+		mesh.metadata.lastValidPos = mesh.position.clone();
+		mesh.metadata.snapped = true;
+	}
+
+	function restoreLastValidOrTray(mesh: any) {
+		const lastValid = mesh.metadata?.lastValidPos;
+		if (lastValid) {
+			mesh.position.copyFrom(lastValid);
+			return;
+		}
+		returnToTray(mesh);
+	}
+
 	// Helper to find root mesh
 	function findRootMesh(mesh: any): any {
 		let parent = mesh;
@@ -73,50 +134,22 @@
 		return parent;
 	}
 
-	// Drag and drop handler for canvas
+	// Keep stable handlers for Svelte reactivity; assign impls inside onMount.
+	let onCanvasDragOverImpl: ((e: DragEvent) => void) | null = null;
+	let onCanvasDropImpl: ((e: DragEvent) => Promise<void>) | null = null;
+
 	function onCanvasDragOver(e: DragEvent) {
 		e.preventDefault();
+		onCanvasDragOverImpl?.(e);
 	}
 
 	async function onCanvasDrop(e: DragEvent) {
 		e.preventDefault();
-		
-		if (!scene) return;
-
-		const componentId = e.dataTransfer?.getData('componentId');
-		if (!componentId) return;
-
-		const component = COMPONENTS.find(c => c.id === componentId);
-		if (!component) return;
-
-		// Calculate 3D position from mouse coordinates
-		const pickResult = scene.pick(scene.pointerX, scene.pointerY);
-		const dropPosition = pickResult?.hit && pickResult.pickedPoint 
-			? pickResult.pickedPoint 
-			: Vector3.Zero();
-
-		try {
-			const result = await SceneLoader.ImportMeshAsync("", component.modelPath, "", scene);
-			
-			if (result.meshes.length > 0) {
-				const rootMesh = result.meshes[0];
-				rootMesh.position = dropPosition.clone();
-				rootMesh.metadata = { componentId: component.id, componentName: component.name };
-				
-				placedMeshes.push(rootMesh);
-				
-				// Auto-select the newly placed mesh
-				if (gizmoManager) {
-					gizmoManager.attachToMesh(rootMesh);
-					selectedMeshName = component.name;
-				}
-
-				score += 5; // Points for placing
-			}
-		} catch (error) {
-			console.error('Error loading component:', error);
-		}
+		await onCanvasDropImpl?.(e);
 	}
+	let handleDragEnd = (mesh: any, skipSnapping?: boolean) => {
+		// assigned inside onMount
+	};
 
 	// Create preview for component
 	async function createComponentPreview(component: Component, previewCanvas: HTMLCanvasElement) {
@@ -178,10 +211,12 @@
 		if (!scene) return;
 
 		// Remove all placed meshes
-		placedMeshes.forEach(mesh => {
+		placedMeshes.forEach((mesh) => {
 			mesh.dispose();
 		});
 		placedMeshes = [];
+		placedOrder = [];
+		placedMap.clear();
 		
 		if (gizmoManager) {
 			gizmoManager.attachToMesh(null);
@@ -234,6 +269,9 @@
 	onMount(async () => {
 		if (!browser || !canvas) return;
 
+		// Shuffle tray order on every page load (client-only to avoid SSR hydration mismatch)
+		shuffledComponents = shuffleInPlace([...COMPONENTS]);
+
 		// Dynamically import Babylon.js only on client side
 		const babylon = await import('@babylonjs/core');
 		await import('@babylonjs/loaders');
@@ -251,6 +289,9 @@
 		GizmoManager = babylon.GizmoManager;
 		PointerEventTypes = babylon.PointerEventTypes;
 		UtilityLayerRenderer = babylon.UtilityLayerRenderer;
+		PointerDragBehavior = babylon.PointerDragBehavior;
+
+		initTrayPositions();
 
 		// Initialize Babylon.js
 		engine = new Engine(canvas, true, {
@@ -262,17 +303,27 @@
 		scene.clearColor = new Color4(0.02, 0.02, 0.05, 1);
 
 		// Camera setup
-		const camera = new ArcRotateCamera(
+		camera = new ArcRotateCamera(
 			'camera',
 			-Math.PI / 2,
 			Math.PI / 2.5,
-			25,
+			88,
 			Vector3.Zero(),
 			scene
 		);
 		camera.attachControl(canvas, true);
-		camera.lowerRadiusLimit = 10;
-		camera.upperRadiusLimit = 60;
+		camera.lowerRadiusLimit = 18;
+		camera.upperRadiusLimit = 400;
+		camera.useFramingBehavior = true;
+		if (camera.framingBehavior) {
+			// Add comfortable padding so the scene doesn't feel over-zoomed.
+			camera.framingBehavior.radiusScale = 2.6;
+			camera.framingBehavior.positionScale = 0.5;
+			camera.framingBehavior.framingTime = 250;
+			camera.framingBehavior.elevationReturnTime = -1;
+			camera.framingBehavior.zoomStopsAnimation = false;
+			camera.framingBehavior.autoCorrectCameraLimitsAndSensibility = false;
+		}
 
 		// Lighting
 		const light = new HemisphericLight('light', new Vector3(1, 1, 0), scene);
@@ -296,11 +347,514 @@
 			if (casingMesh) {
 				const bounds = casingMesh.getHierarchyBoundingVectors();
 				const center = bounds.max.add(bounds.min).scale(0.5);
-				camera.target = center;
+				// Center the casing and face the opening toward the user.
+				// Engine axis is X in this activity; alpha=0 places the camera on +X looking toward -X.
+				camera.setTarget(center);
+				camera.alpha = 0;
+				camera.beta = Math.PI / 2.05;
+				camera.radius = Math.max(bounds.max.subtract(bounds.min).length() * 2.0, 65);
 				casingMesh.isPickable = false; // Don't select the casing
+				updateCameraFraming();
 			}
 		} catch (error) {
 			console.error('Error loading casing:', error);
+		}
+
+		// ---- Dynamic placement + scaling + scoring (client-only) ----
+		const getWorldBounds = (mesh: any) => mesh.getHierarchyBoundingVectors();
+		const getBoundingSize = (mesh: any) => {
+			try {
+				mesh.computeWorldMatrix?.(true);
+				const bb = mesh.getBoundingInfo?.()?.boundingBox;
+				const ex = bb?.extendSizeWorld ?? bb?.extendSize;
+				if (ex) {
+					return {
+						x: Math.max(0.0001, (ex.x ?? 0) * 2),
+						y: Math.max(0.0001, (ex.y ?? 0) * 2),
+						z: Math.max(0.0001, (ex.z ?? 0) * 2)
+					};
+				}
+			} catch {
+				// ignore and fallback
+			}
+			const b = getWorldBounds(mesh);
+			return {
+				x: Math.max(0.0001, b.max.x - b.min.x),
+				y: Math.max(0.0001, b.max.y - b.min.y),
+				z: Math.max(0.0001, b.max.z - b.min.z)
+			};
+		};
+
+		const setYZToCasingCenter = (mesh: any) => {
+			if (!casingMesh) return;
+			const casingBounds = getWorldBounds(casingMesh);
+			const casingCenter = casingBounds.max.add(casingBounds.min).scale(0.5);
+			const curBounds = getWorldBounds(mesh);
+			const curCenter = curBounds.max.add(curBounds.min).scale(0.5);
+			mesh.position.y += casingCenter.y - curCenter.y;
+			mesh.position.z += casingCenter.z - curCenter.z;
+		};
+
+		const clampXToCasing = (mesh: any) => {
+			if (!casingMesh) return;
+			const casingBounds = getWorldBounds(casingMesh);
+			const cur = getWorldBounds(mesh);
+			const minX = casingBounds.min.x + CASING_PADDING_X;
+			const maxX = casingBounds.max.x - CASING_PADDING_X;
+			if (cur.min.x < minX) mesh.position.x += minX - cur.min.x;
+			if (cur.max.x > maxX) mesh.position.x -= cur.max.x - maxX;
+		};
+		
+		// Position component at next available slot (left to right from casing front)
+		const positionNextToLastPlaced = (mesh: any) => {
+			if (!casingMesh) return;
+			
+			const casingBounds = getWorldBounds(casingMesh);
+			const meshBounds = getWorldBounds(mesh);
+			const meshWidth = meshBounds.max.x - meshBounds.min.x;
+			
+			// If this is the first component, place it at the front (max.x) of casing
+			if (placedMap.size <= 1) {
+				const targetMaxX = casingBounds.max.x - CASING_PADDING_X;
+				const currentMaxX = meshBounds.max.x;
+				mesh.position.x += (targetMaxX - currentMaxX);
+				mesh.computeWorldMatrix?.(true);
+				return;
+			}
+			
+			// Find the leftmost placed component (excluding self) - components flow from max.x towards min.x
+			let leftmostMinX = casingBounds.max.x;
+			for (const [id, otherMesh] of placedMap.entries()) {
+				if (otherMesh === mesh) continue; // Skip self
+				const otherBounds = getWorldBounds(otherMesh);
+				if (otherBounds.min.x < leftmostMinX) {
+					leftmostMinX = otherBounds.min.x;
+				}
+			}
+			
+			// Position this component to the left of the leftmost one (towards min.x)
+			const currentMaxX = meshBounds.max.x;
+			const targetMaxX = leftmostMinX - 0.05; // Small gap for visual separation
+			mesh.position.x += (targetMaxX - currentMaxX);
+			mesh.computeWorldMatrix?.(true);
+		};
+
+		// Reflow all placed meshes to fit perfectly inside casing with no gaps
+		const reflowAndFit = () => {
+			if (!casingMesh || placedMap.size === 0) return;
+			const casingBounds = getWorldBounds(casingMesh);
+			const casingSize = getBoundingSize(casingMesh);
+			const availableWidth = (casingBounds.max.x - casingBounds.min.x) - CASING_PADDING_X * 2;
+			
+			// Sort by current world X descending (max.x to min.x) - front to back
+			const meshes = Array.from(placedMap.values()).sort((a, b) => {
+				const aB = getWorldBounds(a);
+				const bB = getWorldBounds(b);
+				return bB.min.x - aB.min.x; // Reversed: higher X (front) comes first
+			});
+			
+			// Measure current widths
+			let totalWidth = 0;
+			for (const m of meshes) {
+				m.computeWorldMatrix?.(true);
+				const b = getWorldBounds(m);
+				const w = b.max.x - b.min.x;
+				totalWidth += w;
+			}
+			
+			// If total width exceeds available width, scale all components down uniformly
+			let scaleFactor = 1;
+			if (totalWidth > availableWidth) {
+				scaleFactor = availableWidth / Math.max(totalWidth, 0.0001);
+				console.log(`Scaling components by ${scaleFactor.toFixed(3)} to fit casing`);
+				
+				// Apply uniform scaling to all components
+				meshes.forEach(m => {
+					m.scaling.scaleInPlace(scaleFactor);
+					m.computeWorldMatrix?.(true);
+				});
+			}
+
+			// Position components touching each other from front to back with no gaps
+			let cursor = casingBounds.max.x - CASING_PADDING_X; // Start from front (max.x)
+			meshes.forEach((m) => {
+				// Align Y/Z to centerline
+				setYZToCasingCenter(m);
+				m.computeWorldMatrix?.(true);
+				
+				// Position component at cursor
+				const b = getWorldBounds(m);
+				const currentMaxX = b.max.x;
+				const dx = cursor - currentMaxX;
+				m.position.x += dx;
+				m.computeWorldMatrix?.(true);
+				
+				// Move cursor to left edge of this component for next component
+				const placedBounds = getWorldBounds(m);
+				cursor = placedBounds.min.x; // No gap - components touch
+			});
+		};
+
+		// Load reference scales from full turbofan model for perfect fit
+		const loadReferenceScales = async () => {
+			try {
+				const result = await SceneLoader.ImportMeshAsync(
+					'',
+					'/models/Turbofan.glb',
+					'',
+					scene
+				);
+				
+				if (result.meshes.length > 0) {
+					console.log('Reference model meshes:', result.meshes.map((m: any) => m.name));
+					
+					// Find component meshes by name matching (case-insensitive, partial match)
+					const componentMap: Record<string, string[]> = {
+						intake: ['intake', 'inlet', 'fan'],
+						compression: ['compress', 'compressor', 'lpc', 'hpc'],
+						combustion: ['combustion', 'combustor', 'burner', 'chamber'],
+						turbine: ['turbine', 'lpt', 'hpt'],
+						exhaust: ['exhaust', 'nozzle', 'tail']
+					};
+					
+					for (const [id, keywords] of Object.entries(componentMap)) {
+						const mesh = result.meshes.find((m: any) => {
+							const name = m.name.toLowerCase();
+							return keywords.some(kw => name.includes(kw));
+						});
+						
+						if (mesh) {
+							const bounds = mesh.getHierarchyBoundingVectors();
+							const worldPos = mesh.getAbsolutePosition();
+							referenceScales.set(id, {
+								scale: mesh.scaling.clone(),
+								bounds: {
+									min: bounds.min.clone(),
+									max: bounds.max.clone()
+								},
+								position: worldPos.clone()
+							});
+							console.log(`Found reference for ${id}:`, mesh.name, 'scale:', mesh.scaling);
+						} else {
+							console.warn(`No reference mesh found for ${id}`);
+						}
+					}
+				}
+				
+				// Dispose the reference model after extracting data
+				result.meshes.forEach((m: any) => m.dispose());
+			} catch (error) {
+				console.warn('Could not load reference turbofan model, using fallback scaling:', error);
+			}
+		};
+
+		// Apply dynamic scaling to fit components perfectly inside the casing
+		const normalizeScaleToCasing = (mesh: any, fitRatio = 0.92) => {
+			if (!casingMesh) return;
+			mesh.metadata = mesh.metadata || {};
+			mesh.metadata.__normalize = mesh.metadata.__normalize || {};
+			const meta = mesh.metadata.__normalize;
+			if (!meta.baseScaling) meta.baseScaling = mesh.scaling.clone();
+
+			// Always use proportional scaling to ensure perfect fit with casing
+			const casingSize = getBoundingSize(casingMesh);
+			mesh.scaling.copyFrom(meta.baseScaling);
+			mesh.computeWorldMatrix?.(true);
+			const compSize = getBoundingSize(mesh);
+
+			// Scale to fit snugly inside the casing diameter (Y/Z)
+			const targetY = casingSize.y * fitRatio;
+			const targetZ = casingSize.z * fitRatio;
+			const scaleY = targetY / compSize.y;
+			const scaleZ = targetZ / compSize.z;
+			const scaleFactor = Math.min(scaleY, scaleZ);
+			
+			const componentId = mesh.metadata?.componentId;
+			console.log(`Scaling ${componentId || 'component'} by ${scaleFactor.toFixed(3)} to fit casing`);
+			mesh.scaling.copyFrom(meta.baseScaling);
+			mesh.scaling.setAll(scaleFactor);
+			mesh.computeWorldMatrix?.(true);
+		};
+		
+		// Load reference scales for perfect component fit
+		await loadReferenceScales();
+
+		const computeOrderFromPositions = () => {
+			return Array.from(placedMap.entries())
+				.filter(([id, mesh]) => !!id && !!mesh)
+				.sort((a, b) => {
+					const aBounds = getWorldBounds(a[1]);
+					const bBounds = getWorldBounds(b[1]);
+					return aBounds.min.x - bBounds.min.x;
+				})
+				.map(([id]) => id);
+		};
+
+		const recomputeScore = (order: string[]) => {
+			const n = order.filter((id) => placedMap.has(id)).length;
+			
+			if (n === 0) {
+				score = 0;
+				return;
+			}
+			
+			// Check sequential correctness
+			let correctPositions = 0;
+			for (let i = 0; i < Math.min(order.length, SEQUENCE.length); i++) {
+				if (order[i] === SEQUENCE[i]) {
+					correctPositions++;
+				}
+			}
+			
+			// Percentage-based scoring:
+			// - Each correctly positioned component = 20% (5 components × 20% = 100%)
+			// - Placed but wrong position = 5% each
+			const correctScore = correctPositions * 20;
+			const incorrectScore = (n - correctPositions) * 5;
+			
+			score = correctScore + incorrectScore;
+		};
+
+		const SNAP_THRESHOLD_X = 1.25;
+		const COLLISION_TOLERANCE = 0.1; // Small overlap tolerance
+		
+		const hasCollision = (mesh: any): boolean => {
+			const a = getWorldBounds(mesh);
+			for (const [otherId, otherMesh] of placedMap.entries()) {
+				if (otherMesh === mesh) continue;
+				const b = getWorldBounds(otherMesh);
+				// Check for significant overlap (beyond tolerance)
+				const overlapX = Math.min(a.max.x, b.max.x) - Math.max(a.min.x, b.min.x);
+				if (overlapX > COLLISION_TOLERANCE) {
+					return true;
+				}
+			}
+			return false;
+		};
+		
+		const resolveCollisionX = (mesh: any) => {
+			mesh.metadata = mesh.metadata || {};
+			const lastValidX = mesh.metadata.lastValidPos?.x;
+			
+			if (!hasCollision(mesh)) return;
+			
+			// Try to revert to last valid position first
+			if (typeof lastValidX === 'number' && Number.isFinite(lastValidX)) {
+				mesh.position.x = lastValidX;
+				mesh.computeWorldMatrix?.(true);
+				
+				// If still colliding after revert, send back to tray
+				if (hasCollision(mesh)) {
+					returnToTray(mesh);
+				}
+				return;
+			}
+			
+			// No valid last position, try to find space or return to tray
+			let resolved = false;
+			for (const [otherId, otherMesh] of placedMap.entries()) {
+				if (otherMesh === mesh) continue;
+				const a = getWorldBounds(mesh);
+				const b = getWorldBounds(otherMesh);
+				const overlapX = Math.min(a.max.x, b.max.x) - Math.max(a.min.x, b.min.x);
+				
+				if (overlapX > COLLISION_TOLERANCE) {
+					// Try pushing to nearest free space
+					const pushLeftDist = b.min.x - a.max.x;
+					const pushRightDist = b.max.x - a.min.x;
+					
+					if (Math.abs(pushLeftDist) < Math.abs(pushRightDist)) {
+						mesh.position.x += pushLeftDist - 0.2; // Add small gap
+					} else {
+						mesh.position.x += pushRightDist + 0.2; // Add small gap
+					}
+					mesh.computeWorldMatrix?.(true);
+					
+					// Check if pushing resolved the collision
+					if (!hasCollision(mesh)) {
+						resolved = true;
+						break;
+					}
+				}
+			}
+			
+			// If still colliding after all attempts, return to tray
+			if (!resolved && hasCollision(mesh)) {
+				returnToTray(mesh);
+			}
+		};
+
+		const trySnapToCorrectNeighbor = (mesh: any) => {
+			const id = mesh.metadata?.componentId as string | undefined;
+			if (!id) return;
+			const idx = SEQUENCE.indexOf(id);
+			if (idx === -1) return;
+
+			const leftId = idx > 0 ? SEQUENCE[idx - 1] : null;
+			const rightId = idx < SEQUENCE.length - 1 ? SEQUENCE[idx + 1] : null;
+			const leftMesh = leftId ? placedMap.get(leftId) : null;
+			const rightMesh = rightId ? placedMap.get(rightId) : null;
+
+			const cur = getWorldBounds(mesh);
+			let bestDelta: number | null = null;
+
+			if (leftMesh) {
+				const lb = getWorldBounds(leftMesh);
+				const gap = cur.min.x - lb.max.x;
+				if (Math.abs(gap) <= SNAP_THRESHOLD_X) bestDelta = -gap;
+			}
+
+			if (rightMesh) {
+				const rb = getWorldBounds(rightMesh);
+				const gap = rb.min.x - cur.max.x;
+				const delta = gap;
+				if (Math.abs(delta) <= SNAP_THRESHOLD_X) {
+					if (bestDelta === null || Math.abs(delta) < Math.abs(bestDelta)) bestDelta = delta;
+				}
+			}
+
+			if (bestDelta !== null) {
+				mesh.position.x += bestDelta;
+				mesh.computeWorldMatrix?.(true);
+			}
+		};
+
+		handleDragEnd = (mesh: any, skipSnapping?: boolean) => {
+			const id = mesh.metadata?.componentId as string | undefined;
+			if (!id) return;
+			
+			// Always maintain centerline alignment
+			setYZToCasingCenter(mesh);
+			// Use 92% fit ratio for proper assembly
+			normalizeScaleToCasing(mesh, 0.92);
+			clampXToCasing(mesh);
+			reflowAndFit();
+			
+			// Only try to snap and resolve collisions during drag, not on initial drop
+			if (skipSnapping !== true) {
+				trySnapToCorrectNeighbor(mesh);
+				resolveCollisionX(mesh);
+				clampXToCasing(mesh);
+			}
+			
+			mesh.metadata = mesh.metadata || {};
+			mesh.metadata.lastValidPos = mesh.position.clone();
+			mesh.metadata.snapped = true;
+
+			placedOrder = computeOrderFromPositions();
+			recomputeScore(placedOrder);
+			updateCameraFraming();
+		};
+
+		onCanvasDragOverImpl = (_e: DragEvent) => {
+			// no-op beyond preventDefault in the stable handler
+		};
+
+		onCanvasDropImpl = async (e: DragEvent) => {
+			if (!scene) return;
+
+			const componentId = e.dataTransfer?.getData('componentId');
+			if (!componentId) return;
+			const component = COMPONENTS.find((c) => c.id === componentId);
+			if (!component) return;
+
+			// If already placed, ignore re-drop (user can drag to reposition)
+			const already = placedMap.get(component.id);
+			if (already) {
+				if (gizmoManager) {
+					gizmoManager.attachToMesh(already);
+					selectedMeshName = component.name;
+				}
+				return;
+			}
+
+			try {
+				const result = await SceneLoader.ImportMeshAsync('', component.modelPath, '', scene);
+				if (result.meshes.length <= 0) return;
+
+				// Use a mesh-like root for behaviors/bounds when possible.
+				const candidate =
+					result.meshes.find((m: any) => typeof m.getBoundingInfo === 'function') ?? result.meshes[0];
+				const rootMesh = findRootMesh(candidate);
+				
+				// Start at casing center (will be positioned sequentially after)
+				if (casingMesh) {
+					const casingBounds = getWorldBounds(casingMesh);
+					const casingCenter = casingBounds.max.add(casingBounds.min).scale(0.5);
+					rootMesh.position.copyFrom(casingCenter);
+				} else {
+					rootMesh.position.copyFrom(Vector3.Zero());
+				}
+				
+				rootMesh.metadata = {
+					componentId: component.id,
+					componentName: component.name,
+					originalPos: rootMesh.position.clone(),
+					snapped: false,
+					lastValidPos: null
+				};
+
+				// Set Y/Z to centerline and scale to fit
+				setYZToCasingCenter(rootMesh);
+				normalizeScaleToCasing(rootMesh, 0.95);
+				
+				// Add to map before positioning (so positionNextToLastPlaced can see previous components)
+				placedMap.set(component.id, rootMesh);
+				placedMeshes.push(rootMesh);
+				
+				// Position sequentially from left to right, then reflow to keep everything inside casing
+				positionNextToLastPlaced(rootMesh);
+				reflowAndFit();
+
+				// PointerDragBehavior: strictly X-axis only, Y and Z locked to centerline.
+				const drag = new PointerDragBehavior({ dragAxis: new Vector3(1, 0, 0), moveAttached: true });
+				drag.dragDeltaRatio = 1;
+				drag.forceNormal = true;
+				
+				// Store the locked Y and Z positions
+				let lockedY: number;
+				let lockedZ: number;
+				
+				drag.onDragStartObservable.add(() => {
+					rootMesh.metadata.originalPos = rootMesh.position.clone();
+					rootMesh.metadata.lastValidPos = rootMesh.position.clone();
+					setYZToCasingCenter(rootMesh);
+					clampXToCasing(rootMesh);
+					// Lock Y and Z positions
+					lockedY = rootMesh.position.y;
+					lockedZ = rootMesh.position.z;
+				});
+				drag.onDragObservable.add(() => {
+					// Enforce Y and Z lock during drag
+					rootMesh.position.y = lockedY;
+					rootMesh.position.z = lockedZ;
+					clampXToCasing(rootMesh);
+				});
+				drag.onDragEndObservable.add(() => {
+					// Final enforcement of Y and Z lock
+					rootMesh.position.y = lockedY;
+					rootMesh.position.z = lockedZ;
+					handleDragEnd(rootMesh);
+				});
+				rootMesh.addBehavior(drag);
+
+				handleDragEnd(rootMesh, true); // Skip snapping/collision on initial drop
+
+				if (gizmoManager) {
+					gizmoManager.attachToMesh(rootMesh);
+					selectedMeshName = component.name;
+				}
+				updateCameraFraming();
+			} catch (error) {
+				console.error('Error loading component:', error);
+			}
+		};
+
+		// If parts were placed before casing finished loading, reflow them now.
+		if (placedOrder.length > 0) {
+			placedOrder = computeOrderFromPositions();
+			recomputeScore(placedOrder);
+			updateCameraFraming();
 		}
 
 		// Setup Gizmo Manager
@@ -362,11 +916,20 @@
 					case 'backspace':
 						if (gizmoManager.gizmos.positionGizmo?.attachedMesh) {
 							const meshToDelete = gizmoManager.gizmos.positionGizmo.attachedMesh;
+							const wasSnapped = !!meshToDelete.metadata?.snapped;
 							gizmoManager.attachToMesh(null);
 							meshToDelete.dispose();
 							placedMeshes = placedMeshes.filter(m => m !== meshToDelete);
+							const id = meshToDelete.metadata?.componentId;
+							if (id) {
+								placedMap.delete(id);
+								placedOrder = placedOrder.filter((x) => x !== id);
+							}
 							selectedMeshName = null;
-							score = Math.max(0, score - 5);
+							if (wasSnapped) score = Math.max(0, score - 5);
+							placedOrder = computeOrderFromPositions();
+							recomputeScore(placedOrder);
+							updateCameraFraming();
 						}
 						break;
 				}
@@ -389,6 +952,86 @@
 
 	function handleResize() {
 		engine?.resize();
+	}
+
+	function returnToTray(mesh: any) {
+		const id = mesh.metadata?.componentId as string | undefined;
+		const trayPos = id ? trayPositions.get(id) : null;
+		if (trayPos) {
+			mesh.position.copyFrom(trayPos);
+		} else {
+			pushAway(mesh);
+		}
+		if (id) {
+			placedMap.delete(id);
+			placedOrder = placedOrder.filter((x) => x !== id);
+			mesh.metadata = mesh.metadata || {};
+			mesh.metadata.snapped = false;
+			mesh.metadata.lastValidPos = null;
+		}
+	}
+
+	function pushAway(mesh: any) {
+		mesh.position.addInPlace(new Vector3(0, 0, PUSH_AWAY_Z));
+	}
+
+	function updateCameraFraming() {
+		const activeCamera = camera || scene?.activeCamera;
+		if (!activeCamera) return;
+
+		let min = new Vector3(Number.POSITIVE_INFINITY, Number.POSITIVE_INFINITY, Number.POSITIVE_INFINITY);
+		let max = new Vector3(Number.NEGATIVE_INFINITY, Number.NEGATIVE_INFINITY, Number.NEGATIVE_INFINITY);
+		let hasAnyBounds = false;
+
+		// Include casing bounds as baseline so framing isn't too tight/zoomed
+		if (casingMesh) {
+			const cb = casingMesh.getHierarchyBoundingVectors();
+			min = Vector3.Minimize(min, cb.min);
+			max = Vector3.Maximize(max, cb.max);
+			hasAnyBounds = true;
+		}
+
+		if (placedMap.size > 0) {
+			placedMap.forEach((m) => {
+				const b = m.getHierarchyBoundingVectors();
+				min = Vector3.Minimize(min, b.min);
+				max = Vector3.Maximize(max, b.max);
+				hasAnyBounds = true;
+			});
+		}
+
+		if (!hasAnyBounds) return;
+
+		if (casingMesh && typeof activeCamera.setTarget === 'function') {
+			const cb = casingMesh.getHierarchyBoundingVectors();
+			activeCamera.setTarget(cb.max.add(cb.min).scale(0.5));
+		}
+
+		if (activeCamera.framingBehavior) {
+			// Keep a consistent, non-zoomed-in framing.
+			activeCamera.framingBehavior.radiusScale = 2.6;
+			activeCamera.framingBehavior.positionScale = 0.5;
+			activeCamera.framingBehavior.framingTime = 250;
+			activeCamera.framingBehavior.elevationReturnTime = -1;
+			activeCamera.framingBehavior.zoomStopsAnimation = false;
+			activeCamera.framingBehavior.zoomOnBoundingInfo(min, max, false);
+			return;
+		}
+
+		if (typeof activeCamera.zoomOn === 'function') {
+			// Prefer Babylon's built-in zoomOn when available
+			const meshesToZoom: any[] = [];
+			if (casingMesh) meshesToZoom.push(casingMesh);
+			placedMap.forEach((m) => meshesToZoom.push(m));
+			activeCamera.zoomOn(meshesToZoom);
+			return;
+		}
+
+		// fallback
+		const size = max.subtract(min);
+		const maxDim = Math.max(size.x, size.y, size.z);
+		activeCamera.setTarget(max.add(min).scale(0.5));
+		activeCamera.radius = maxDim * 6.3;
 	}
 
 	onDestroy(() => {
@@ -472,7 +1115,7 @@
 	<div class="components-shelf">
 		<h3 class="shelf-title">Component Parts</h3>
 		<div class="shelf-grid">
-			{#each COMPONENTS as component (component.id)}
+			{#each (shuffledComponents.length ? shuffledComponents : COMPONENTS) as component (component.id)}
 				<div
 					class="component-card"
 					draggable="true"
@@ -744,9 +1387,11 @@
 	}
 
 	.shelf-grid {
-		display: grid;
-		grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-		gap: 1.5rem;
+		display: flex;
+		flex-direction: row;
+		flex-wrap: nowrap;
+		gap: 1rem;
+		justify-content: space-between;
 	}
 
 	.component-card {
@@ -758,6 +1403,8 @@
 		transition: all 0.3s ease;
 		display: flex;
 		flex-direction: column;
+		flex: 1;
+		min-width: 0;
 	}
 
 	.component-card:hover {
@@ -772,7 +1419,7 @@
 
 	.component-preview-wrapper {
 		width: 100%;
-		height: 150px;
+		height: 120px;
 		background: rgba(0, 0, 0, 0.5);
 		position: relative;
 	}
@@ -790,7 +1437,7 @@
 
 	.component-name {
 		font-family: var(--font-heading);
-		font-size: 1rem;
+		font-size: 0.9rem;
 		font-weight: 700;
 		color: var(--font-secondary);
 		margin-bottom: 0.5rem;
@@ -892,8 +1539,12 @@
 		}
 
 		.shelf-grid {
-			grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
 			gap: 1rem;
+		}
+
+		.component-card {
+			flex-basis: 150px;
+			min-width: 150px;
 		}
 
 		.component-preview-wrapper {

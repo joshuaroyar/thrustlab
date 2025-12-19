@@ -1,4 +1,4 @@
-import { createBrowserClient, isBrowser, parseCookieHeader } from '@supabase/ssr';
+import { createBrowserClient, isBrowser } from '@supabase/ssr';
 import { PUBLIC_SUPABASE_ANON_KEY, PUBLIC_SUPABASE_URL } from '$env/static/public';
 import type { LayoutLoad } from './$types';
 
@@ -27,7 +27,9 @@ export const load: LayoutLoad = async ({ data, depends, fetch }) => {
                     // This is required by @supabase/ssr
                 },
             },
-        }); const { session, user } = data;
+        });
+
+    const { session, user } = data;
 
     return { supabase, session, user };
 };

@@ -12,9 +12,9 @@
 		HighlightLayer,
 		PointerEventTypes,
 		Color3,
-		AbstractMesh,
 		Mesh
 	} from '@babylonjs/core';
+	import type { AbstractMesh } from '@babylonjs/core';
 	import '@babylonjs/loaders';
 	import { ttsService } from '$lib/utils/tts';
 
@@ -386,6 +386,22 @@
 
 					// Enable framing behavior for auto-sizing
 					activeCam.useFramingBehavior = true;
+					if (activeCam.framingBehavior) {
+						// Add a bit of padding so models don't feel overly zoomed-in.
+						activeCam.framingBehavior.radiusScale = 1.9;
+						activeCam.framingBehavior.positionScale = 0.5;
+						activeCam.framingBehavior.framingTime = 250;
+						activeCam.framingBehavior.elevationReturnTime = -1;
+						activeCam.framingBehavior.zoomStopsAnimation = false;
+						activeCam.framingBehavior.autoCorrectCameraLimitsAndSensibility = false;
+
+						const worldExtends = loadedScene.getWorldExtends();
+						activeCam.framingBehavior.zoomOnBoundingInfo(
+							worldExtends.min,
+							worldExtends.max,
+							false
+						);
+					}
 
 					// --- Smoothness with Control (Low Inertia) ---
 					// Reducing inertia significantly to prevent excessive spinning
