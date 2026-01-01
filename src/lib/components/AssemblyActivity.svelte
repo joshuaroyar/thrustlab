@@ -1,1558 +1,1433 @@
 <script lang="ts">
 	import { onMount, onDestroy } from 'svelte';
 	import { browser } from '$app/environment';
-	import { saveActivityScore, getActivityScores } from '$lib/utils/activityScore';
-	
-	let Engine: any, Scene: any, ArcRotateCamera: any, Vector3: any;
-	let HemisphericLight: any, SceneLoader: any, Color4: any, Color3: any;
-	let AbstractMesh: any, MeshBuilder: any, GizmoManager: any;
-	let PointerEventTypes: any, UtilityLayerRenderer: any, PointerDragBehavior: any;
 
+	// Babylon.js imports (loaded dynamically)
+	let Engine: any,
+		Scene: any,
+		ArcRotateCamera: any,
+		Vector3: any,
+		Quaternion: any,
+		HemisphericLight: any,
+		SceneLoader: any,
+		Color4: any,
+		MeshBuilder: any,
+		PointerDragBehavior: any;
+
+	// Hardcoded assembly configuration - DO NOT MODIFY THESE NUMBERS
+	// Stored as plain objects to avoid SSR issues, converted to Babylon types at runtime
+	const assemblyConfigRaw = {
+		Casing: {
+			targetPosition: { x: 30, y: 0, z: 0 },
+			targetRotation: { x: 0, y: 0, z: 0, w: 1 }, // Identity
+			scale: { x: 0.2, y: 0.2, z: 0.2 }
+		},
+		'Intake Section (Gray)': {
+			targetPosition: { x: 47.51, y: 0.269, z: -2.881 },
+			targetRotation: { x: 0.7071, y: 0, z: 0, w: 0.7071 },
+			scale: { x: 0.2, y: 0.2, z: 0.2 }
+		},
+		'Compression Section (Gray)': {
+			targetPosition: { x: 60.464, y: -0.449, z: -2.937 },
+			targetRotation: { x: 0, y: 0, z: 0, w: 1 },
+			scale: { x: 0.2, y: 0.2, z: 0.2 }
+		},
+		'Combustion Section (Gray)': {
+			targetPosition: { x: 71.635, y: -0.726, z: -5.565 },
+			targetRotation: { x: 0.6156, y: 0, z: 0, w: 0.788 },
+			scale: { x: 0.2, y: 0.2, z: 0.2 }
+		},
+		'Turbine Section (Gray)': {
+			targetPosition: { x: 85.701, y: 1.255, z: -2.759 },
+			targetRotation: { x: 0.7071, y: 0, z: 0, w: 0.7071 },
+			scale: { x: 0.2, y: 0.2, z: 0.2 }
+		},
+		'Exhaust Section (Gray)': {
+			targetPosition: { x: 97.391, y: 0.0, z: -4.629 },
+			targetRotation: { x: 0.7071, y: 0, z: 0, w: 0.7071 },
+			scale: { x: 0.2, y: 0.2, z: 0.2 }
+		}
+	};
+
+	// Component definitions
 	interface Component {
 		id: string;
 		name: string;
+		displayName: string;
 		modelPath: string;
-		correctOrder: number;
+		imagePath: string;
+		keywords: string[];
 	}
 
 	const COMPONENTS: Component[] = [
 		{
+			id: 'casing',
+			name: 'Casing',
+			displayName: 'Casing',
+			modelPath: '/models/assembly-disassembly/Casing (Gray).gltf',
+			imagePath: '/images/assembly-disassembly/casing.png',
+			keywords: ['casing', 'case', 'shell', 'housing']
+		},
+		{
 			id: 'intake',
-			name: 'Intake Section',
-			modelPath: '/models/assembly-disassembly/Intake Section (Gray).glb',
-			correctOrder: 0
+			name: 'Intake Section (Gray)',
+			displayName: 'Intake Section',
+			modelPath: '/models/assembly-disassembly/Intake Section (Gray).gltf',
+			imagePath: '/images/assembly-disassembly/intake.png',
+			keywords: ['intake', 'inlet', 'fan']
 		},
 		{
 			id: 'compression',
-			name: 'Compression Section',
-			modelPath: '/models/assembly-disassembly/Compression Section (Gray).glb',
-			correctOrder: 1
+			name: 'Compression Section (Gray)',
+			displayName: 'Compression Section',
+			modelPath: '/models/assembly-disassembly/Compression Section (Gray).gltf',
+			imagePath: '/images/assembly-disassembly/compression.png',
+			keywords: ['compress', 'compressor']
 		},
 		{
 			id: 'combustion',
-			name: 'Combustion Section',
-			modelPath: '/models/assembly-disassembly/Combustion Section (Gray).glb',
-			correctOrder: 2
+			name: 'Combustion Section (Gray)',
+			displayName: 'Combustion Section',
+			modelPath: '/models/assembly-disassembly/Combustion Section (Gray).gltf',
+			imagePath: '/images/assembly-disassembly/combustion.png',
+			keywords: ['combustion', 'combustor', 'burner']
 		},
 		{
 			id: 'turbine',
-			name: 'Turbine Section',
-			modelPath: '/models/assembly-disassembly/Turbine Section (Gray).glb',
-			correctOrder: 3
+			name: 'Turbine Section (Gray)',
+			displayName: 'Turbine Section',
+			modelPath: '/models/assembly-disassembly/Turbine Section (Gray).gltf',
+			imagePath: '/images/assembly-disassembly/turbine.png',
+			keywords: ['turbine']
 		},
 		{
 			id: 'exhaust',
-			name: 'Exhaust Section',
-			modelPath: '/models/assembly-disassembly/Exhaust Section (Gray).glb',
-			correctOrder: 4
+			name: 'Exhaust Section (Gray)',
+			displayName: 'Exhaust Section',
+			modelPath: '/models/assembly-disassembly/Exhaust Section (Gray).gltf',
+			imagePath: '/images/assembly-disassembly/exhaust.png',
+			keywords: ['exhaust', 'nozzle']
 		}
 	];
 
-	let shuffledComponents = $state<Component[]>([]);
-
-	function shuffleInPlace<T>(arr: T[]) {
-		for (let i = arr.length - 1; i > 0; i--) {
-			const j = Math.floor(Math.random() * (i + 1));
-			[arr[i], arr[j]] = [arr[j], arr[i]];
-		}
-		return arr;
-	}
-
-	// Correct sequence (aligns with component ids)
-	const SEQUENCE = ['intake', 'compression', 'combustion', 'turbine', 'exhaust'];
-	const trayPositions = new Map<string, any>();
-	// Tracks all placed meshes (used for camera framing + deletion)
-	const placedMap = new Map<string, any>();
-	// Tracks the current left-to-right order (derived from X positions)
-	let placedOrder: string[] = [];
-	// Store reference scales from full turbofan model for perfect fit
-	const referenceScales = new Map<string, {scale: any, bounds: any, position?: any}>();
-
-	const CASING_PADDING_X = 0.3; // Padding to prevent components from extending outside
-	const PUSH_AWAY_Z = 2.5;
-
+	// Scene variables
 	let canvas: HTMLCanvasElement;
 	let engine: any = null;
 	let scene: any = null;
 	let camera: any = null;
-	let gizmoManager: any = null;
-	let ground: any = null;
+	let removeCanvasWheelGuard: (() => void) | null = null;
 	let casingMesh: any = null;
-	let placedMeshes: any[] = [];
-	let componentPreviews = new Map<string, HTMLCanvasElement>();
-	let previewScenes = new Map<string, { engine: any; scene: any }>();
-	let score = $state(0);
-	let selectedMeshName = $state<string | null>(null);
+	let componentMeshes = new Map<string, any>();
+	let placedComponents = $state(new Set<string>()); // Track which components are placed
+	let loadedComponents = $state(0);
+	let totalComponents = COMPONENTS.length;
+	let assembledCount = $state(0);
 	let showInstructions = $state(true);
-	let highScore = $state(0);
+	let loadingError = $state<string | null>(null);
+	let draggedComponentId: string | null = null;
+	let visibleComponents = $state(COMPONENTS.filter((c) => c.id !== 'casing'));
+
+	// Scoring system
+	const CORRECT_ORDER = ['intake', 'compression', 'combustion', 'turbine', 'exhaust'];
+	let assemblyOrder = $state<string[]>([]); // Track order of assembly
+	let showFeedback = $state(false);
+	let scoreData = $state<{
+		totalScore: number;
+		componentResults: Array<{ id: string; name: string; correct: boolean; points: number }>;
+	} | null>(null);
 	let isSavingScore = $state(false);
-	let saveMessage = $state<{ type: 'success' | 'error'; text: string } | null>(null);
+	let scoreSaved = $state(false);
 
-	// Precompute tray positions so pieces can be sent back when dropped incorrectly
-	function initTrayPositions() {
-		if (trayPositions.size > 0) return;
-		const startX = -18;
-		const gap = 6;
-		SEQUENCE.forEach((id, idx) => {
-			trayPositions.set(id, new Vector3(startX + gap * idx, 0, -12));
-		});
-	}
-
-	function getMeshBounds(mesh: any) {
-		return mesh.getHierarchyBoundingVectors();
-	}
-
-	function boundsIntersect(aMin: any, aMax: any, bMin: any, bMax: any) {
-		return (
-			aMin.x <= bMax.x && aMax.x >= bMin.x &&
-			aMin.y <= bMax.y && aMax.y >= bMin.y &&
-			aMin.z <= bMax.z && aMax.z >= bMin.z
-		);
-	}
-
-	function rememberLastValid(mesh: any) {
-		mesh.metadata = mesh.metadata || {};
-		mesh.metadata.lastValidPos = mesh.position.clone();
-		mesh.metadata.snapped = true;
-	}
-
-	function restoreLastValidOrTray(mesh: any) {
-		const lastValid = mesh.metadata?.lastValidPos;
-		if (lastValid) {
-			mesh.position.copyFrom(lastValid);
-			return;
-		}
-		returnToTray(mesh);
-	}
-
-	// Helper to find root mesh
-	function findRootMesh(mesh: any): any {
-		let parent = mesh;
-		while (parent.parent && parent.parent.getClassName() !== 'Scene') {
-			parent = parent.parent;
-		}
-		return parent;
-	}
-
-	// Keep stable handlers for Svelte reactivity; assign impls inside onMount.
-	let onCanvasDragOverImpl: ((e: DragEvent) => void) | null = null;
-	let onCanvasDropImpl: ((e: DragEvent) => Promise<void>) | null = null;
-
-	function onCanvasDragOver(e: DragEvent) {
-		e.preventDefault();
-		onCanvasDragOverImpl?.(e);
-	}
-
-	async function onCanvasDrop(e: DragEvent) {
-		e.preventDefault();
-		await onCanvasDropImpl?.(e);
-	}
-	let handleDragEnd = (mesh: any, skipSnapping?: boolean) => {
-		// assigned inside onMount
-	};
-
-	// Create preview for component
-	async function createComponentPreview(component: Component, previewCanvas: HTMLCanvasElement) {
-		if (!browser) return;
-
-		const babylon = await import('@babylonjs/core');
-		await import('@babylonjs/loaders');
-
-		const previewEngine = new babylon.Engine(previewCanvas, true, {
-			preserveDrawingBuffer: true,
-			stencil: true
-		});
-
-		const previewScene = new babylon.Scene(previewEngine);
-		previewScene.clearColor = new babylon.Color4(0.05, 0.05, 0.05, 1);
-
-		const camera = new babylon.ArcRotateCamera(
-			'previewCamera',
-			-Math.PI / 4,
-			Math.PI / 3,
-			3,
-			babylon.Vector3.Zero(),
-			previewScene
-		);
-
-		const light = new babylon.HemisphericLight('previewLight', new babylon.Vector3(1, 1, 0), previewScene);
-		light.intensity = 1.2;
-
-		try {
-			const result = await babylon.SceneLoader.ImportMeshAsync("", component.modelPath, "", previewScene);
-			
-			if (result.meshes.length > 0) {
-				const rootMesh = result.meshes[0];
-				const bounds = rootMesh.getHierarchyBoundingVectors();
-				const center = bounds.max.add(bounds.min).scale(0.5);
-				const size = bounds.max.subtract(bounds.min);
-				const maxDim = Math.max(size.x, size.y, size.z);
-				
-				camera.target = center;
-				camera.radius = maxDim * 2;
-				
-				// Auto-rotate
-				previewScene.registerBeforeRender(() => {
-					rootMesh.rotation.y += 0.01;
-				});
+	// Realtime score calculation
+	let currentScore = $derived(
+		assemblyOrder.reduce((score, id, index) => {
+			if (index < CORRECT_ORDER.length && id === CORRECT_ORDER[index]) {
+				return score + 20;
 			}
-		} catch (error) {
-			console.error('Error loading preview:', error);
+			return score;
+		}, 0)
+	);
+
+	const SNAP_THRESHOLD = 3.0; // Distance threshold for snapping
+
+	function shuffleComponents() {
+		const array = [...visibleComponents];
+		for (let i = array.length - 1; i > 0; i--) {
+			const j = Math.floor(Math.random() * (i + 1));
+			[array[i], array[j]] = [array[j], array[i]];
 		}
-
-		previewEngine.runRenderLoop(() => {
-			previewScene.render();
-		});
-
-		previewScenes.set(component.id, { engine: previewEngine, scene: previewScene });
+		visibleComponents = array;
 	}
 
-	function resetScene() {
-		if (!scene) return;
+	/**
+	 * Calculate score based on correct assembly order
+	 */
+	function calculateScore() {
+		const componentResults = CORRECT_ORDER.map((correctId, index) => {
+			const component = COMPONENTS.find((c) => c.id === correctId);
+			const assembledId = assemblyOrder[index];
+			const isCorrect = assembledId === correctId;
 
-		// Remove all placed meshes
-		placedMeshes.forEach((mesh) => {
-			mesh.dispose();
+			return {
+				id: correctId,
+				name: component?.displayName || correctId,
+				correct: isCorrect,
+				points: isCorrect ? 20 : 0
+			};
 		});
-		placedMeshes = [];
-		placedOrder = [];
-		placedMap.clear();
-		
-		if (gizmoManager) {
-			gizmoManager.attachToMesh(null);
-		}
-		
-		selectedMeshName = null;
-		score = 0;
-		saveMessage = null;
+
+		const totalScore = componentResults.reduce((sum, result) => sum + result.points, 0);
+
+		scoreData = {
+			totalScore,
+			componentResults
+		};
+
+		scoreSaved = false;
+		showFeedback = true;
 	}
 
-	async function saveScore() {
-		if (score <= 0) {
-			saveMessage = { type: 'error', text: 'Score must be greater than 0' };
-			setTimeout(() => saveMessage = null, 3000);
-			return;
-		}
+	/**
+	 * Save score to backend
+	 */
+	async function saveScore(closeModal = true, showAlert = true) {
+		if (!scoreData || isSavingScore) return;
 
 		isSavingScore = true;
-		saveMessage = null;
 
-		const result = await saveActivityScore({
-			activityType: 'assembly-disassembly',
-			score,
-			metadata: {
-				componentsPlaced: placedMeshes.length,
-				timestamp: new Date().toISOString()
-			}
-		});
-
-		isSavingScore = false;
-
-		if (result.success) {
-			saveMessage = { type: 'success', text: 'Score saved successfully!' };
-			// Refresh high score
-			await loadHighScore();
-		} else {
-			saveMessage = { type: 'error', text: result.error || 'Failed to save score' };
-		}
-
-		setTimeout(() => saveMessage = null, 3000);
-	}
-
-	async function loadHighScore() {
-		const result = await getActivityScores('assembly-disassembly', 1);
-		if (result.success && result.highScore !== undefined) {
-			highScore = result.highScore;
-		}
-	}
-
-	onMount(async () => {
-		if (!browser || !canvas) return;
-
-		// Shuffle tray order on every page load (client-only to avoid SSR hydration mismatch)
-		shuffledComponents = shuffleInPlace([...COMPONENTS]);
-
-		// Dynamically import Babylon.js only on client side
-		const babylon = await import('@babylonjs/core');
-		await import('@babylonjs/loaders');
-
-		Engine = babylon.Engine;
-		Scene = babylon.Scene;
-		ArcRotateCamera = babylon.ArcRotateCamera;
-		Vector3 = babylon.Vector3;
-		HemisphericLight = babylon.HemisphericLight;
-		SceneLoader = babylon.SceneLoader;
-		Color4 = babylon.Color4;
-		Color3 = babylon.Color3;
-		AbstractMesh = babylon.AbstractMesh;
-		MeshBuilder = babylon.MeshBuilder;
-		GizmoManager = babylon.GizmoManager;
-		PointerEventTypes = babylon.PointerEventTypes;
-		UtilityLayerRenderer = babylon.UtilityLayerRenderer;
-		PointerDragBehavior = babylon.PointerDragBehavior;
-
-		initTrayPositions();
-
-		// Initialize Babylon.js
-		engine = new Engine(canvas, true, {
-			preserveDrawingBuffer: true,
-			stencil: true
-		});
-
-		scene = new Scene(engine);
-		scene.clearColor = new Color4(0.02, 0.02, 0.05, 1);
-
-		// Camera setup
-		camera = new ArcRotateCamera(
-			'camera',
-			-Math.PI / 2,
-			Math.PI / 2.5,
-			88,
-			Vector3.Zero(),
-			scene
-		);
-		camera.attachControl(canvas, true);
-		camera.lowerRadiusLimit = 18;
-		camera.upperRadiusLimit = 400;
-		camera.useFramingBehavior = true;
-		if (camera.framingBehavior) {
-			// Add comfortable padding so the scene doesn't feel over-zoomed.
-			camera.framingBehavior.radiusScale = 2.6;
-			camera.framingBehavior.positionScale = 0.5;
-			camera.framingBehavior.framingTime = 250;
-			camera.framingBehavior.elevationReturnTime = -1;
-			camera.framingBehavior.zoomStopsAnimation = false;
-			camera.framingBehavior.autoCorrectCameraLimitsAndSensibility = false;
-		}
-
-		// Lighting
-		const light = new HemisphericLight('light', new Vector3(1, 1, 0), scene);
-		light.intensity = 1.5;
-
-		// Create ground for picking
-		ground = MeshBuilder.CreateGround('ground', { width: 50, height: 50 }, scene);
-		ground.isPickable = true;
-		ground.visibility = 0.1;
-
-		// Load casing model
 		try {
-			const result = await SceneLoader.ImportMeshAsync(
-				'',
-				'/models/assembly-disassembly/Casing (Gray).glb',
-				'',
-				scene
-			);
-			casingMesh = result.meshes[0];
-			
-			if (casingMesh) {
-				const bounds = casingMesh.getHierarchyBoundingVectors();
-				const center = bounds.max.add(bounds.min).scale(0.5);
-				// Center the casing and face the opening toward the user.
-				// Engine axis is X in this activity; alpha=0 places the camera on +X looking toward -X.
-				camera.setTarget(center);
-				camera.alpha = 0;
-				camera.beta = Math.PI / 2.05;
-				camera.radius = Math.max(bounds.max.subtract(bounds.min).length() * 2.0, 65);
-				casingMesh.isPickable = false; // Don't select the casing
-				updateCameraFraming();
+			const response = await fetch('/api/activity-score/save', {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify({
+					activityType: 'assembly-disassembly',
+					score: scoreData.totalScore,
+					metadata: {
+						assemblyOrder,
+						correctOrder: CORRECT_ORDER,
+						componentResults: scoreData.componentResults
+					}
+				})
+			});
+
+			const result = await response.json();
+
+			if (result.success) {
+				scoreSaved = true;
+				if (showAlert) alert('✅ Score saved successfully!');
+				if (closeModal) showFeedback = false;
+			} else {
+				if (showAlert) alert('❌ Failed to save score: ' + (result.error || 'Unknown error'));
 			}
 		} catch (error) {
-			console.error('Error loading casing:', error);
+			console.error('Error saving score:', error);
+			if (showAlert) alert('❌ Error saving score. Please try again.');
+		} finally {
+			isSavingScore = false;
+		}
+	}
+
+	async function handleSaveAndShowFeedback() {
+		calculateScore();
+		await saveScore(false, false);
+	}
+
+	/**
+	 * Close feedback modal without saving
+	 */
+	function closeFeedback() {
+		showFeedback = false;
+	}
+
+	/**
+	 * Find the root mesh from loaded result by searching for keywords
+	 */
+	function findMeshByKeywords(meshes: any[], keywords: string[]): any {
+		// Try to find a mesh whose name contains any of the keywords
+		for (const keyword of keywords) {
+			const found = meshes.find((m: any) => m.name.toLowerCase().includes(keyword));
+			if (found) return found;
 		}
 
-		// ---- Dynamic placement + scaling + scoring (client-only) ----
-		const getWorldBounds = (mesh: any) => mesh.getHierarchyBoundingVectors();
-		const getBoundingSize = (mesh: any) => {
-			try {
-				mesh.computeWorldMatrix?.(true);
-				const bb = mesh.getBoundingInfo?.()?.boundingBox;
-				const ex = bb?.extendSizeWorld ?? bb?.extendSize;
-				if (ex) {
-					return {
-						x: Math.max(0.0001, (ex.x ?? 0) * 2),
-						y: Math.max(0.0001, (ex.y ?? 0) * 2),
-						z: Math.max(0.0001, (ex.z ?? 0) * 2)
-					};
-				}
-			} catch {
-				// ignore and fallback
+		// Fallback: return first non-root mesh with geometry
+		const meshWithGeometry = meshes.find(
+			(m: any) => m.getTotalVertices && m.getTotalVertices() > 0
+		);
+		if (meshWithGeometry) return meshWithGeometry;
+
+		// Last resort: return root mesh
+		return meshes[0];
+	}
+
+	/**
+	 * Load a single component and set it up
+	 */
+	async function loadComponent(component: Component, shelfIndex: number) {
+		try {
+			console.log(`Loading ${component.displayName} from ${component.modelPath}...`);
+			const result = await SceneLoader.ImportMeshAsync('', component.modelPath, '', scene);
+
+			if (!result.meshes || result.meshes.length === 0) {
+				console.error(`No meshes loaded for ${component.name}`);
+				return;
 			}
-			const b = getWorldBounds(mesh);
-			return {
-				x: Math.max(0.0001, b.max.x - b.min.x),
-				y: Math.max(0.0001, b.max.y - b.min.y),
-				z: Math.max(0.0001, b.max.z - b.min.z)
+
+			// Find the appropriate root mesh
+			const rootMesh = findMeshByKeywords(result.meshes, component.keywords);
+
+			if (!rootMesh) {
+				console.error(`Could not find root mesh for ${component.name}`);
+				return;
+			}
+
+			// Get assembly config for this component
+			const configRaw = assemblyConfigRaw[component.name as keyof typeof assemblyConfigRaw];
+			if (!configRaw) {
+				console.error(`No assembly config found for ${component.name}`);
+				return;
+			}
+
+			// Convert plain objects to Babylon types
+			let targetPosition = new Vector3(
+				configRaw.targetPosition.x,
+				configRaw.targetPosition.y,
+				configRaw.targetPosition.z
+			);
+			let targetRotation = new Quaternion(
+				configRaw.targetRotation.x,
+				configRaw.targetRotation.y,
+				configRaw.targetRotation.z,
+				configRaw.targetRotation.w
+			);
+			const scale = new Vector3(configRaw.scale.x, configRaw.scale.y, configRaw.scale.z);
+
+			// Set scale immediately
+			rootMesh.scaling = scale.clone();
+
+			// Store reference to target config in metadata
+			rootMesh.metadata = {
+				component: component,
+				targetPosition: targetPosition,
+				targetRotation: targetRotation,
+				isAssembled: false
 			};
-		};
 
-		const setYZToCasingCenter = (mesh: any) => {
-			if (!casingMesh) return;
-			const casingBounds = getWorldBounds(casingMesh);
-			const casingCenter = casingBounds.max.add(casingBounds.min).scale(0.5);
-			const curBounds = getWorldBounds(mesh);
-			const curCenter = curBounds.max.add(curBounds.min).scale(0.5);
-			mesh.position.y += casingCenter.y - curCenter.y;
-			mesh.position.z += casingCenter.z - curCenter.z;
-		};
-
-		const clampXToCasing = (mesh: any) => {
-			if (!casingMesh) return;
-			const casingBounds = getWorldBounds(casingMesh);
-			const cur = getWorldBounds(mesh);
-			const minX = casingBounds.min.x + CASING_PADDING_X;
-			const maxX = casingBounds.max.x - CASING_PADDING_X;
-			if (cur.min.x < minX) mesh.position.x += minX - cur.min.x;
-			if (cur.max.x > maxX) mesh.position.x -= cur.max.x - maxX;
-		};
-		
-		// Position component at next available slot (left to right from casing front)
-		const positionNextToLastPlaced = (mesh: any) => {
-			if (!casingMesh) return;
-			
-			const casingBounds = getWorldBounds(casingMesh);
-			const meshBounds = getWorldBounds(mesh);
-			const meshWidth = meshBounds.max.x - meshBounds.min.x;
-			
-			// If this is the first component, place it at the front (max.x) of casing
-			if (placedMap.size <= 1) {
-				const targetMaxX = casingBounds.max.x - CASING_PADDING_X;
-				const currentMaxX = meshBounds.max.x;
-				mesh.position.x += (targetMaxX - currentMaxX);
-				mesh.computeWorldMatrix?.(true);
-				return;
+			// Position casing at center (visible), other components hidden initially
+			if (component.id === 'casing') {
+				rootMesh.position = targetPosition.clone();
+				rootMesh.rotationQuaternion = targetRotation.clone();
+				rootMesh.isVisible = true;
+				placedComponents.add(component.id);
+			} else {
+				// Hide other components until dropped from tray
+				rootMesh.position = new Vector3(0, -1000, 0); // Off screen
+				rootMesh.isVisible = false;
 			}
-			
-			// Find the leftmost placed component (excluding self) - components flow from max.x towards min.x
-			let leftmostMinX = casingBounds.max.x;
-			for (const [id, otherMesh] of placedMap.entries()) {
-				if (otherMesh === mesh) continue; // Skip self
-				const otherBounds = getWorldBounds(otherMesh);
-				if (otherBounds.min.x < leftmostMinX) {
-					leftmostMinX = otherBounds.min.x;
+
+			// Make it pickable for drag behavior (will be added when dropped)
+			rootMesh.isPickable = true;
+
+			// Store in map
+			componentMeshes.set(component.id, rootMesh);
+			loadedComponents++;
+
+			console.log(`Loaded ${component.displayName} at shelf position ${shelfIndex}`);
+		} catch (error) {
+			console.error(`Error loading ${component.name}:`, error);
+			loadingError = `Failed to load ${component.displayName}. Check console for details.`;
+			// Still increment counter so loading doesn't get stuck
+			loadedComponents++;
+		}
+	}
+
+	/**
+	 * Setup drag behavior for a mesh (called after placement from tray)
+	 */
+	function setupDragBehavior(mesh: any) {
+		if (!PointerDragBehavior) return;
+
+		// Constrain drag to X axis
+		const dragBehavior = new PointerDragBehavior({ dragAxis: new Vector3(1, 0, 0) });
+
+		// Enforce Y and Z constraints during drag to ensure it stays "inside" the casing line
+		dragBehavior.onDragObservable.add(() => {
+			if (mesh.metadata && mesh.metadata.targetPosition) {
+				mesh.position.y = mesh.metadata.targetPosition.y;
+				mesh.position.z = mesh.metadata.targetPosition.z;
+			}
+		});
+
+		dragBehavior.onDragStartObservable.add(() => {
+			console.log(`Started dragging ${mesh.metadata.component.displayName}`);
+		});
+
+		dragBehavior.onDragEndObservable.add(() => {
+			checkAndSnap(mesh);
+		});
+
+		mesh.addBehavior(dragBehavior);
+	}
+
+	/**
+	 * Handle drag start from component tray
+	 */
+	function handleDragStart(event: DragEvent, componentId: string) {
+		if (placedComponents.has(componentId)) return; // Already placed
+		draggedComponentId = componentId;
+		if (event.dataTransfer) {
+			event.dataTransfer.effectAllowed = 'move';
+			event.dataTransfer.setData('componentId', componentId);
+		}
+	}
+
+	/**
+	 * Handle drop on canvas
+	 */
+	async function handleCanvasDrop(event: DragEvent) {
+		event.preventDefault();
+		if (!draggedComponentId || !scene || !canvas) return;
+
+		const componentId = draggedComponentId;
+		draggedComponentId = null;
+
+		if (placedComponents.has(componentId)) return;
+
+		const mesh = componentMeshes.get(componentId);
+		if (!mesh) return;
+
+		// Calculate 3D position from mouse coordinates
+		const pickResult = scene.pick(scene.pointerX, scene.pointerY);
+		const dropPosition =
+			pickResult?.hit && pickResult.pickedPoint ? pickResult.pickedPoint : new Vector3(0, 0, 0);
+
+		// Make visible and position at drop location
+		mesh.isVisible = true;
+
+		// Constrain to target Y and Z, only allow X to vary based on drop
+		const targetPos = mesh.metadata.targetPosition;
+		mesh.position = new Vector3(dropPosition.x, targetPos.y, targetPos.z);
+
+		// Set rotation to target rotation
+		mesh.rotationQuaternion = mesh.metadata.targetRotation.clone();
+
+		// Add drag behavior for repositioning
+		setupDragBehavior(mesh);
+
+		// Mark as placed
+		placedComponents = new Set(placedComponents.add(componentId));
+
+		// Try to snap immediately
+		checkAndSnap(mesh);
+	}
+
+	function handleCanvasDragOver(event: DragEvent) {
+		event.preventDefault();
+		if (event.dataTransfer) {
+			event.dataTransfer.dropEffect = 'move';
+		}
+	}
+
+	/**
+	 * Check if mesh is close enough to snap, and snap if so
+	 */
+	function checkAndSnap(mesh: any) {
+		const metadata = mesh.metadata;
+		if (!metadata || metadata.isAssembled) return;
+
+		const targetPos = metadata.targetPosition;
+		const currentPos = mesh.position;
+
+		// Calculate distance to target position
+		const distance = Vector3.Distance(currentPos, targetPos);
+
+		console.log(
+			`${metadata.component.displayName}: distance = ${distance.toFixed(2)} (threshold = ${SNAP_THRESHOLD})`
+		);
+
+		if (distance < SNAP_THRESHOLD) {
+			// SNAP!
+			mesh.position = targetPos.clone();
+			mesh.rotationQuaternion = metadata.targetRotation.clone();
+
+			// Parent to casing (if not casing itself)
+			if (metadata.component.id !== 'casing' && casingMesh) {
+				mesh.parent = casingMesh;
+
+				// Reset scaling to 1,1,1 since it inherits parent's scale (0.2)
+				// This ensures the component maintains its world scale of 0.2
+				mesh.scaling = new Vector3(1, 1, 1);
+
+				// Adjust position to account for parent's scale
+				// Since casing is at (30, 0, 0) with identity rotation, we need to convert
+				// world position to local position relative to parent
+				const casingScale = assemblyConfigRaw.Casing.scale.x;
+				const scaleFactor = 1 / casingScale;
+
+				// Convert from world space to local space
+				const casingPos = casingMesh.position;
+				const localPos = targetPos.subtract(casingPos);
+				mesh.position = localPos.scale(scaleFactor);
+			}
+
+			// Mark as assembled
+			metadata.isAssembled = true;
+			assembledCount++;
+
+			// Track assembly order (exclude casing)
+			if (metadata.component.id !== 'casing') {
+				assemblyOrder = [...assemblyOrder, metadata.component.id];
+				console.log('Assembly order:', assemblyOrder);
+			}
+
+			// Remove drag behavior to make component immoveable once snapped
+			if (mesh.getBehaviorByName) {
+				const behavior = mesh.getBehaviorByName('PointerDrag');
+				if (behavior) {
+					mesh.removeBehavior(behavior);
+					console.log(`🔒 ${metadata.component.displayName} locked in place`);
 				}
 			}
-			
-			// Position this component to the left of the leftmost one (towards min.x)
-			const currentMaxX = meshBounds.max.x;
-			const targetMaxX = leftmostMinX - 0.05; // Small gap for visual separation
-			mesh.position.x += (targetMaxX - currentMaxX);
-			mesh.computeWorldMatrix?.(true);
-		};
 
-		// Reflow all placed meshes to fit perfectly inside casing with no gaps
-		const reflowAndFit = () => {
-			if (!casingMesh || placedMap.size === 0) return;
-			const casingBounds = getWorldBounds(casingMesh);
-			const casingSize = getBoundingSize(casingMesh);
-			const availableWidth = (casingBounds.max.x - casingBounds.min.x) - CASING_PADDING_X * 2;
-			
-			// Sort by current world X descending (max.x to min.x) - front to back
-			const meshes = Array.from(placedMap.values()).sort((a, b) => {
-				const aB = getWorldBounds(a);
-				const bB = getWorldBounds(b);
-				return bB.min.x - aB.min.x; // Reversed: higher X (front) comes first
+			// Visual feedback
+			console.log(
+				`✓ ${metadata.component.displayName} assembled! (${assembledCount}/${COMPONENTS.length})`
+			);
+
+			// Check if all assembled (excluding casing which is pre-placed)
+			if (assembledCount === COMPONENTS.length - 1) {
+				setTimeout(() => {
+					calculateScore();
+					saveScore(false, false); // Auto-save silently
+				}, 500);
+			}
+		}
+	}
+
+	/**
+	 * Initialize the Babylon.js scene
+	 */
+	async function initScene() {
+		if (!browser || !canvas) return;
+
+		try {
+			// Dynamically import Babylon.js
+			const babylon = await import('@babylonjs/core');
+			await import('@babylonjs/loaders');
+
+			// Assign to module-level variables
+			Engine = babylon.Engine;
+			Scene = babylon.Scene;
+			ArcRotateCamera = babylon.ArcRotateCamera;
+			Vector3 = babylon.Vector3;
+			Quaternion = babylon.Quaternion;
+			HemisphericLight = babylon.HemisphericLight;
+			SceneLoader = babylon.SceneLoader;
+			Color4 = babylon.Color4;
+			MeshBuilder = babylon.MeshBuilder;
+			PointerDragBehavior = babylon.PointerDragBehavior;
+
+			// Make Vector3 and Quaternion globally available for assemblyConfig
+			(window as any).BABYLON = { Vector3, Quaternion };
+
+			// Create engine
+			engine = new Engine(canvas, true, { preserveDrawingBuffer: true, stencil: true });
+			scene = new Scene(engine);
+			scene.clearColor = new Color4(0, 0, 0, 0);
+
+			// Setup camera - positioned to see both shelf and assembly area
+			camera = new ArcRotateCamera(
+				'camera',
+				Math.PI / 2,
+				Math.PI / 3,
+				120,
+				new Vector3(-60, 0, 0), // Shift view left to center the casing on screen
+				scene
+			);
+			camera.attachControl(canvas, true);
+
+			// Only allow zoom when the canvas is focused.
+			const wheelInput = camera?.inputs?.attached?.mousewheel as any;
+			wheelInput?.detachControl?.(canvas);
+
+			// Prevent page scroll only while the canvas is focused.
+			const wheelGuard = (event: WheelEvent) => {
+				if (document.activeElement === (canvas as unknown as Element)) {
+					event.preventDefault();
+				}
+			};
+			canvas.addEventListener('wheel', wheelGuard, { passive: false });
+			removeCanvasWheelGuard = () => canvas.removeEventListener('wheel', wheelGuard);
+
+			// If the canvas already has focus (e.g. programmatic), enable zoom.
+			if (document.activeElement === (canvas as unknown as Element)) {
+				wheelInput?.attachControl?.(canvas);
+			}
+			camera.lowerRadiusLimit = 30;
+			camera.upperRadiusLimit = 150;
+			camera.panningSensibility = 50;
+
+			// Lighting
+			const light = new HemisphericLight('light', new Vector3(1, 1, 0.5), scene);
+			light.intensity = 1.5;
+
+			// Start render loop
+			engine.runRenderLoop(() => {
+				scene.render();
 			});
-			
-			// Measure current widths
-			let totalWidth = 0;
-			for (const m of meshes) {
-				m.computeWorldMatrix?.(true);
-				const b = getWorldBounds(m);
-				const w = b.max.x - b.min.x;
-				totalWidth += w;
-			}
-			
-			// If total width exceeds available width, scale all components down uniformly
-			let scaleFactor = 1;
-			if (totalWidth > availableWidth) {
-				scaleFactor = availableWidth / Math.max(totalWidth, 0.0001);
-				console.log(`Scaling components by ${scaleFactor.toFixed(3)} to fit casing`);
-				
-				// Apply uniform scaling to all components
-				meshes.forEach(m => {
-					m.scaling.scaleInPlace(scaleFactor);
-					m.computeWorldMatrix?.(true);
-				});
+
+			// Handle resize
+			window.addEventListener('resize', () => engine.resize());
+
+			// Load all components
+			console.log('Loading components...');
+
+			// Load casing first (it's the anchor)
+			const casingComponent = COMPONENTS.find((c) => c.id === 'casing');
+			if (casingComponent) {
+				await loadComponent(casingComponent, 0);
+				casingMesh = componentMeshes.get('casing');
 			}
 
-			// Position components touching each other from front to back with no gaps
-			let cursor = casingBounds.max.x - CASING_PADDING_X; // Start from front (max.x)
-			meshes.forEach((m) => {
-				// Align Y/Z to centerline
-				setYZToCasingCenter(m);
-				m.computeWorldMatrix?.(true);
-				
-				// Position component at cursor
-				const b = getWorldBounds(m);
-				const currentMaxX = b.max.x;
-				const dx = cursor - currentMaxX;
-				m.position.x += dx;
-				m.computeWorldMatrix?.(true);
-				
-				// Move cursor to left edge of this component for next component
-				const placedBounds = getWorldBounds(m);
-				cursor = placedBounds.min.x; // No gap - components touch
-			});
-		};
+			// Load other components in parallel (use allSettled to continue even if some fail)
+			const otherComponents = COMPONENTS.filter((c) => c.id !== 'casing');
+			const results = await Promise.allSettled(
+				otherComponents.map((component, index) => loadComponent(component, index + 1))
+			);
 
-		// Load reference scales from full turbofan model for perfect fit
-		const loadReferenceScales = async () => {
-			try {
-				const result = await SceneLoader.ImportMeshAsync(
-					'',
-					'/models/Turbofan.glb',
-					'',
-					scene
-				);
-				
-				if (result.meshes.length > 0) {
-					console.log('Reference model meshes:', result.meshes.map((m: any) => m.name));
-					
-					// Find component meshes by name matching (case-insensitive, partial match)
-					const componentMap: Record<string, string[]> = {
-						intake: ['intake', 'inlet', 'fan'],
-						compression: ['compress', 'compressor', 'lpc', 'hpc'],
-						combustion: ['combustion', 'combustor', 'burner', 'chamber'],
-						turbine: ['turbine', 'lpt', 'hpt'],
-						exhaust: ['exhaust', 'nozzle', 'tail']
-					};
-					
-					for (const [id, keywords] of Object.entries(componentMap)) {
-						const mesh = result.meshes.find((m: any) => {
-							const name = m.name.toLowerCase();
-							return keywords.some(kw => name.includes(kw));
-						});
-						
-						if (mesh) {
-							const bounds = mesh.getHierarchyBoundingVectors();
-							const worldPos = mesh.getAbsolutePosition();
-							referenceScales.set(id, {
-								scale: mesh.scaling.clone(),
-								bounds: {
-									min: bounds.min.clone(),
-									max: bounds.max.clone()
-								},
-								position: worldPos.clone()
-							});
-							console.log(`Found reference for ${id}:`, mesh.name, 'scale:', mesh.scaling);
-						} else {
-							console.warn(`No reference mesh found for ${id}`);
-						}
-					}
-				}
-				
-				// Dispose the reference model after extracting data
-				result.meshes.forEach((m: any) => m.dispose());
-			} catch (error) {
-				console.warn('Could not load reference turbofan model, using fallback scaling:', error);
+			const successCount =
+				results.filter((r) => r.status === 'fulfilled').length + (casingMesh ? 1 : 0);
+			console.log(`Loaded ${successCount}/${COMPONENTS.length} components`);
+
+			// Clear any error messages after a delay
+			if (loadingError) {
+				setTimeout(() => {
+					loadingError = null;
+				}, 3000);
 			}
-		};
-
-		// Apply dynamic scaling to fit components perfectly inside the casing
-		const normalizeScaleToCasing = (mesh: any, fitRatio = 0.92) => {
-			if (!casingMesh) return;
-			mesh.metadata = mesh.metadata || {};
-			mesh.metadata.__normalize = mesh.metadata.__normalize || {};
-			const meta = mesh.metadata.__normalize;
-			if (!meta.baseScaling) meta.baseScaling = mesh.scaling.clone();
-
-			// Always use proportional scaling to ensure perfect fit with casing
-			const casingSize = getBoundingSize(casingMesh);
-			mesh.scaling.copyFrom(meta.baseScaling);
-			mesh.computeWorldMatrix?.(true);
-			const compSize = getBoundingSize(mesh);
-
-			// Scale to fit snugly inside the casing diameter (Y/Z)
-			const targetY = casingSize.y * fitRatio;
-			const targetZ = casingSize.z * fitRatio;
-			const scaleY = targetY / compSize.y;
-			const scaleZ = targetZ / compSize.z;
-			const scaleFactor = Math.min(scaleY, scaleZ);
-			
-			const componentId = mesh.metadata?.componentId;
-			console.log(`Scaling ${componentId || 'component'} by ${scaleFactor.toFixed(3)} to fit casing`);
-			mesh.scaling.copyFrom(meta.baseScaling);
-			mesh.scaling.setAll(scaleFactor);
-			mesh.computeWorldMatrix?.(true);
-		};
-		
-		// Load reference scales for perfect component fit
-		await loadReferenceScales();
-
-		const computeOrderFromPositions = () => {
-			return Array.from(placedMap.entries())
-				.filter(([id, mesh]) => !!id && !!mesh)
-				.sort((a, b) => {
-					const aBounds = getWorldBounds(a[1]);
-					const bBounds = getWorldBounds(b[1]);
-					return aBounds.min.x - bBounds.min.x;
-				})
-				.map(([id]) => id);
-		};
-
-		const recomputeScore = (order: string[]) => {
-			const n = order.filter((id) => placedMap.has(id)).length;
-			
-			if (n === 0) {
-				score = 0;
-				return;
-			}
-			
-			// Check sequential correctness
-			let correctPositions = 0;
-			for (let i = 0; i < Math.min(order.length, SEQUENCE.length); i++) {
-				if (order[i] === SEQUENCE[i]) {
-					correctPositions++;
-				}
-			}
-			
-			// Percentage-based scoring:
-			// - Each correctly positioned component = 20% (5 components × 20% = 100%)
-			// - Placed but wrong position = 5% each
-			const correctScore = correctPositions * 20;
-			const incorrectScore = (n - correctPositions) * 5;
-			
-			score = correctScore + incorrectScore;
-		};
-
-		const SNAP_THRESHOLD_X = 1.25;
-		const COLLISION_TOLERANCE = 0.1; // Small overlap tolerance
-		
-		const hasCollision = (mesh: any): boolean => {
-			const a = getWorldBounds(mesh);
-			for (const [otherId, otherMesh] of placedMap.entries()) {
-				if (otherMesh === mesh) continue;
-				const b = getWorldBounds(otherMesh);
-				// Check for significant overlap (beyond tolerance)
-				const overlapX = Math.min(a.max.x, b.max.x) - Math.max(a.min.x, b.min.x);
-				if (overlapX > COLLISION_TOLERANCE) {
-					return true;
-				}
-			}
-			return false;
-		};
-		
-		const resolveCollisionX = (mesh: any) => {
-			mesh.metadata = mesh.metadata || {};
-			const lastValidX = mesh.metadata.lastValidPos?.x;
-			
-			if (!hasCollision(mesh)) return;
-			
-			// Try to revert to last valid position first
-			if (typeof lastValidX === 'number' && Number.isFinite(lastValidX)) {
-				mesh.position.x = lastValidX;
-				mesh.computeWorldMatrix?.(true);
-				
-				// If still colliding after revert, send back to tray
-				if (hasCollision(mesh)) {
-					returnToTray(mesh);
-				}
-				return;
-			}
-			
-			// No valid last position, try to find space or return to tray
-			let resolved = false;
-			for (const [otherId, otherMesh] of placedMap.entries()) {
-				if (otherMesh === mesh) continue;
-				const a = getWorldBounds(mesh);
-				const b = getWorldBounds(otherMesh);
-				const overlapX = Math.min(a.max.x, b.max.x) - Math.max(a.min.x, b.min.x);
-				
-				if (overlapX > COLLISION_TOLERANCE) {
-					// Try pushing to nearest free space
-					const pushLeftDist = b.min.x - a.max.x;
-					const pushRightDist = b.max.x - a.min.x;
-					
-					if (Math.abs(pushLeftDist) < Math.abs(pushRightDist)) {
-						mesh.position.x += pushLeftDist - 0.2; // Add small gap
-					} else {
-						mesh.position.x += pushRightDist + 0.2; // Add small gap
-					}
-					mesh.computeWorldMatrix?.(true);
-					
-					// Check if pushing resolved the collision
-					if (!hasCollision(mesh)) {
-						resolved = true;
-						break;
-					}
-				}
-			}
-			
-			// If still colliding after all attempts, return to tray
-			if (!resolved && hasCollision(mesh)) {
-				returnToTray(mesh);
-			}
-		};
-
-		const trySnapToCorrectNeighbor = (mesh: any) => {
-			const id = mesh.metadata?.componentId as string | undefined;
-			if (!id) return;
-			const idx = SEQUENCE.indexOf(id);
-			if (idx === -1) return;
-
-			const leftId = idx > 0 ? SEQUENCE[idx - 1] : null;
-			const rightId = idx < SEQUENCE.length - 1 ? SEQUENCE[idx + 1] : null;
-			const leftMesh = leftId ? placedMap.get(leftId) : null;
-			const rightMesh = rightId ? placedMap.get(rightId) : null;
-
-			const cur = getWorldBounds(mesh);
-			let bestDelta: number | null = null;
-
-			if (leftMesh) {
-				const lb = getWorldBounds(leftMesh);
-				const gap = cur.min.x - lb.max.x;
-				if (Math.abs(gap) <= SNAP_THRESHOLD_X) bestDelta = -gap;
-			}
-
-			if (rightMesh) {
-				const rb = getWorldBounds(rightMesh);
-				const gap = rb.min.x - cur.max.x;
-				const delta = gap;
-				if (Math.abs(delta) <= SNAP_THRESHOLD_X) {
-					if (bestDelta === null || Math.abs(delta) < Math.abs(bestDelta)) bestDelta = delta;
-				}
-			}
-
-			if (bestDelta !== null) {
-				mesh.position.x += bestDelta;
-				mesh.computeWorldMatrix?.(true);
-			}
-		};
-
-		handleDragEnd = (mesh: any, skipSnapping?: boolean) => {
-			const id = mesh.metadata?.componentId as string | undefined;
-			if (!id) return;
-			
-			// Always maintain centerline alignment
-			setYZToCasingCenter(mesh);
-			// Use 92% fit ratio for proper assembly
-			normalizeScaleToCasing(mesh, 0.92);
-			clampXToCasing(mesh);
-			reflowAndFit();
-			
-			// Only try to snap and resolve collisions during drag, not on initial drop
-			if (skipSnapping !== true) {
-				trySnapToCorrectNeighbor(mesh);
-				resolveCollisionX(mesh);
-				clampXToCasing(mesh);
-			}
-			
-			mesh.metadata = mesh.metadata || {};
-			mesh.metadata.lastValidPos = mesh.position.clone();
-			mesh.metadata.snapped = true;
-
-			placedOrder = computeOrderFromPositions();
-			recomputeScore(placedOrder);
-			updateCameraFraming();
-		};
-
-		onCanvasDragOverImpl = (_e: DragEvent) => {
-			// no-op beyond preventDefault in the stable handler
-		};
-
-		onCanvasDropImpl = async (e: DragEvent) => {
-			if (!scene) return;
-
-			const componentId = e.dataTransfer?.getData('componentId');
-			if (!componentId) return;
-			const component = COMPONENTS.find((c) => c.id === componentId);
-			if (!component) return;
-
-			// If already placed, ignore re-drop (user can drag to reposition)
-			const already = placedMap.get(component.id);
-			if (already) {
-				if (gizmoManager) {
-					gizmoManager.attachToMesh(already);
-					selectedMeshName = component.name;
-				}
-				return;
-			}
-
-			try {
-				const result = await SceneLoader.ImportMeshAsync('', component.modelPath, '', scene);
-				if (result.meshes.length <= 0) return;
-
-				// Use a mesh-like root for behaviors/bounds when possible.
-				const candidate =
-					result.meshes.find((m: any) => typeof m.getBoundingInfo === 'function') ?? result.meshes[0];
-				const rootMesh = findRootMesh(candidate);
-				
-				// Start at casing center (will be positioned sequentially after)
-				if (casingMesh) {
-					const casingBounds = getWorldBounds(casingMesh);
-					const casingCenter = casingBounds.max.add(casingBounds.min).scale(0.5);
-					rootMesh.position.copyFrom(casingCenter);
-				} else {
-					rootMesh.position.copyFrom(Vector3.Zero());
-				}
-				
-				rootMesh.metadata = {
-					componentId: component.id,
-					componentName: component.name,
-					originalPos: rootMesh.position.clone(),
-					snapped: false,
-					lastValidPos: null
-				};
-
-				// Set Y/Z to centerline and scale to fit
-				setYZToCasingCenter(rootMesh);
-				normalizeScaleToCasing(rootMesh, 0.95);
-				
-				// Add to map before positioning (so positionNextToLastPlaced can see previous components)
-				placedMap.set(component.id, rootMesh);
-				placedMeshes.push(rootMesh);
-				
-				// Position sequentially from left to right, then reflow to keep everything inside casing
-				positionNextToLastPlaced(rootMesh);
-				reflowAndFit();
-
-				// PointerDragBehavior: strictly X-axis only, Y and Z locked to centerline.
-				const drag = new PointerDragBehavior({ dragAxis: new Vector3(1, 0, 0), moveAttached: true });
-				drag.dragDeltaRatio = 1;
-				drag.forceNormal = true;
-				
-				// Store the locked Y and Z positions
-				let lockedY: number;
-				let lockedZ: number;
-				
-				drag.onDragStartObservable.add(() => {
-					rootMesh.metadata.originalPos = rootMesh.position.clone();
-					rootMesh.metadata.lastValidPos = rootMesh.position.clone();
-					setYZToCasingCenter(rootMesh);
-					clampXToCasing(rootMesh);
-					// Lock Y and Z positions
-					lockedY = rootMesh.position.y;
-					lockedZ = rootMesh.position.z;
-				});
-				drag.onDragObservable.add(() => {
-					// Enforce Y and Z lock during drag
-					rootMesh.position.y = lockedY;
-					rootMesh.position.z = lockedZ;
-					clampXToCasing(rootMesh);
-				});
-				drag.onDragEndObservable.add(() => {
-					// Final enforcement of Y and Z lock
-					rootMesh.position.y = lockedY;
-					rootMesh.position.z = lockedZ;
-					handleDragEnd(rootMesh);
-				});
-				rootMesh.addBehavior(drag);
-
-				handleDragEnd(rootMesh, true); // Skip snapping/collision on initial drop
-
-				if (gizmoManager) {
-					gizmoManager.attachToMesh(rootMesh);
-					selectedMeshName = component.name;
-				}
-				updateCameraFraming();
-			} catch (error) {
-				console.error('Error loading component:', error);
-			}
-		};
-
-		// If parts were placed before casing finished loading, reflow them now.
-		if (placedOrder.length > 0) {
-			placedOrder = computeOrderFromPositions();
-			recomputeScore(placedOrder);
-			updateCameraFraming();
+		} catch (error) {
+			console.error('Error initializing scene:', error);
+			loadingError = 'Failed to initialize 3D scene';
 		}
+	}
 
-		// Setup Gizmo Manager
-		gizmoManager = new GizmoManager(scene);
-		gizmoManager.positionGizmoEnabled = true;
-		gizmoManager.rotationGizmoEnabled = true;
-		gizmoManager.scaleGizmoEnabled = false;
-		gizmoManager.usePointerToAttachGizmos = false;
-		
-		if (gizmoManager.gizmos.positionGizmo) {
-			gizmoManager.gizmos.positionGizmo.scaleRatio = 2;
-		}
-
-		// Click to select logic
-		scene.onPointerObservable.add((pointerInfo: any) => {
-			if (pointerInfo.type === PointerEventTypes.POINTERDOWN) {
-				if (pointerInfo.pickInfo?.hit && pointerInfo.pickInfo.pickedMesh) {
-					const mesh = pointerInfo.pickInfo.pickedMesh;
-					
-					if (mesh.name === 'ground' || mesh === casingMesh) {
-						gizmoManager.attachToMesh(null);
-						selectedMeshName = null;
-					} else {
-						const root = findRootMesh(mesh);
-						gizmoManager.attachToMesh(root);
-						selectedMeshName = root.metadata?.componentName || root.name;
-					}
-				} else {
-					gizmoManager.attachToMesh(null);
-					selectedMeshName = null;
-				}
-			}
-		});
-
-		// Keyboard shortcuts
-		scene.onKeyboardObservable.add((kbInfo: any) => {
-			if (kbInfo.type === 2) { // KEYDOWN
-				switch (kbInfo.event.key.toLowerCase()) {
-					case 'w':
-						gizmoManager.positionGizmoEnabled = true;
-						gizmoManager.rotationGizmoEnabled = false;
-						gizmoManager.scaleGizmoEnabled = false;
-						break;
-					case 'e':
-						gizmoManager.positionGizmoEnabled = false;
-						gizmoManager.rotationGizmoEnabled = true;
-						gizmoManager.scaleGizmoEnabled = false;
-						break;
-					case 'r':
-						gizmoManager.positionGizmoEnabled = false;
-						gizmoManager.rotationGizmoEnabled = false;
-						gizmoManager.scaleGizmoEnabled = true;
-						break;
-					case 'escape':
-						gizmoManager.attachToMesh(null);
-						selectedMeshName = null;
-						break;
-					case 'delete':
-					case 'backspace':
-						if (gizmoManager.gizmos.positionGizmo?.attachedMesh) {
-							const meshToDelete = gizmoManager.gizmos.positionGizmo.attachedMesh;
-							const wasSnapped = !!meshToDelete.metadata?.snapped;
-							gizmoManager.attachToMesh(null);
-							meshToDelete.dispose();
-							placedMeshes = placedMeshes.filter(m => m !== meshToDelete);
-							const id = meshToDelete.metadata?.componentId;
-							if (id) {
-								placedMap.delete(id);
-								placedOrder = placedOrder.filter((x) => x !== id);
-							}
-							selectedMeshName = null;
-							if (wasSnapped) score = Math.max(0, score - 5);
-							placedOrder = computeOrderFromPositions();
-							recomputeScore(placedOrder);
-							updateCameraFraming();
-						}
-						break;
-				}
-			}
-		});
-
-		// Render loop
-		engine.runRenderLoop(() => {
-			scene?.render();
-		});
-
-		// Handle resize
-		if (browser && typeof window !== 'undefined') {
-			window.addEventListener('resize', handleResize);
-		}
-
-		// Load high score
-		await loadHighScore();
+	onMount(() => {
+		initScene();
 	});
-
-	function handleResize() {
-		engine?.resize();
-	}
-
-	function returnToTray(mesh: any) {
-		const id = mesh.metadata?.componentId as string | undefined;
-		const trayPos = id ? trayPositions.get(id) : null;
-		if (trayPos) {
-			mesh.position.copyFrom(trayPos);
-		} else {
-			pushAway(mesh);
-		}
-		if (id) {
-			placedMap.delete(id);
-			placedOrder = placedOrder.filter((x) => x !== id);
-			mesh.metadata = mesh.metadata || {};
-			mesh.metadata.snapped = false;
-			mesh.metadata.lastValidPos = null;
-		}
-	}
-
-	function pushAway(mesh: any) {
-		mesh.position.addInPlace(new Vector3(0, 0, PUSH_AWAY_Z));
-	}
-
-	function updateCameraFraming() {
-		const activeCamera = camera || scene?.activeCamera;
-		if (!activeCamera) return;
-
-		let min = new Vector3(Number.POSITIVE_INFINITY, Number.POSITIVE_INFINITY, Number.POSITIVE_INFINITY);
-		let max = new Vector3(Number.NEGATIVE_INFINITY, Number.NEGATIVE_INFINITY, Number.NEGATIVE_INFINITY);
-		let hasAnyBounds = false;
-
-		// Include casing bounds as baseline so framing isn't too tight/zoomed
-		if (casingMesh) {
-			const cb = casingMesh.getHierarchyBoundingVectors();
-			min = Vector3.Minimize(min, cb.min);
-			max = Vector3.Maximize(max, cb.max);
-			hasAnyBounds = true;
-		}
-
-		if (placedMap.size > 0) {
-			placedMap.forEach((m) => {
-				const b = m.getHierarchyBoundingVectors();
-				min = Vector3.Minimize(min, b.min);
-				max = Vector3.Maximize(max, b.max);
-				hasAnyBounds = true;
-			});
-		}
-
-		if (!hasAnyBounds) return;
-
-		if (casingMesh && typeof activeCamera.setTarget === 'function') {
-			const cb = casingMesh.getHierarchyBoundingVectors();
-			activeCamera.setTarget(cb.max.add(cb.min).scale(0.5));
-		}
-
-		if (activeCamera.framingBehavior) {
-			// Keep a consistent, non-zoomed-in framing.
-			activeCamera.framingBehavior.radiusScale = 2.6;
-			activeCamera.framingBehavior.positionScale = 0.5;
-			activeCamera.framingBehavior.framingTime = 250;
-			activeCamera.framingBehavior.elevationReturnTime = -1;
-			activeCamera.framingBehavior.zoomStopsAnimation = false;
-			activeCamera.framingBehavior.zoomOnBoundingInfo(min, max, false);
-			return;
-		}
-
-		if (typeof activeCamera.zoomOn === 'function') {
-			// Prefer Babylon's built-in zoomOn when available
-			const meshesToZoom: any[] = [];
-			if (casingMesh) meshesToZoom.push(casingMesh);
-			placedMap.forEach((m) => meshesToZoom.push(m));
-			activeCamera.zoomOn(meshesToZoom);
-			return;
-		}
-
-		// fallback
-		const size = max.subtract(min);
-		const maxDim = Math.max(size.x, size.y, size.z);
-		activeCamera.setTarget(max.add(min).scale(0.5));
-		activeCamera.radius = maxDim * 6.3;
-	}
 
 	onDestroy(() => {
-		if (browser && typeof window !== 'undefined') {
-			window.removeEventListener('resize', handleResize);
+		if (engine) {
+			engine.dispose();
 		}
-		
-		// Dispose preview scenes
-		previewScenes.forEach(({ engine, scene }) => {
-			scene?.dispose();
-			engine?.dispose();
-		});
-		previewScenes.clear();
-		
-		scene?.dispose();
-		engine?.dispose();
+		removeCanvasWheelGuard?.();
+		if (typeof window !== 'undefined') {
+			window.removeEventListener('resize', () => engine?.resize());
+		}
 	});
-    
-    function initPreview(node: HTMLCanvasElement, component: Component) {
-		if (browser) {
-			tick().then(() => {
-				createComponentPreview(component, node);
-				componentPreviews.set(component.id, node);
-			});
-		}
-		
-		return {
-			destroy() {}
-		};
-	}
 </script>
 
 <div class="assembly-container">
-	<!-- Instructions Banner -->
+	<!-- Instructions Modal -->
 	{#if showInstructions}
-		<div class="instructions-banner">
-			<div class="instructions-content">
-				<h3>🎮 Controls</h3>
-				<div class="controls-grid">
-					<div><kbd>W</kbd> Position Mode</div>
-					<div><kbd>E</kbd> Rotation Mode</div>
-					<div><kbd>ESC</kbd> Deselect</div>
-					<div><kbd>DEL</kbd> Delete Selected</div>
+		<div
+			class="instructions-overlay"
+			role="button"
+			tabindex="0"
+			onclick={() => (showInstructions = false)}
+			onkeydown={(e) => e.key === 'Enter' && (showInstructions = false)}
+		>
+			<div class="instructions-modal">
+				<h2>Assembly Instructions</h2>
+				<div class="instructions-content">
+					<p>
+						<strong>Objective:</strong> Assemble the turbofan engine by dragging and dropping each component
+						to its correct position.
+					</p>
+
+					<h3>How to Play:</h3>
+					<ol>
+						<li><strong>Select:</strong> Find a component from the tray on the left</li>
+						<li>
+							<strong>Drag:</strong> Click and hold on a component card, then drag it onto the 3D canvas
+						</li>
+						<li>
+							<strong>Position:</strong> Once placed, drag the component in 3D space to position it
+						</li>
+						<li>
+							<strong>Snap:</strong> When close enough to the correct position, it will automatically
+							snap into place
+						</li>
+						<li><strong>Assembly Order:</strong> Components can be assembled in any order</li>
+					</ol>
+
+					<h3>Camera Controls:</h3>
+					<ul>
+						<li><strong>Rotate:</strong> Left-click and drag</li>
+						<li><strong>Zoom:</strong> Scroll wheel</li>
+						<li><strong>Pan:</strong> Right-click and drag</li>
+					</ul>
+
+					<p class="hint">
+						<strong>Tip:</strong> The components are already scaled correctly. Focus on positioning them
+						in the right location!
+					</p>
 				</div>
-				<p>Drag components from below onto the canvas. Click to select and use gizmos to position/rotate.</p>
+				<button class="start-button" onclick={() => (showInstructions = false)}>
+					Start Assembly
+				</button>
 			</div>
-			<button class="close-instructions" onclick={() => showInstructions = false}>✕</button>
 		</div>
 	{/if}
 
-	<!-- Main Canvas -->
-	<div class="canvas-wrapper">
-		<canvas 
-			bind:this={canvas} 
-			class="assembly-canvas"
-			ondragover={onCanvasDragOver}
-			ondrop={onCanvasDrop}
-		></canvas>
-
-		<!-- Status Overlay -->
-		<div class="status-overlay">
-			<div class="score-badge">
-				<span class="score-label">Score</span>
-				<span class="score-value">{score}</span>
+	<!-- Loading Indicator -->
+	{#if loadedComponents < totalComponents}
+		<div class="loading-overlay">
+			<div class="loading-content">
+				<div class="loading-spinner"></div>
+				<p>Loading Components... ({loadedComponents}/{totalComponents})</p>
+				{#if loadingError}
+					<p class="error-message">{loadingError}</p>
+				{/if}
 			</div>
-			{#if highScore > 0}
-				<div class="high-score-badge">
-					<span class="high-score-label">High Score</span>
-					<span class="high-score-value">{highScore}</span>
-				</div>
-			{/if}
-			{#if selectedMeshName}
-				<div class="selected-badge">
-					Selected: {selectedMeshName}
-				</div>
-			{/if}
 		</div>
-	</div>
+	{/if}
 
-	<!-- Components Shelf -->
-	<div class="components-shelf">
-		<h3 class="shelf-title">Component Parts</h3>
-		<div class="shelf-grid">
-			{#each (shuffledComponents.length ? shuffledComponents : COMPONENTS) as component (component.id)}
-				<div
-					class="component-card"
-					draggable="true"
-					ondragstart={(e) => {
-						e.dataTransfer?.setData('componentId', component.id);
-					}}
-					role="button"
-					tabindex="0"
-				>
-					<div class="component-preview-wrapper">
-						<canvas
-							class="component-preview"
-							use:initPreview={component}
-						></canvas>
+	<!-- Component Tray -->
+	<div class="component-tray">
+		<h3>Components</h3>
+		<div class="component-list">
+			{#each visibleComponents as component}
+				{#if !placedComponents.has(component.id)}
+					<div
+						class="component-card"
+						role="button"
+						tabindex="0"
+						draggable={true}
+						ondragstart={(e) => handleDragStart(e, component.id)}
+					>
+						<div class="component-image-container">
+							<img
+								src={component.imagePath}
+								alt={component.displayName}
+								class="component-image"
+								onerror={(e) => {
+									// Fallback to wrench icon if image fails
+									(e.target as HTMLElement).style.display = 'none';
+									(e.target as HTMLElement).nextElementSibling?.classList.remove('hidden');
+								}}
+							/>
+							<div class="component-icon hidden">🔧</div>
+						</div>
+						<span class="component-name">{component.displayName}</span>
 					</div>
-					<div class="component-info">
-						<div class="component-name">{component.name}</div>
-						<div class="drag-hint">Drag to canvas</div>
-					</div>
-				</div>
+				{/if}
 			{/each}
 		</div>
 	</div>
 
-	<!-- Control Buttons -->
-	<div class="controls">
-		<button class="control-btn reset-btn" onclick={resetScene}>
-			<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-				<path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/>
-				<path d="M21 3v5h-5"/>
-			</svg>
-			Reset Scene
+	<!-- Canvas -->
+	<canvas
+		bind:this={canvas}
+		class="babylon-canvas"
+		tabindex="0"
+		onpointerdown={() => canvas?.focus()}
+		onfocus={() => (camera?.inputs?.attached?.mousewheel as any)?.attachControl?.(canvas)}
+		onblur={() => (camera?.inputs?.attached?.mousewheel as any)?.detachControl?.(canvas)}
+		ondrop={handleCanvasDrop}
+		ondragover={handleCanvasDragOver}
+	></canvas>
+
+	<!-- Controls Overlay -->
+	<div class="controls-overlay">
+		<button class="control-btn" onclick={() => window.location.reload()} title="Reset Scene">
+			Reset
 		</button>
-		<button class="control-btn save-btn" onclick={saveScore} disabled={isSavingScore || score <= 0}>
-			<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-				<path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/>
-				<polyline points="17 21 17 13 7 13 7 21"/>
-				<polyline points="7 3 7 8 15 8"/>
-			</svg>
-			{isSavingScore ? 'Saving...' : 'Save Score'}
+		<button class="control-btn" onclick={shuffleComponents} title="Shuffle Components">
+			Shuffle
 		</button>
-		<button class="control-btn help-btn" onclick={() => showInstructions = !showInstructions}>
-			<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-				<circle cx="12" cy="12" r="10"/>
-				<path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/>
-				<line x1="12" y1="17" x2="12.01" y2="17"/>
-			</svg>
+		<button class="control-btn" onclick={handleSaveAndShowFeedback} title="Save Score">
+			Save
+		</button>
+		<button
+			class="control-btn"
+			onclick={() => (showInstructions = !showInstructions)}
+			title="Toggle Help"
+		>
 			Help
 		</button>
+		<div class="realtime-score">
+			<span class="score-label">Score:</span>
+			<span class="score-value">{currentScore}</span>
+		</div>
 	</div>
 
-	<!-- Save Message -->
-	{#if saveMessage}
-		<div class="save-message" class:success={saveMessage.type === 'success'} class:error={saveMessage.type === 'error'}>
-			{saveMessage.text}
+	<!-- Score Feedback Modal -->
+	{#if showFeedback && scoreData}
+		<div
+			class="feedback-modal-overlay"
+			role="button"
+			tabindex="0"
+			onclick={closeFeedback}
+			onkeydown={(e) => e.key === 'Enter' && closeFeedback()}
+		>
+			<div
+				class="feedback-modal"
+				role="button"
+				tabindex="0"
+				onclick={(e) => e.stopPropagation()}
+				onkeydown={(e) => e.stopPropagation()}
+			>
+				<div class="feedback-header">
+					<h2>Assembly Complete!</h2>
+					<button class="close-btn" onclick={closeFeedback}>×</button>
+				</div>
+
+				<div class="score-display">
+					<div class="score-circle">
+						<div class="score-value">{scoreData.totalScore}</div>
+						<div class="score-label">/ 100</div>
+					</div>
+					<p class="score-message">
+						{#if scoreData.totalScore === 100}
+							🎉 Perfect! All components assembled in correct order!
+						{:else if scoreData.totalScore >= 80}
+							👍 Great job! Almost perfect assembly!
+						{:else if scoreData.totalScore >= 60}
+							👌 Good effort! Keep practicing the sequence!
+						{:else if scoreData.totalScore >= 40}
+							💪 You're learning! Review the correct order!
+						{:else}
+							📚 Keep trying! Study the assembly sequence!
+						{/if}
+					</p>
+				</div>
+
+				<div class="results-section">
+					<h3>Component Results</h3>
+					<div class="results-list">
+						{#each scoreData.componentResults as result, index}
+							<div
+								class="result-item"
+								class:correct={result.correct}
+								class:incorrect={!result.correct}
+							>
+								<div class="result-number">{index + 1}</div>
+								<div class="result-details">
+									<span class="result-name">{result.name}</span>
+									<span class="result-status">
+										{result.correct ? '✓ Correct Position & Order' : '✗ Incorrect Order'}
+									</span>
+								</div>
+								<div class="result-points">{result.points} pts</div>
+							</div>
+						{/each}
+					</div>
+				</div>
+
+				<div class="feedback-actions">
+					<button class="action-btn secondary" onclick={closeFeedback}>Close</button>
+					<button
+						class="action-btn primary"
+						onclick={() => saveScore(true, true)}
+						disabled={isSavingScore || scoreSaved}
+					>
+						{isSavingScore ? 'Saving...' : scoreSaved ? 'Saved' : 'Save Score'}
+					</button>
+				</div>
+			</div>
 		</div>
 	{/if}
 </div>
 
-<!-- Svelte action for initializing previews -->
-<script module lang="ts">
-	import { tick } from 'svelte';
-</script>
-
 <style>
 	.assembly-container {
+		position: relative;
 		width: 100%;
+		height: calc(100vh - 100px);
+		min-height: 700px;
+		background: radial-gradient(circle at 50% 100%, #2c3e50 0%, #000000 70%);
+		border-radius: 12px;
+		overflow: hidden;
+		box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
 		display: flex;
-		flex-direction: column;
-		gap: 1.5rem;
-		position: relative;
 	}
 
-	/* Instructions Banner */
-	.instructions-banner {
-		background: linear-gradient(135deg, rgba(255, 204, 0, 0.15), rgba(135, 206, 235, 0.15));
-		border: 2px solid var(--navbar-accent, var(--ui-yellow));
-		border-radius: 1rem;
-		padding: var(--spacing-md);
-		position: relative;
-		animation: slideDown 0.3s ease;
-	}
-
-	@keyframes slideDown {
-		from {
-			opacity: 0;
-			transform: translateY(-20px);
-		}
-		to {
-			opacity: 1;
-			transform: translateY(0);
-		}
-	}
-
-	.instructions-content h3 {
-		font-family: var(--font-heading);
-		color: var(--navbar-accent, var(--ui-yellow));
-		margin: 0 0 1rem 0;
-		font-size: 1.25rem;
-	}
-
-	.controls-grid {
-		display: grid;
-		grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-		gap: 0.75rem;
-		margin-bottom: 1rem;
-		font-family: var(--font-body);
-		color: var(--font-secondary);
-	}
-
-	.controls-grid kbd {
-		background: rgba(0, 0, 0, 0.5);
-		padding: 0.25rem 0.5rem;
-		border-radius: 0.25rem;
-		border: 1px solid var(--navbar-accent, var(--ui-yellow));
-		font-family: var(--font-heading);
-		font-weight: 700;
-		color: var(--navbar-accent, var(--ui-yellow));
-		margin-right: 0.5rem;
-	}
-
-	.instructions-content p {
-		color: var(--font-secondary);
-		margin: 0;
-		font-family: var(--font-body);
-	}
-
-	.close-instructions {
+	.controls-overlay {
 		position: absolute;
 		top: 1rem;
 		right: 1rem;
-		background: rgba(0, 0, 0, 0.5);
-		border: 2px solid var(--navbar-accent, var(--ui-yellow));
-		color: var(--navbar-accent, var(--ui-yellow));
-		width: 2rem;
-		height: 2rem;
-		border-radius: 50%;
-		cursor: pointer;
-		font-size: 1.25rem;
+		display: flex;
+		gap: 0.75rem;
+		z-index: 100;
+		align-items: center;
+	}
+
+	.realtime-score {
+		position: relative;
+		overflow: hidden;
+		background: rgba(255, 255, 255, 0.08);
+		border: 1px solid rgba(255, 255, 255, 0.18);
+		border-radius: 22px;
+		padding: 0.6rem 1.1rem;
 		display: flex;
 		align-items: center;
-		justify-content: center;
+		gap: 0.8rem;
+		margin-left: 0.75rem;
+		backdrop-filter: blur(10px);
+		box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
 		transition: all 0.3s ease;
 	}
 
-	.close-instructions:hover {
-		background: var(--navbar-accent, var(--ui-yellow));
-		color: var(--bg-dark);
-		transform: rotate(90deg);
-	}
-
-	/* Canvas */
-	.canvas-wrapper {
-		position: relative;
-		width: 100%;
-		height: 600px;
-		background: linear-gradient(135deg, rgba(0, 0, 0, 0.5), rgba(10, 47, 53, 0.5));
-		border-radius: 1rem;
-		overflow: hidden;
-		border: 2px solid rgba(135, 206, 235, 0.3);
-		box-shadow: inset 0 4px 20px rgba(0, 0, 0, 0.3);
-	}
-
-	.assembly-canvas {
-		width: 100%;
-		height: 100%;
-		display: block;
-		outline: none;
-		cursor: crosshair;
-	}
-
-	/* Status Overlay */
-	.status-overlay {
+	.realtime-score::before {
+		content: '';
 		position: absolute;
-		top: 1rem;
-		right: 1rem;
-		display: flex;
-		flex-direction: column;
-		gap: 0.75rem;
-		align-items: flex-end;
+		inset: 0;
+		background:
+			radial-gradient(circle at 20% 15%, rgba(255, 255, 255, 0.22), transparent 55%),
+			radial-gradient(circle at 80% 85%, rgba(79, 195, 247, 0.14), transparent 55%);
 		pointer-events: none;
 	}
 
-	.score-badge {
-		background: rgba(0, 0, 0, 0.8);
-		border: 2px solid var(--navbar-accent, var(--ui-yellow));
-		border-radius: 0.75rem;
-		padding: 0.75rem 1.25rem;
-		display: flex;
-		flex-direction: column;
-		align-items: center;
-		gap: 0.25rem;
-		box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+	.realtime-score:hover {
+		box-shadow: 0 6px 25px rgba(79, 195, 247, 0.2);
+		border-color: rgba(79, 195, 247, 0.45);
 	}
 
 	.score-label {
-		font-family: var(--font-heading);
-		font-size: 0.875rem;
-		color: var(--font-accent-yellow);
-		font-weight: 700;
+		color: #87ceeb;
+		font-family: 'Poppins', sans-serif;
+		font-size: 1.2rem;
+		font-weight: 600;
 		text-transform: uppercase;
-		letter-spacing: 0.05em;
+		letter-spacing: 1px;
 	}
 
 	.score-value {
-		font-family: var(--font-heading);
-		font-size: 2rem;
-		font-weight: 900;
-		color: var(--navbar-accent, var(--ui-yellow));
+		color: #fff;
+		font-family: 'Poppins', sans-serif;
+		font-size: 1.4rem;
+		font-weight: 700;
+		text-shadow: 0 0 15px rgba(79, 195, 247, 0.6);
 		line-height: 1;
-	}
-
-	.selected-badge {
-		background: rgba(135, 206, 235, 0.2);
-		border: 2px solid var(--ui-light-blue);
-		border-radius: 0.5rem;
-		padding: 0.5rem 1rem;
-		font-family: var(--font-heading);
-		font-size: 0.875rem;
-		color: var(--ui-light-blue);
-		font-weight: 700;
-		box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
-	}
-
-	.high-score-badge {
-		background: rgba(255, 215, 0, 0.2);
-		border: 2px solid gold;
-		border-radius: 0.75rem;
-		padding: 0.75rem 1.25rem;
-		display: flex;
-		flex-direction: column;
-		align-items: center;
-		gap: 0.25rem;
-		box-shadow: 0 4px 12px rgba(255, 215, 0, 0.3);
-	}
-
-	.high-score-label {
-		font-family: var(--font-heading);
-		font-size: 0.75rem;
-		color: gold;
-		font-weight: 700;
-		text-transform: uppercase;
-		letter-spacing: 0.05em;
-	}
-
-	.high-score-value {
-		font-family: var(--font-heading);
-		font-size: 1.5rem;
-		font-weight: 900;
-		color: gold;
-		line-height: 1;
-	}
-
-	/* Components Shelf */
-	.components-shelf {
-		background: rgba(0, 0, 0, 0.3);
-		border: 2px solid rgba(135, 206, 235, 0.3);
-		border-radius: 1rem;
-		padding: var(--spacing-md);
-	}
-
-	.shelf-title {
-		font-family: var(--font-heading);
-		font-size: 1.5rem;
-		font-weight: 800;
-		color: var(--navbar-accent, var(--ui-yellow));
-		margin: 0 0 1.5rem 0;
-		text-align: center;
-	}
-
-	.shelf-grid {
-		display: flex;
-		flex-direction: row;
-		flex-wrap: nowrap;
-		gap: 1rem;
-		justify-content: space-between;
-	}
-
-	.component-card {
-		background: rgba(10, 47, 53, 0.8);
-		border: 2px solid rgba(135, 206, 235, 0.5);
-		border-radius: 1rem;
-		overflow: hidden;
-		cursor: grab;
-		transition: all 0.3s ease;
-		display: flex;
-		flex-direction: column;
-		flex: 1;
-		min-width: 0;
-	}
-
-	.component-card:hover {
-		border-color: var(--navbar-accent, var(--ui-yellow));
-		transform: translateY(-4px);
-		box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
-	}
-
-	.component-card:active {
-		cursor: grabbing;
-	}
-
-	.component-preview-wrapper {
-		width: 100%;
-		height: 120px;
-		background: rgba(0, 0, 0, 0.5);
-		position: relative;
-	}
-
-	.component-preview {
-		width: 100%;
-		height: 100%;
-		display: block;
-	}
-
-	.component-info {
-		padding: var(--spacing-sm);
-		text-align: center;
-	}
-
-	.component-name {
-		font-family: var(--font-heading);
-		font-size: 0.9rem;
-		font-weight: 700;
-		color: var(--font-secondary);
-		margin-bottom: 0.5rem;
-	}
-
-	.drag-hint {
-		font-family: var(--font-body);
-		font-size: 0.8rem;
-		color: var(--font-accent-cyan);
-		font-style: italic;
-	}
-
-	/* Controls */
-	.controls {
-		display: flex;
-		justify-content: center;
-		gap: 1rem;
-		flex-wrap: wrap;
 	}
 
 	.control-btn {
-		display: flex;
-		align-items: center;
-		gap: 0.5rem;
-		padding: var(--spacing-xs) var(--spacing-md);
-		border: none;
-		border-radius: 0.75rem;
-		font-family: var(--font-heading);
-		font-size: 1rem;
-		font-weight: 700;
+		background: rgba(255, 255, 255, 0.1);
+		border: 1px solid rgba(255, 255, 255, 0.2);
+		color: #e0e0e0;
+		padding: 0.6rem 1.2rem;
+		border-radius: 8px;
 		cursor: pointer;
+		font-family: 'Poppins', sans-serif;
+		font-weight: 500;
+		font-size: 0.9rem;
 		transition: all 0.3s ease;
-		box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-	}
-
-	.reset-btn {
-		background: linear-gradient(135deg, var(--navbar-accent, var(--ui-yellow)), var(--font-accent-yellow));
-		color: var(--bg-dark);
-	}
-
-	.help-btn {
-		background: linear-gradient(135deg, var(--ui-light-blue), var(--font-accent-cyan));
-		color: var(--bg-dark);
-	}
-
-	.save-btn {
-		background: linear-gradient(135deg, #10b981, #059669);
-		color: white;
-	}
-
-	.save-btn:disabled {
-		opacity: 0.5;
-		cursor: not-allowed;
-	}
-
-	.save-btn:disabled:hover {
-		transform: none;
+		backdrop-filter: blur(8px);
+		text-transform: uppercase;
+		letter-spacing: 0.5px;
+		box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 	}
 
 	.control-btn:hover {
+		background: rgba(93, 168, 203, 0.3); /* Overhaul accent color */
+		border-color: #5da8cb;
+		color: white;
 		transform: translateY(-2px);
-		box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4);
+		box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
 	}
 
 	.control-btn:active {
 		transform: translateY(0);
 	}
 
-	.control-btn svg {
-		flex-shrink: 0;
+	.component-tray {
+		width: 200px;
+		background: rgba(0, 0, 0, 0.5);
+		border-right: 2px solid rgba(79, 195, 247, 0.3);
+		padding: 1rem;
+		overflow-y: auto;
+		z-index: 10;
 	}
 
-	/* Save Message */
-	.save-message {
-		padding: var(--spacing-sm) var(--spacing-md);
-		border-radius: 0.75rem;
-		font-family: var(--font-heading);
-		font-weight: 700;
+	.component-tray h3 {
+		color: #4fc3f7;
+		font-family: 'Poppins', sans-serif;
+		font-size: 1.2rem;
+		font-weight: 600;
+		margin-bottom: 1rem;
 		text-align: center;
-		animation: slideDown 0.3s ease;
 	}
 
-	.save-message.success {
-		background: rgba(16, 185, 129, 0.2);
-		border: 2px solid #10b981;
-		color: #10b981;
+	.component-list {
+		display: flex;
+		flex-direction: column;
+		gap: 0.75rem;
 	}
 
-	.save-message.error {
-		background: rgba(239, 68, 68, 0.2);
-		border: 2px solid #ef4444;
-		color: #ef4444;
+	.component-card {
+		background: rgba(45, 53, 97, 0.8);
+		border: 2px solid rgba(79, 195, 247, 0.4);
+		border-radius: 8px;
+		padding: 0.75rem;
+		cursor: grab;
+		transition: all 0.3s ease;
+		text-align: center;
+		position: relative;
+	}
+
+	.component-card:hover:not(.placed) {
+		background: rgba(45, 53, 97, 1);
+		border-color: #4fc3f7;
+		transform: translateX(5px);
+		box-shadow: 0 5px 15px rgba(79, 195, 247, 0.3);
+	}
+
+	.component-card:active:not(.placed) {
+		cursor: grabbing;
+	}
+
+	.component-image-container {
+		width: 100%;
+		height: 80px;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		margin-bottom: 0.5rem;
+		background: rgba(0, 0, 0, 0.2);
+		border-radius: 4px;
+		overflow: hidden;
+	}
+
+	.component-image {
+		max-width: 100%;
+		max-height: 100%;
+		object-fit: contain;
+	}
+
+	.component-icon {
+		font-size: 2rem;
+	}
+
+	.hidden {
+		display: none;
+	}
+
+	.component-name {
+		display: block;
+		color: #e0e0e0;
+		font-size: 0.85rem;
+		font-weight: 500;
+	}
+
+	.babylon-canvas {
+		flex: 1;
+		height: 100%;
+		display: block;
+		outline: none;
+	}
+
+	/* Instructions Overlay */
+	.instructions-overlay {
+		position: absolute;
+		top: 0;
+		left: 0;
+		width: 100%;
+		height: 100%;
+		background: rgba(0, 0, 0, 0.85);
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		z-index: 1000;
+		backdrop-filter: blur(5px);
+	}
+
+	.instructions-modal {
+		background: linear-gradient(135deg, #2d3561 0%, #1f2544 100%);
+		border-radius: 16px;
+		padding: 2rem;
+		max-width: 600px;
+		width: 90%;
+		max-height: 80vh;
+		overflow-y: auto;
+		box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+		border: 2px solid rgba(255, 255, 255, 0.1);
+	}
+
+	.instructions-modal h2 {
+		color: #4fc3f7;
+		margin-bottom: 1rem;
+		font-size: 1.8rem;
+		text-align: center;
+	}
+
+	.instructions-modal h3 {
+		color: #81c784;
+		margin-top: 1.5rem;
+		margin-bottom: 0.5rem;
+		font-size: 1.2rem;
+	}
+
+	.instructions-content {
+		color: #e0e0e0;
+		line-height: 1.6;
+	}
+
+	.instructions-content p {
+		margin-bottom: 1rem;
+	}
+
+	.instructions-content ol,
+	.instructions-content ul {
+		padding-left: 1.5rem;
+		margin-bottom: 1rem;
+	}
+
+	.instructions-content li {
+		margin-bottom: 0.5rem;
+	}
+
+	.hint {
+		background: rgba(255, 193, 7, 0.1);
+		border-left: 4px solid #ffc107;
+		padding: 0.75rem;
+		border-radius: 4px;
+		margin-top: 1rem;
+	}
+
+	.start-button {
+		width: 100%;
+		padding: 1rem;
+		margin-top: 1.5rem;
+		background: linear-gradient(135deg, #4fc3f7 0%, #2196f3 100%);
+		color: white;
+		border: none;
+		border-radius: 8px;
+		font-size: 1.1rem;
+		font-weight: bold;
+		cursor: pointer;
+		transition: all 0.3s ease;
+	}
+
+	.start-button:hover {
+		transform: translateY(-2px);
+		box-shadow: 0 10px 25px rgba(79, 195, 247, 0.3);
+	}
+
+	/* Loading Overlay */
+	.loading-overlay {
+		position: absolute;
+		top: 0;
+		left: 0;
+		width: 100%;
+		height: 100%;
+		background: rgba(0, 0, 0, 0.8);
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		z-index: 999;
+	}
+
+	.loading-content {
+		text-align: center;
+		color: white;
+	}
+
+	.loading-spinner {
+		width: 60px;
+		height: 60px;
+		border: 4px solid rgba(255, 255, 255, 0.1);
+		border-top-color: #4fc3f7;
+		border-radius: 50%;
+		animation: spin 1s linear infinite;
+		margin: 0 auto 1rem;
+	}
+
+	@keyframes spin {
+		to {
+			transform: rotate(360deg);
+		}
+	}
+
+	.error-message {
+		color: #ff5252;
+		margin-top: 1rem;
 	}
 
 	/* Responsive */
 	@media (max-width: 768px) {
-		.canvas-wrapper {
-			height: 400px;
+		.assembly-container {
+			height: calc(100vh - 80px);
+			min-height: 500px;
 		}
 
-		.shelf-grid {
-			gap: 1rem;
+		.instructions-modal {
+			padding: 1.5rem;
+		}
+
+		.component-tray {
+			width: 150px;
+			padding: 0.5rem 0;
+		}
+
+		.component-tray h3 {
+			padding: 0 0.5rem;
 		}
 
 		.component-card {
-			flex-basis: 150px;
-			min-width: 150px;
+			padding: 0.5rem;
 		}
 
-		.component-preview-wrapper {
-			height: 120px;
+		.component-icon {
+			font-size: 1.5rem;
 		}
 
-		.controls-grid {
-			grid-template-columns: 1fr 1fr;
+		.component-name {
+			font-size: 0.75rem;
 		}
+	}
+
+	/* Feedback Modal Styles */
+	.feedback-modal-overlay {
+		position: fixed;
+		top: 0;
+		left: 0;
+		right: 0;
+		bottom: 0;
+		background: rgba(0, 0, 0, 0.8);
+		backdrop-filter: blur(4px);
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		z-index: 1000;
+		animation: fadeIn 0.3s ease;
+	}
+
+	@keyframes fadeIn {
+		from {
+			opacity: 0;
+		}
+		to {
+			opacity: 1;
+		}
+	}
+
+	.feedback-modal {
+		background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+		border: 2px solid rgba(93, 168, 203, 0.3);
+		border-radius: 16px;
+		padding: 1.25rem;
+		max-width: 600px;
+		width: 90%;
+		max-height: calc(100vh - 140px);
+		overflow: hidden;
+		display: flex;
+		flex-direction: column;
+		box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+		animation: slideUp 0.3s ease;
+	}
+
+	@keyframes slideUp {
+		from {
+			transform: translateY(30px);
+			opacity: 0;
+		}
+		to {
+			transform: translateY(0);
+			opacity: 1;
+		}
+	}
+
+	.feedback-header {
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		margin-bottom: 1rem;
+		border-bottom: 2px solid rgba(93, 168, 203, 0.3);
+		padding-bottom: 0.75rem;
+	}
+
+	.feedback-header h2 {
+		color: #5da8cb;
+		font-family: 'Poppins', sans-serif;
+		font-size: 1.6rem;
+		font-weight: 600;
+		margin: 0;
+	}
+
+	.close-btn {
+		background: transparent;
+		border: none;
+		color: rgba(255, 255, 255, 0.6);
+		font-size: 2rem;
+		cursor: pointer;
+		width: 40px;
+		height: 40px;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		border-radius: 50%;
+		transition: all 0.3s ease;
+	}
+
+	.close-btn:hover {
+		background: rgba(255, 255, 255, 0.1);
+		color: #fff;
+	}
+
+	.score-display {
+		text-align: center;
+		margin-bottom: 1rem;
+		padding: 1rem;
+		background: rgba(0, 0, 0, 0.2);
+		border-radius: 12px;
+	}
+
+	.score-circle {
+		display: inline-flex;
+		flex-direction: column;
+		align-items: center;
+		justify-content: center;
+		width: 110px;
+		height: 110px;
+		border-radius: 50%;
+		background: linear-gradient(135deg, #5da8cb 0%, #3d7fa8 100%);
+		box-shadow: 0 10px 30px rgba(93, 168, 203, 0.4);
+		margin-bottom: 0.75rem;
+	}
+
+	.feedback-modal .score-value {
+		font-size: 2.4rem;
+		font-weight: 700;
+		color: #fff;
+		font-family: 'Poppins', sans-serif;
+	}
+
+	.feedback-modal .score-label {
+		font-size: 1rem;
+		color: rgba(255, 255, 255, 0.8);
+		font-family: 'Poppins', sans-serif;
+	}
+
+	.score-message {
+		color: #e0e0e0;
+		font-size: 1rem;
+		font-family: 'Poppins', sans-serif;
+		margin: 0;
+	}
+
+	.results-section {
+		margin-bottom: 1rem;
+	}
+
+	.results-section h3 {
+		color: #5da8cb;
+		font-family: 'Poppins', sans-serif;
+		font-size: 1.1rem;
+		margin-bottom: 0.75rem;
+	}
+
+	.results-list {
+		display: flex;
+		flex-direction: column;
+		gap: 0.5rem;
+	}
+
+	.result-item {
+		display: flex;
+		align-items: center;
+		gap: 1rem;
+		padding: 0.75rem;
+		background: rgba(255, 255, 255, 0.05);
+		border-radius: 8px;
+		border-left: 4px solid transparent;
+		transition: all 0.3s ease;
+	}
+
+	.result-item.correct {
+		border-left-color: #4caf50;
+		background: rgba(76, 175, 80, 0.1);
+	}
+
+	.result-item.incorrect {
+		border-left-color: #f44336;
+		background: rgba(244, 67, 54, 0.1);
+	}
+
+	.result-number {
+		font-size: 1.2rem;
+		font-weight: 700;
+		color: #5da8cb;
+		font-family: 'Poppins', sans-serif;
+		min-width: 30px;
+	}
+
+	.result-details {
+		flex: 1;
+		display: flex;
+		flex-direction: column;
+		gap: 0.25rem;
+	}
+
+	.result-name {
+		color: #fff;
+		font-weight: 600;
+		font-family: 'Poppins', sans-serif;
+	}
+
+	.result-status {
+		color: rgba(255, 255, 255, 0.7);
+		font-size: 0.9rem;
+		font-family: 'Poppins', sans-serif;
+	}
+
+	.result-points {
+		font-size: 1.2rem;
+		font-weight: 700;
+		color: #5da8cb;
+		font-family: 'Poppins', sans-serif;
+	}
+
+	.feedback-actions {
+		display: flex;
+		gap: 1rem;
+		justify-content: flex-end;
+	}
+
+	.action-btn {
+		padding: 0.8rem 2rem;
+		border: none;
+		border-radius: 8px;
+		font-family: 'Poppins', sans-serif;
+		font-weight: 600;
+		font-size: 1rem;
+		cursor: pointer;
+		transition: all 0.3s ease;
+		text-transform: uppercase;
+		letter-spacing: 0.5px;
+	}
+
+	.action-btn.secondary {
+		background: rgba(255, 255, 255, 0.1);
+		color: #e0e0e0;
+		border: 1px solid rgba(255, 255, 255, 0.2);
+	}
+
+	.action-btn.secondary:hover {
+		background: rgba(255, 255, 255, 0.15);
+	}
+
+	.action-btn.primary {
+		background: linear-gradient(135deg, #5da8cb 0%, #3d7fa8 100%);
+		color: #fff;
+		box-shadow: 0 4px 15px rgba(93, 168, 203, 0.3);
+	}
+
+	.action-btn.primary:hover:not(:disabled) {
+		transform: translateY(-2px);
+		box-shadow: 0 6px 20px rgba(93, 168, 203, 0.4);
+	}
+
+	.action-btn.primary:disabled {
+		opacity: 0.6;
+		cursor: not-allowed;
 	}
 </style>

@@ -4,7 +4,7 @@
 	import SkyBackground from '$lib/components/SkyBackground.svelte';
 	import { fade, fly, scale } from 'svelte/transition';
 
-	let { data, form } = $props<{ data: PageData, form: ActionData }>();
+	let { data, form } = $props<{ data: PageData; form: ActionData }>();
 </script>
 
 <SkyBackground useRealTime={true} />
@@ -12,7 +12,7 @@
 <div class="dashboard-container">
 	<header class="dashboard-header" in:fly={{ y: -20, duration: 800, delay: 200 }}>
 		<div class="welcome-text">
-			<h1>Profile Settings</h1>
+			<h1 class="gradient-animated">Profile Settings</h1>
 			<p>Manage your account details and security preferences.</p>
 		</div>
 	</header>
@@ -31,15 +31,24 @@
 	<div class="main-content-grid">
 		<!-- Left Column: Profile Card & Activity -->
 		<div class="left-column">
-			<section class="profile-card glass-panel" in:scale={{ duration: 500, delay: 300, start: 0.9 }}>
+			<section
+				class="profile-card glass-panel"
+				in:scale={{ duration: 500, delay: 300, start: 0.9 }}
+			>
 				<div class="avatar-container">
 					<div class="avatar">
-						<span class="avatar-text">{data.profile?.username?.charAt(0).toUpperCase() || data.user?.email?.charAt(0).toUpperCase() || 'T'}</span>
+						<span class="avatar-text"
+							>{data.profile?.username?.charAt(0).toUpperCase() ||
+								data.user?.email?.charAt(0).toUpperCase() ||
+								'T'}</span
+						>
 					</div>
 				</div>
 				<div class="profile-info">
 					<h2>{data.profile?.fullName || data.user?.user_metadata?.full_name || 'Pilot'}</h2>
-					<p class="username-display">@{data.profile?.username || data.user?.user_metadata?.username || 'username'}</p>
+					<p class="username-display">
+						@{data.profile?.username || data.user?.user_metadata?.username || 'username'}
+					</p>
 				</div>
 			</section>
 
@@ -78,11 +87,23 @@
 				<form method="POST" action="?/updateProfile" use:enhance class="profile-form">
 					<div class="form-group">
 						<label for="fullName">Full Name</label>
-						<input type="text" id="fullName" name="fullName" value={data.profile?.fullName || data.user?.user_metadata?.full_name || ''} placeholder="Enter full name" />
+						<input
+							type="text"
+							id="fullName"
+							name="fullName"
+							value={data.profile?.fullName || data.user?.user_metadata?.full_name || ''}
+							placeholder="Enter full name"
+						/>
 					</div>
 					<div class="form-group">
 						<label for="username">Username</label>
-						<input type="text" id="username" name="username" value={data.profile?.username || data.user?.user_metadata?.username || ''} placeholder="Enter username" />
+						<input
+							type="text"
+							id="username"
+							name="username"
+							value={data.profile?.username || data.user?.user_metadata?.username || ''}
+							placeholder="Enter username"
+						/>
 					</div>
 					<button type="submit" class="btn-primary">Update Profile</button>
 				</form>
@@ -93,11 +114,23 @@
 				<form method="POST" action="?/changePassword" use:enhance class="profile-form">
 					<div class="form-group">
 						<label for="password">New Password</label>
-						<input type="password" id="password" name="password" placeholder="New password" required />
+						<input
+							type="password"
+							id="password"
+							name="password"
+							placeholder="New password"
+							required
+						/>
 					</div>
 					<div class="form-group">
 						<label for="confirmPassword">Confirm Password</label>
-						<input type="password" id="confirmPassword" name="confirmPassword" placeholder="Confirm new password" required />
+						<input
+							type="password"
+							id="confirmPassword"
+							name="confirmPassword"
+							placeholder="Confirm new password"
+							required
+						/>
 					</div>
 					<button type="submit" class="btn-secondary">Change Password</button>
 				</form>
@@ -107,7 +140,18 @@
 				<h3>Danger Zone</h3>
 				<p>Once you delete your account, there is no going back. Please be certain.</p>
 				<form method="POST" action="?/deleteAccount" use:enhance>
-					<button type="submit" class="btn-danger" onclick={(e) => { if (!confirm('Are you sure you want to delete your account? This action cannot be undone.')) e.preventDefault(); }}>Delete Account</button>
+					<button
+						type="submit"
+						class="btn-danger"
+						onclick={(e) => {
+							if (
+								!confirm(
+									'Are you sure you want to delete your account? This action cannot be undone.'
+								)
+							)
+								e.preventDefault();
+						}}>Delete Account</button
+					>
 				</form>
 			</section>
 		</div>
@@ -122,27 +166,29 @@
 	.dashboard-container {
 		position: relative;
 		z-index: 10;
-		max-width: 1200px;
+		max-width: 1400px;
 		margin: 0 auto;
-		padding: calc(var(--spacing-xxl) * 1.5) var(--container-side-padding) var(--spacing-lg);
+		padding: 6rem 2rem 2rem; /* align with dashboard spacing under navbar */
 		min-height: 100vh;
-		color: var(--font-primary);
+		color: #fff;
 	}
 
 	.glass-panel {
-		background: rgba(255, 255, 255, 0.65);
-		backdrop-filter: blur(20px);
-		-webkit-backdrop-filter: blur(20px);
-		border: 1px solid rgba(255, 255, 255, 0.5);
+		background: rgba(255, 255, 255, 0.12);
+		backdrop-filter: blur(12px);
+		-webkit-backdrop-filter: blur(12px);
+		border: 1px solid rgba(255, 255, 255, 0.22);
 		border-radius: 24px;
-		box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.1);
-		transition: transform 0.3s ease, box-shadow 0.3s ease;
+		box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+		transition:
+			transform 0.3s ease,
+			box-shadow 0.3s ease;
 		padding: var(--spacing-lg);
 	}
 
 	.glass-panel:hover {
 		transform: translateY(-5px);
-		box-shadow: 0 12px 40px 0 rgba(31, 38, 135, 0.15);
+		box-shadow: 0 14px 44px rgba(0, 0, 0, 0.22);
 	}
 
 	/* Header */
@@ -171,7 +217,8 @@
 		gap: 2rem;
 	}
 
-	.left-column, .right-column {
+	.left-column,
+	.right-column {
 		display: flex;
 		flex-direction: column;
 		gap: 2rem;
@@ -185,7 +232,7 @@
 
 	@media (max-width: 768px) {
 		.dashboard-container {
-			padding: calc(var(--spacing-xxl) * 1.25) var(--spacing-sm) var(--spacing-sm);
+			padding: 6rem 1rem 1.25rem;
 		}
 
 		.welcome-text h1 {
@@ -203,7 +250,7 @@
 		flex-direction: column;
 		align-items: center;
 		text-align: center;
-		background: linear-gradient(135deg, rgba(255,255,255,0.8) 0%, rgba(255,255,255,0.6) 100%);
+		background: rgba(255, 255, 255, 0.1);
 	}
 
 	.avatar-container {
@@ -213,13 +260,17 @@
 	.avatar {
 		width: 120px;
 		height: 120px;
-		background: linear-gradient(135deg, #223A5E 0%, #38C172 100%);
+		background: linear-gradient(
+			135deg,
+			var(--navbar-accent, var(--ui-yellow)) 0%,
+			var(--font-accent-cyan) 100%
+		);
 		border-radius: 50%;
 		display: flex;
 		align-items: center;
 		justify-content: center;
-		box-shadow: 0 8px 20px rgba(34, 58, 94, 0.2);
-		border: 4px solid white;
+		box-shadow: 0 12px 30px rgba(0, 0, 0, 0.25);
+		border: 4px solid rgba(255, 255, 255, 0.6);
 	}
 
 	.avatar-text {
@@ -230,12 +281,12 @@
 
 	.profile-info h2 {
 		font-size: 1.8rem;
-		color: #223a5e;
+		color: #ffffff;
 		margin: 0 0 0.25rem 0;
 	}
 
 	.username-display {
-		color: #4facfe;
+		color: var(--font-accent-cyan);
 		font-weight: 600;
 		font-size: 1rem;
 		margin: 0 0 0.5rem 0;
@@ -244,7 +295,7 @@
 	/* Activity Section */
 	.activity-section h3 {
 		font-size: 1.2rem;
-		color: #223a5e;
+		color: #ffffff;
 		margin: 0 0 1.5rem 0;
 	}
 
@@ -259,9 +310,9 @@
 		align-items: center;
 		gap: 1rem;
 		padding: 0.75rem;
-		background: rgba(255, 255, 255, 0.5);
+		background: rgba(255, 255, 255, 0.1);
 		border-radius: 12px;
-		border: 1px solid rgba(255, 255, 255, 0.3);
+		border: 1px solid rgba(255, 255, 255, 0.14);
 	}
 
 	.activity-icon {
@@ -270,21 +321,21 @@
 
 	.activity-title {
 		font-weight: 600;
-		color: #223a5e;
+		color: rgba(255, 255, 255, 0.9);
 		margin: 0;
 		font-size: 0.95rem;
 	}
 
 	.activity-time {
 		font-size: 0.8rem;
-		color: #666;
+		color: rgba(255, 255, 255, 0.65);
 		margin: 0;
 	}
 
 	/* Forms */
 	.form-section h3 {
 		font-size: 1.5rem;
-		color: #223a5e;
+		color: #ffffff;
 		margin: 0 0 1.5rem 0;
 	}
 
@@ -302,24 +353,29 @@
 
 	label {
 		font-weight: 600;
-		color: #223a5e;
+		color: rgba(255, 255, 255, 0.85);
 		font-size: 0.9rem;
 	}
 
 	input {
 		padding: 0.8rem 1rem;
-		border: 1px solid rgba(0, 0, 0, 0.1);
+		border: 1px solid rgba(255, 255, 255, 0.22);
 		border-radius: 12px;
-		background: rgba(255, 255, 255, 0.8);
+		background: rgba(255, 255, 255, 0.12);
 		font-size: 1rem;
 		transition: all 0.2s;
+		color: #ffffff;
+	}
+
+	input::placeholder {
+		color: rgba(255, 255, 255, 0.6);
 	}
 
 	input:focus {
 		outline: none;
-		border-color: #4facfe;
-		background: white;
-		box-shadow: 0 0 0 3px rgba(79, 172, 254, 0.2);
+		border-color: var(--font-accent-cyan);
+		background: rgba(255, 255, 255, 0.16);
+		box-shadow: 0 0 0 3px rgba(0, 206, 209, 0.25);
 	}
 
 	button {
@@ -333,51 +389,56 @@
 	}
 
 	.btn-primary {
-		background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
-		color: white;
-		box-shadow: 0 4px 15px rgba(79, 172, 254, 0.4);
+		background: linear-gradient(
+			135deg,
+			var(--navbar-accent, var(--ui-yellow)) 0%,
+			var(--font-accent-cyan) 100%
+		);
+		color: var(--ui-dark-teal);
+		box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
 	}
 
 	.btn-primary:hover {
 		transform: translateY(-2px);
-		box-shadow: 0 6px 20px rgba(79, 172, 254, 0.6);
+		box-shadow: 0 12px 32px rgba(0, 0, 0, 0.3);
 	}
 
 	.btn-secondary {
-		background: #223a5e;
-		color: white;
-		box-shadow: 0 4px 15px rgba(34, 58, 94, 0.3);
+		background: rgba(255, 255, 255, 0.14);
+		color: #ffffff;
+		border: 1px solid rgba(255, 255, 255, 0.24);
+		box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
 	}
 
 	.btn-secondary:hover {
-		background: #1a2e4b;
+		background: rgba(255, 255, 255, 0.18);
 		transform: translateY(-2px);
 	}
 
 	/* Danger Zone */
 	.danger-zone {
-		border-color: rgba(255, 60, 126, 0.3);
-		background: rgba(255, 255, 255, 0.7);
+		border-color: rgba(244, 63, 94, 0.35);
+		background: rgba(255, 255, 255, 0.1);
 	}
 
 	.danger-zone h3 {
-		color: #ff3c7e;
+		color: #f43f5e;
 		margin: 0 0 0.5rem 0;
 	}
 
 	.danger-zone p {
-		color: #666;
+		color: rgba(255, 255, 255, 0.7);
 		margin-bottom: 1.5rem;
 	}
 
 	.btn-danger {
-		background: #ff3c7e;
+		background: #f43f5e;
 		color: white;
-		box-shadow: 0 4px 15px rgba(255, 60, 126, 0.3);
+		box-shadow: 0 10px 28px rgba(0, 0, 0, 0.25);
 	}
 
 	.btn-danger:hover {
-		background: #e62e6b;
+		background: #e11d48;
 		transform: translateY(-2px);
 	}
 
@@ -389,14 +450,14 @@
 	}
 
 	.alert.success {
-		background: rgba(220, 252, 231, 0.9);
-		border-color: #86efac;
-		color: #166534;
+		background: rgba(34, 197, 94, 0.12);
+		border-color: rgba(34, 197, 94, 0.35);
+		color: #bbf7d0;
 	}
 
 	.alert.error {
-		background: rgba(254, 226, 226, 0.9);
-		border-color: #fca5a5;
-		color: #991b1b;
+		background: rgba(244, 63, 94, 0.12);
+		border-color: rgba(244, 63, 94, 0.35);
+		color: #fecdd3;
 	}
 </style>

@@ -8,18 +8,18 @@
 
 	$effect(() => {
 		show = $isTransitioning;
-		
+
 		// Sync body class with transition state
 		if (typeof document !== 'undefined') {
 			if ($isTransitioning) {
 				document.body.classList.add('page-transitioning');
-				console.log('Scroll locked - page transitioning');
+				console.log('Page transitioning');
 			} else {
 				document.body.classList.remove('page-transitioning');
 				// Force enable scrolling
 				document.body.style.removeProperty('overflow');
 				document.documentElement.style.removeProperty('overflow');
-				console.log('Scroll unlocked - transition complete');
+				console.log('Transition complete');
 			}
 		}
 	});
@@ -42,7 +42,7 @@
 </script>
 
 {#if show}
-	<div 
+	<div
 		class="transition-overlay"
 		in:fade={{ duration: 300, easing: cubicOut }}
 		out:fade={{ duration: 400, easing: cubicOut }}
@@ -63,7 +63,7 @@
 		background: rgba(27, 53, 88, 0.3);
 		backdrop-filter: blur(8px);
 		z-index: 9998;
-		pointer-events: none;
+		pointer-events: auto;
 		display: flex;
 		align-items: flex-start;
 		justify-content: center;
@@ -87,8 +87,9 @@
 			var(--ui-light-blue) 100%
 		);
 		background-size: 200% 100%;
-		animation: progressSlide 0.6s cubic-bezier(0.4, 0, 0.2, 1) forwards,
-					progressShimmer 1.5s ease-in-out infinite;
+		animation:
+			progressSlide 0.6s cubic-bezier(0.4, 0, 0.2, 1) forwards,
+			progressShimmer 1.5s ease-in-out infinite;
 		box-shadow: 0 0 20px var(--font-accent-cyan);
 	}
 
@@ -104,7 +105,8 @@
 	}
 
 	@keyframes progressShimmer {
-		0%, 100% {
+		0%,
+		100% {
 			background-position: 0% 50%;
 		}
 		50% {
@@ -117,7 +119,7 @@
 			animation: none;
 			width: 100%;
 		}
-		
+
 		.transition-overlay {
 			backdrop-filter: none;
 			background: rgba(27, 53, 88, 0.1);

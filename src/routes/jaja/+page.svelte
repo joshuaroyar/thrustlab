@@ -30,7 +30,8 @@
 		messages: initialMessages
 	});
 
-	const isCitationPart = (part: JajaMessage['parts'][number]): part is CitationPart => part.type === 'data-citations';
+	const isCitationPart = (part: JajaMessage['parts'][number]): part is CitationPart =>
+		part.type === 'data-citations';
 
 	const getCitations = (message: JajaMessage) =>
 		message.parts.filter(isCitationPart).flatMap((part) => part.data ?? []);
@@ -88,8 +89,8 @@
 			</div>
 			<a href="/" class="close-btn" aria-label="Back to Home">
 				<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-					<line x1="18" y1="6" x2="6" y2="18" stroke-width="2" stroke-linecap="round"/>
-					<line x1="6" y1="6" x2="18" y2="18" stroke-width="2" stroke-linecap="round"/>
+					<line x1="18" y1="6" x2="6" y2="18" stroke-width="2" stroke-linecap="round" />
+					<line x1="6" y1="6" x2="18" y2="18" stroke-width="2" stroke-linecap="round" />
 				</svg>
 			</a>
 		</div>
@@ -97,7 +98,10 @@
 		<div class="chat-body">
 			<div class="chat-messages" bind:this={chatContainer}>
 				{#each chat.messages as message (message.id)}
-					<div class="message {message.role === 'user' ? 'user-message' : 'ai-message'}" in:fly={{ y: 10, duration: 300 }}>
+					<div
+						class="message {message.role === 'user' ? 'user-message' : 'ai-message'}"
+						in:fly={{ y: 10, duration: 300 }}
+					>
 						{#if message.role === 'assistant'}
 							<div class="message-avatar">
 								<img src="/icons/jaja.png" alt="JAJA Avatar" class="avatar-img" />
@@ -116,22 +120,32 @@
 						{/if}
 					</div>
 				{/each}
-				
+
 				{#if chat.status === 'streaming'}
 					<div class="typing-indicator">Thinking...</div>
 				{/if}
 			</div>
 
 			<form class="chat-input-wrapper" onsubmit={handleSubmit}>
-				<input 
-					class="chat-input" 
-					bind:value={inputValue} 
+				<input
+					class="chat-input"
+					bind:value={inputValue}
 					placeholder="Fuel your curiosity, ask me anything!"
 					disabled={chat.status === 'streaming'}
 				/>
-				<button class="send-button" type="submit" disabled={chat.status === 'streaming' || !inputValue} aria-label="Send message">
+				<button
+					class="send-button"
+					type="submit"
+					disabled={chat.status === 'streaming' || !inputValue}
+					aria-label="Send message"
+				>
 					<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-						<path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+						<path
+							d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"
+							stroke-width="2"
+							stroke-linecap="round"
+							stroke-linejoin="round"
+						/>
 					</svg>
 				</button>
 			</form>
@@ -142,13 +156,14 @@
 <style>
 	:global(body) {
 		margin: 0;
-		overflow: hidden;
+		overflow-x: hidden;
 		background: #0f172a;
 	}
 
 	.fullscreen-chat {
 		width: 100vw;
 		height: 100vh;
+		overflow: hidden;
 		display: flex;
 		align-items: center;
 		justify-content: center;
@@ -285,7 +300,11 @@
 	}
 
 	.user-bubble {
-		background: linear-gradient(135deg, var(--navbar-accent, var(--ui-yellow)) 0%, var(--font-accent-cyan) 100%);
+		background: linear-gradient(
+			135deg,
+			var(--navbar-accent, var(--ui-yellow)) 0%,
+			var(--font-accent-cyan) 100%
+		);
 		color: #000000;
 		border-top-right-radius: 0.25rem;
 		font-weight: 600;
@@ -328,7 +347,11 @@
 		height: 54px;
 		border-radius: 50%;
 		border: none;
-		background: linear-gradient(135deg, var(--navbar-accent, var(--ui-yellow)) 0%, var(--font-accent-cyan) 100%);
+		background: linear-gradient(
+			135deg,
+			var(--navbar-accent, var(--ui-yellow)) 0%,
+			var(--font-accent-cyan) 100%
+		);
 		color: black;
 		display: flex;
 		align-items: center;
@@ -349,15 +372,20 @@
 	}
 
 	@keyframes float {
-		0%, 100% { transform: translateY(0); }
-		50% { transform: translateY(-5px); }
+		0%,
+		100% {
+			transform: translateY(0);
+		}
+		50% {
+			transform: translateY(-5px);
+		}
 	}
 
 	@media (max-width: 768px) {
 		.fullscreen-chat {
 			padding: 0;
 		}
-		
+
 		.chat-container {
 			height: 100vh;
 			border-radius: 0;

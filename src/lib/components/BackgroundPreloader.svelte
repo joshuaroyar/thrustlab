@@ -11,7 +11,7 @@
 		'/overhaul-station': 'day',
 		'/test-bay': 'dawn',
 		'/profile': 'realtime',
-		'/dashboard': 'day',
+		'/dashboard': 'realtime',
 		'/login': 'evening',
 		'/sign-up': 'evening'
 	};

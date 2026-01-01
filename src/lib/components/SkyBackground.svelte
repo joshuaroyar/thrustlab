@@ -1,13 +1,72 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 
-	let { day = false, evening = false, night = false, dawn = false, useRealTime = false } = $props<{ day?: boolean; evening?: boolean; night?: boolean; dawn?: boolean; useRealTime?: boolean }>();
+	let {
+		day = false,
+		evening = false,
+		night = false,
+		dawn = false,
+		useRealTime = false
+	} = $props<{
+		day?: boolean;
+		evening?: boolean;
+		night?: boolean;
+		dawn?: boolean;
+		useRealTime?: boolean;
+	}>();
 
 	let skyCanvas: HTMLCanvasElement;
 	let farCloudsCanvas: HTMLCanvasElement;
 	let midCloudsCanvas: HTMLCanvasElement;
 	let nearCloudsCanvas: HTMLCanvasElement;
-	
+
+	let lastViewportWidth = 0;
+	let lastViewportHeight = 0;
+
+	function resizeCanvases() {
+		const viewportWidth = Math.max(1, Math.floor(window.innerWidth));
+		const viewportHeight = Math.max(1, Math.floor(window.innerHeight));
+
+		// Scale existing clouds so they keep roughly the same relative placement after resize.
+		if (lastViewportWidth > 0 && lastViewportHeight > 0) {
+			const scaleX = viewportWidth / lastViewportWidth;
+			const scaleY = viewportHeight / lastViewportHeight;
+
+			farClouds = farClouds.map((c) => ({
+				...c,
+				x: c.x * scaleX,
+				y: c.y * scaleY,
+				w: c.w * scaleX,
+				h: c.h * scaleY
+			}));
+			midClouds = midClouds.map((c) => ({
+				...c,
+				x: c.x * scaleX,
+				y: c.y * scaleY,
+				w: c.w * scaleX,
+				h: c.h * scaleY
+			}));
+			nearClouds = nearClouds.map((c) => ({
+				...c,
+				x: c.x * scaleX,
+				y: c.y * scaleY,
+				w: c.w * scaleX,
+				h: c.h * scaleY
+			}));
+		}
+
+		lastViewportWidth = viewportWidth;
+		lastViewportHeight = viewportHeight;
+
+		const canvases = [skyCanvas, farCloudsCanvas, midCloudsCanvas, nearCloudsCanvas].filter(
+			(c): c is HTMLCanvasElement => Boolean(c)
+		);
+		for (const c of canvases) {
+			c.width = viewportWidth;
+			c.height = viewportHeight;
+		}
+	}
+
 	let mouseX = $state(0);
 	let mouseY = $state(0);
 	const BASE_DRIFT_SPEED = 0.61;
@@ -41,13 +100,28 @@
 	let stars: { x: number; y: number; size: number; alpha: number }[] = [];
 
 	onMount(() => {
+		resizeCanvases();
+
 		// Generate stars
 		stars = Array.from({ length: 100 }, () => ({
-			x: Math.random() * window.innerWidth,
-			y: Math.random() * window.innerHeight,
+			x: Math.random() * (skyCanvas?.width || window.innerWidth),
+			y: Math.random() * (skyCanvas?.height || window.innerHeight),
 			size: Math.random() * 2 + 0.5,
 			alpha: Math.random()
 		}));
+
+		const handleResize = () => {
+			resizeCanvases();
+			// Regenerate stars to fill the new viewport.
+			stars = Array.from({ length: 100 }, () => ({
+				x: Math.random() * (skyCanvas?.width || window.innerWidth),
+				y: Math.random() * (skyCanvas?.height || window.innerHeight),
+				size: Math.random() * 2 + 0.5,
+				alpha: Math.random()
+			}));
+		};
+		window.addEventListener('resize', handleResize);
+		window.addEventListener('orientationchange', handleResize);
 
 		// Mouse tracking for parallax
 		const handleMouseMove = (e: MouseEvent) => {
@@ -123,6 +197,8 @@
 		return () => {
 			window.removeEventListener('scroll', handleScroll);
 			window.removeEventListener('mousemove', handleMouseMove);
+			window.removeEventListener('resize', handleResize);
+			window.removeEventListener('orientationchange', handleResize);
 			if (animationId) {
 				cancelAnimationFrame(animationId);
 			}
@@ -405,19 +481,19 @@
 </script>
 
 <div class="sky-background">
-	<canvas bind:this={skyCanvas} width="1920" height="1080" class="sky-canvas"></canvas>
-	<canvas bind:this={farCloudsCanvas} width="1920" height="1080" class="cloud-layer far"></canvas>
-	<canvas bind:this={midCloudsCanvas} width="1920" height="1080" class="cloud-layer mid"></canvas>
-	<canvas bind:this={nearCloudsCanvas} width="1920" height="1080" class="cloud-layer near"></canvas>
+	<canvas bind:this={skyCanvas} class="sky-canvas"></canvas>
+	<canvas bind:this={farCloudsCanvas} class="cloud-layer far"></canvas>
+	<canvas bind:this={midCloudsCanvas} class="cloud-layer mid"></canvas>
+	<canvas bind:this={nearCloudsCanvas} class="cloud-layer near"></canvas>
 </div>
 
 <style>
 	.sky-background {
 		position: fixed;
-		top: 0;
-		left: 0;
-		width: 100%;
-		height: 100%;
+		inset: 0;
+		width: 100vw;
+		height: 100vh;
+		height: 100dvh;
 		z-index: 0;
 		pointer-events: none;
 		overflow: hidden;

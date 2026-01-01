@@ -1646,14 +1646,6 @@
 		line-height: 1.2;
 	}
 
-	.jaja-bubble p {
-		margin: 0;
-		display: flex;
-		align-items: center;
-		gap: 0.5rem;
-		font-size: 1.1rem;
-	}
-
 	.zoom-icon-inline {
 		display: inline-flex;
 		align-items: center;

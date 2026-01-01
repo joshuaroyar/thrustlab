@@ -84,6 +84,12 @@ body {
 	cursor: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='32' height='32' viewBox='0 0 24 24'%3E%3Cpath fill='%2387CEEB' stroke='%23000' stroke-width='2' stroke-linejoin='round' d='M10 11V8.99c0-.88.59-1.64 1.44-1.86h.05A1.99 1.99 0 0 1 14 9.05V12v-2c0-.88.6-1.65 1.46-1.87h.05A1.98 1.98 0 0 1 18 10.06V13v-1.94a2 2 0 0 1 1.51-1.94h0A2 2 0 0 1 22 11.06V14c0 .6-.08 1.27-.21 1.97a7.96 7.96 0 0 1-7.55 6.48 54.98 54.98 0 0 1-4.48 0 7.96 7.96 0 0 1-7.55-6.48C2.08 15.27 2 14.59 2 14v-1.49c0-1.11.9-2.01 2.01-2.01h0a2 2 0 0 1 2.01 2.03l-.01.97v-10c0-1.1.9-2 2-2h0a2 2 0 0 1 2 2V11Z'/%3E%3C/svg%3E") 12 12, auto !important;
 }
 
+/* Dashboard must remain scrollable even if other pages/components lock scroll. */
+html.dashboard-page,
+body.dashboard-page {
+	overflow-y: auto !important;
+}
+
 /* Pointer cursor for interactive elements */
 *,
 *::before,
@@ -105,6 +111,30 @@ input[type="button"],
 .option-item,
 .zoom-icon {
 	cursor: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='32' height='32' viewBox='0 0 24 24'%3E%3Cpath fill='%23FFD966' stroke='%23000' stroke-width='2' stroke-linejoin='round' d='M10 11V8.99c0-.88.59-1.64 1.44-1.86h.05A1.99 1.99 0 0 1 14 9.05V12v-2c0-.88.6-1.65 1.46-1.87h.05A1.98 1.98 0 0 1 18 10.06V13v-1.94a2 2 0 0 1 1.51-1.94h0A2 2 0 0 1 22 11.06V14c0 .6-.08 1.27-.21 1.97a7.96 7.96 0 0 1-7.55 6.48 54.98 54.98 0 0 1-4.48 0 7.96 7.96 0 0 1-7.55-6.48C2.08 15.27 2 14.59 2 14v-1.49c0-1.11.9-2.01 2.01-2.01h0a2 2 0 0 1 2.01 2.03l-.01.97v-10c0-1.1.9-2 2-2h0a2 2 0 0 1 2 2V11Z'/%3E%3C/svg%3E") 12 12, pointer !important;
+}
+
+/* Mobile/touch devices: use the system cursor.
+   Custom cursor URLs are desktop-only and can degrade touch UX. */
+@media (pointer: coarse) {
+	body {
+		cursor: auto !important;
+	}
+
+	a,
+	button,
+	[role="button"],
+	input[type="submit"],
+	input[type="button"],
+	.module-card,
+	.cta-button,
+	.researcher,
+	.zone-card,
+	.feature-card,
+	.test-card,
+	.option-item,
+	.zoom-icon {
+		cursor: auto !important;
+	}
 }
 
 /* Heading styles with Poppins Black */
@@ -306,21 +336,20 @@ main {
 }
 
 body.page-transitioning {
-	overflow: hidden !important;
+	/* overflow: hidden !important; - Removed to prevent scroll locking issues */
 	/* Safety: Auto-remove overflow restriction after animation completes */
-	animation: resetOverflow 0s 1s forwards;
+	/* animation: resetOverflow 0s 1s forwards; - Removed */
 }
 
-body.page-transitioning * {
-	pointer-events: none !important;
-}
+/* Avoid global pointer-events disabling: it can interfere with scrolling.
+   Interaction blocking during transitions is handled by the overlay itself. */
 
 /* Safety animation to reset overflow if class is not removed properly */
-@keyframes resetOverflow {
+/* @keyframes resetOverflow {
 	to {
 		overflow: visible !important;
 	}
-}
+} */
 
 /* Hardware acceleration for smooth animations */
 .sky-background,

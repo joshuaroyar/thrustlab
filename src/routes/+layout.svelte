@@ -29,9 +29,7 @@
 	function formatPathToTitle(pathname: string) {
 		if (!pathname || pathname === '/') return TITLE_MAP['/'];
 		const segment = pathname.split('/').filter(Boolean).pop() ?? '';
-		const words = segment
-			.replace(/-/g, ' ')
-			.replace(/\b\w/g, (char) => char.toUpperCase());
+		const words = segment.replace(/-/g, ' ').replace(/\b\w/g, (char) => char.toUpperCase());
 		return `ThrustLab | ${words || 'Explorer'}`;
 	}
 
@@ -43,12 +41,16 @@
 	// Check if we're on the JAJA fullscreen page to hide the popup
 	let isJajaPage = $derived(page.url.pathname === '/jaja');
 	// Check if we're on the assembly disassembly page to hide the popup
-	let isAssemblyDisassemblyPage = $derived(page.url.pathname === '/overhaul-station/assembly-disassembly');
+	let isAssemblyDisassemblyPage = $derived(
+		page.url.pathname === '/overhaul-station/assembly-disassembly'
+	);
 	// Check if we're on the home page for transparent navbar and JAJA icon
 	let isHomePage = $derived(page.url.pathname === '/');
 
 	let observer: IntersectionObserver;
-	let pageTitle = $derived(TITLE_MAP[page.url.pathname] ?? formatPathToTitle(page.url.pathname) ?? DEFAULT_TITLE);
+	let pageTitle = $derived(
+		TITLE_MAP[page.url.pathname] ?? formatPathToTitle(page.url.pathname) ?? DEFAULT_TITLE
+	);
 
 	function observeElements() {
 		if (!observer) return;
@@ -74,7 +76,50 @@
 			console.log('Layout mounted - scroll enabled');
 		}
 
-		const { data: { subscription } } = supabase.auth.onAuthStateChange((event: AuthChangeEvent, _session: Session | null) => {
+		// Watchdog: if something disables scrolling unexpectedly, restore it.
+		// This targets the reported "scrollbar disappears after a few seconds" issue.
+		let scrollGuardId: number | null = null;
+		if (typeof window !== 'undefined' && typeof document !== 'undefined') {
+			const unlockScroll = () => {
+				document.body.classList.remove('page-transitioning');
+				document.body.style.removeProperty('overflow');
+				document.documentElement.style.removeProperty('overflow');
+				document.body.style.removeProperty('position');
+				document.body.style.removeProperty('top');
+				document.body.style.removeProperty('width');
+				document.body.style.removeProperty('height');
+			};
+
+			const isTransitionOverlayVisible = () => {
+				const overlay = document.querySelector<HTMLElement>('.transition-overlay');
+				if (!overlay) return false;
+				const style = window.getComputedStyle(overlay);
+				return style.display !== 'none' && style.visibility !== 'hidden' && style.opacity !== '0';
+			};
+
+			scrollGuardId = window.setInterval(() => {
+				const pathname = page.url.pathname;
+				const shouldGuard = pathname === '/dashboard' || pathname.startsWith('/dashboard/');
+				if (!shouldGuard) return;
+
+				const bodyOverflow = window.getComputedStyle(document.body).overflow;
+				const htmlOverflow = window.getComputedStyle(document.documentElement).overflow;
+				const bodyPos = window.getComputedStyle(document.body).position;
+				const scrollLocked =
+					bodyOverflow === 'hidden' ||
+					htmlOverflow === 'hidden' ||
+					bodyOverflow === 'clip' ||
+					htmlOverflow === 'clip' ||
+					bodyPos === 'fixed';
+				if (scrollLocked && !isTransitionOverlayVisible()) {
+					unlockScroll();
+				}
+			}, 500);
+		}
+
+		const {
+			data: { subscription }
+		} = supabase.auth.onAuthStateChange((event: AuthChangeEvent, _session: Session | null) => {
 			if (_session?.expires_at !== session?.expires_at) {
 				invalidate('supabase:auth');
 			}
@@ -100,7 +145,10 @@
 		return () => {
 			subscription.unsubscribe();
 			observer.disconnect();
-			
+			if (scrollGuardId) {
+				clearInterval(scrollGuardId);
+			}
+
 			// Safety cleanup: ensure scroll is re-enabled
 			if (typeof document !== 'undefined') {
 				document.body.classList.remove('page-transitioning');
@@ -143,7 +191,6 @@
 		background-color: transparent;
 		color: #222831; /* Charcoal Gray */
 		font-family: 'Roboto', sans-serif;
-		cursor: none;
 	}
 
 	main {

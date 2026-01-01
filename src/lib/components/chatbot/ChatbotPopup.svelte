@@ -31,7 +31,8 @@
 		messages: initialMessages
 	});
 
-	const isCitationPart = (part: JajaMessage['parts'][number]): part is CitationPart => part.type === 'data-citations';
+	const isCitationPart = (part: JajaMessage['parts'][number]): part is CitationPart =>
+		part.type === 'data-citations';
 
 	const getCitations = (message: JajaMessage) =>
 		message.parts.filter(isCitationPart).flatMap((part) => part.data ?? []);
@@ -104,19 +105,33 @@
 				</div>
 			</div>
 			<div class="header-actions">
-				<button class="header-btn" onclick={toggleMinimize} aria-label={isMinimized ? 'Maximize' : 'Minimize'}>
+				<button
+					class="header-btn"
+					onclick={toggleMinimize}
+					aria-label={isMinimized ? 'Maximize' : 'Minimize'}
+				>
 					<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
 						{#if isMinimized}
-							<polyline points="18 15 12 9 6 15" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+							<polyline
+								points="18 15 12 9 6 15"
+								stroke-width="2"
+								stroke-linecap="round"
+								stroke-linejoin="round"
+							/>
 						{:else}
-							<polyline points="6 9 12 15 18 9" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+							<polyline
+								points="6 9 12 15 18 9"
+								stroke-width="2"
+								stroke-linecap="round"
+								stroke-linejoin="round"
+							/>
 						{/if}
 					</svg>
 				</button>
 				<button class="header-btn close-btn" onclick={toggleChat} aria-label="Close">
 					<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-						<line x1="18" y1="6" x2="6" y2="18" stroke-width="2" stroke-linecap="round"/>
-						<line x1="6" y1="6" x2="18" y2="18" stroke-width="2" stroke-linecap="round"/>
+						<line x1="18" y1="6" x2="6" y2="18" stroke-width="2" stroke-linecap="round" />
+						<line x1="6" y1="6" x2="18" y2="18" stroke-width="2" stroke-linecap="round" />
 					</svg>
 				</button>
 			</div>
@@ -129,7 +144,10 @@
 						{@const partTexts = message.parts.map((p) => extractTextFromPart(p))}
 						{@const hasText = partTexts.join('').trim().length > 0}
 						{#if hasText}
-							<div class="message {message.role === 'user' ? 'user-message' : 'ai-message'}" in:fly={{ y: 10, duration: 300 }}>
+							<div
+								class="message {message.role === 'user' ? 'user-message' : 'ai-message'}"
+								in:fly={{ y: 10, duration: 300 }}
+							>
 								{#if message.role === 'assistant'}
 									<div class="message-avatar">
 										<img src="/icons/jaja.png" alt="JAJA Avatar" class="avatar-img" />
@@ -153,22 +171,32 @@
 							</div>
 						{/if}
 					{/each}
-					
+
 					{#if chat.status === 'streaming'}
 						<div class="typing-indicator">Thinking...</div>
 					{/if}
 				</div>
 
 				<form class="chat-input-wrapper" onsubmit={handleSubmit}>
-					<input 
-						class="chat-input" 
-						bind:value={inputValue} 
+					<input
+						class="chat-input"
+						bind:value={inputValue}
 						placeholder="Fuel your curiosity, ask me anything!"
 						disabled={chat.status === 'streaming'}
 					/>
-					<button class="send-button" type="submit" disabled={chat.status === 'streaming' || !inputValue} aria-label="Send message">
+					<button
+						class="send-button"
+						type="submit"
+						disabled={chat.status === 'streaming' || !inputValue}
+						aria-label="Send message"
+					>
 						<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-							<path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+							<path
+								d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"
+								stroke-width="2"
+								stroke-linecap="round"
+								stroke-linejoin="round"
+							/>
 						</svg>
 					</button>
 				</form>
@@ -184,7 +212,7 @@
 		color: #666;
 		font-style: italic;
 	}
-	
+
 	/* gradient-flash moved to src/app.css for global reuse */
 
 	.chat-fab {
@@ -219,7 +247,8 @@
 	}
 
 	@keyframes pulse {
-		0%, 100% {
+		0%,
+		100% {
 			box-shadow: 0 8px 24px rgba(var(--navbar-accent-rgb, 255, 217, 102), 0.4);
 		}
 		50% {
@@ -228,9 +257,16 @@
 	}
 
 	@keyframes wave {
-		0%, 100% { transform: rotate(0deg); }
-		25% { transform: rotate(15deg); }
-		75% { transform: rotate(-15deg); }
+		0%,
+		100% {
+			transform: rotate(0deg);
+		}
+		25% {
+			transform: rotate(15deg);
+		}
+		75% {
+			transform: rotate(-15deg);
+		}
 	}
 
 	.chatbot-popup {
@@ -239,7 +275,7 @@
 		right: 2rem;
 		width: 400px;
 		max-height: 600px;
-		background: var(--navbar-bg-color, #0A2F35);
+		background: var(--navbar-bg-color, #0a2f35);
 		border-radius: 1.5rem;
 		border: 2px solid rgba(135, 206, 235, 0.3);
 		box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
@@ -266,7 +302,7 @@
 	}
 
 	.chat-header {
-		background: var(--navbar-bg-color, #0A2F35);
+		background: var(--navbar-bg-color, #0a2f35);
 		padding: var(--spacing-md) var(--spacing-lg);
 		display: flex;
 		justify-content: space-between;
@@ -425,14 +461,14 @@
 	}
 
 	.ai-bubble {
-		background: var(--navbar-bg-color, #1C3E4A);
+		background: var(--navbar-bg-color, #1c3e4a);
 		border: 1px solid rgba(135, 206, 235, 0.2);
 		border-top-left-radius: 0.25rem;
 		color: var(--font-secondary);
 	}
 
 	.user-bubble {
-		background: var(--navbar-bg-color, #1C3E4A);
+		background: var(--navbar-bg-color, #1c3e4a);
 		color: var(--font-secondary);
 		border-top-right-radius: 0.25rem;
 		order: 1;
@@ -489,7 +525,7 @@
 
 	.chat-input-wrapper {
 		padding: var(--spacing-sm) var(--spacing-md);
-		background: var(--navbar-bg-color, #0A2F35);
+		background: var(--navbar-bg-color, #0a2f35);
 		border-top: 1px solid rgba(135, 206, 235, 0.2);
 		display: flex;
 		gap: 0.75rem;
@@ -555,10 +591,12 @@
 
 	@media (max-width: 768px) {
 		.chatbot-popup {
-			width: calc(100vw - 2rem);
-			max-width: 400px;
+			left: 1rem;
 			right: 1rem;
 			bottom: 1rem;
+			width: auto;
+			max-width: none;
+			max-height: calc(100vh - 2rem);
 		}
 
 		.chat-fab {
@@ -568,6 +606,18 @@
 
 		.fab-image {
 			width: 120px;
+		}
+	}
+
+	@media (max-width: 420px) {
+		.fab-image {
+			width: 96px;
+		}
+		.chatbot-popup {
+			bottom: 0.75rem;
+			left: 0.75rem;
+			right: 0.75rem;
+			max-height: calc(100vh - 1.5rem);
 		}
 	}
 </style>
