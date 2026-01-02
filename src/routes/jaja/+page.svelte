@@ -83,7 +83,7 @@
 					<img src="/icons/jaja.png" alt="JAJA Avatar" class="avatar-img" />
 				</div>
 				<div class="header-info">
-					<h1>JAJA AI Assistant</h1>
+					<h1 class="gradient-animated">JAJA AI Assistant</h1>
 					<p>Your co-engineer specialized in turbofan engines</p>
 				</div>
 			</div>

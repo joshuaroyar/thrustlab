@@ -3,7 +3,7 @@
 
 	onMount(() => {
 		document.body.classList.add('zone-hangar');
-		
+
 		// Safety: Ensure scrolling is enabled when page loads
 		if (typeof document !== 'undefined') {
 			document.body.classList.remove('page-transitioning');
@@ -11,7 +11,7 @@
 			document.documentElement.style.removeProperty('overflow');
 			console.log('Hangar Zone mounted - scroll enabled');
 		}
-		
+
 		return () => {
 			document.body.classList.remove('zone-hangar');
 			// Safety: Ensure scroll remains enabled on cleanup
@@ -24,11 +24,13 @@
 </script>
 
 <div class="page-container">
-	
 	<div class="hero-section">
 		<h1 class="gradient-title gradient-animated">Hangar Zone</h1>
 		<p class="description">
-			Welcome to the Hangar Zone, a learning space where students journey through the history and evolution of gas turbine engines. Here, they'll discover how these powerful machines have developed over time—from early designs to the advanced engines that power today's aircraft—building a strong foundation for deeper exploration ahead.
+			Welcome to the Hangar Zone, a learning space where students journey through the history and
+			evolution of gas turbine engines. Here, they'll discover how these powerful machines have
+			developed over time—from early designs to the advanced engines that power today's
+			aircraft—building a strong foundation for deeper exploration ahead.
 		</p>
 	</div>
 
@@ -37,10 +39,21 @@
 			<div class="card-content">
 				<span class="sub-label">LEARNING</span>
 				<span class="main-label">MODULE 01:</span>
-				<h3 class="module-title-text gradient-animated">HISTORY OF<br>GAS TURBINE<br>ENGINES</h3>
+				<h3 class="module-title-text gradient-animated">
+					HISTORY OF<br />GAS TURBINE<br />ENGINES
+				</h3>
 			</div>
 			<div class="arrow-icon">
-				<svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+				<svg
+					width="40"
+					height="40"
+					viewBox="0 0 24 24"
+					fill="none"
+					stroke="currentColor"
+					stroke-width="3"
+					stroke-linecap="round"
+					stroke-linejoin="round"
+				>
 					<line x1="5" y1="12" x2="19" y2="12"></line>
 					<polyline points="12 5 19 12 12 19"></polyline>
 				</svg>
@@ -51,10 +64,19 @@
 			<div class="card-content">
 				<span class="sub-label">LEARNING</span>
 				<span class="main-label">MODULE 02:</span>
-				<h3 class="module-title-text gradient-animated">TYPES OF GAS<br>TURBINE<br>ENGINES</h3>
+				<h3 class="module-title-text gradient-animated">TYPES OF GAS<br />TURBINE<br />ENGINES</h3>
 			</div>
 			<div class="arrow-icon">
-				<svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+				<svg
+					width="40"
+					height="40"
+					viewBox="0 0 24 24"
+					fill="none"
+					stroke="currentColor"
+					stroke-width="3"
+					stroke-linecap="round"
+					stroke-linejoin="round"
+				>
 					<line x1="5" y1="12" x2="19" y2="12"></line>
 					<polyline points="12 5 19 12 12 19"></polyline>
 				</svg>
@@ -87,7 +109,6 @@
 		font-weight: 900;
 		margin: 0 0 1.5rem 0;
 		/* Gradient animation moved to .gradient-animated (opt-in) */
-		background: transparent;
 		color: var(--font-secondary);
 		filter: drop-shadow(0 4px 20px rgba(0, 0, 0, 0.9));
 		letter-spacing: -1px;
@@ -138,7 +159,7 @@
 		text-align: center;
 		border: none;
 		background-color: #1a2b47; /* Dark Blue for both */
-		color: #FFFFFF;
+		color: #ffffff;
 	}
 
 	.module-card:hover {

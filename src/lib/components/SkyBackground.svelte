@@ -98,9 +98,27 @@
 	// Day/Night Cycle State
 	let time = $state(24); // Start at Night
 	let stars: { x: number; y: number; size: number; alpha: number }[] = [];
+	let lastSkyPhase: 'day' | 'evening' | 'night' | 'dawn' | null = null;
+
+	function getSkyPhase(t: number): 'day' | 'evening' | 'night' | 'dawn' {
+		if (t >= 5 && t < 8) return 'dawn';
+		if (t >= 8 && t < 16) return 'day';
+		if (t >= 16 && t < 19) return 'evening';
+		return 'night';
+	}
+
+	function syncSkyPhaseToDocument() {
+		if (typeof document === 'undefined') return;
+		const phase = getSkyPhase(time);
+		if (phase === lastSkyPhase) return;
+		lastSkyPhase = phase;
+		document.documentElement.dataset.skyPhase = phase;
+		document.body.dataset.skyPhase = phase;
+	}
 
 	onMount(() => {
 		resizeCanvases();
+		syncSkyPhaseToDocument();
 
 		// Generate stars
 		stars = Array.from({ length: 100 }, () => ({
@@ -135,6 +153,7 @@
 		const animate = () => {
 			// Time is now controlled by scroll
 			updateSky();
+			syncSkyPhaseToDocument();
 			animateCloudLayers();
 			animationId = requestAnimationFrame(animate);
 		};

@@ -1,7 +1,52 @@
 <script lang="ts">
-	import { searchQuery, searchResults, isSearching, showSearchModal } from '$lib/stores/searchStore';
+	import {
+		searchQuery,
+		searchResults,
+		isSearching,
+		showSearchModal
+	} from '$lib/stores/searchStore';
 	import { highlightText } from '$lib/stores/searchStore';
 	import { goto } from '$app/navigation';
+	import { onDestroy } from 'svelte';
+
+	let restoreScrollLock: null | (() => void) = null;
+
+	function lockPageScroll() {
+		if (typeof document === 'undefined') return;
+
+		const body = document.body;
+		const html = document.documentElement;
+		const prevBodyOverflow = body.style.overflow;
+		const prevHtmlOverflow = html.style.overflow;
+		const prevBodyPaddingRight = body.style.paddingRight;
+		const scrollbarWidth = window.innerWidth - html.clientWidth;
+
+		body.style.overflow = 'hidden';
+		html.style.overflow = 'hidden';
+		if (scrollbarWidth > 0) {
+			body.style.paddingRight = `${scrollbarWidth}px`;
+		}
+
+		restoreScrollLock = () => {
+			body.style.overflow = prevBodyOverflow;
+			html.style.overflow = prevHtmlOverflow;
+			body.style.paddingRight = prevBodyPaddingRight;
+		};
+	}
+
+	function unlockPageScroll() {
+		restoreScrollLock?.();
+		restoreScrollLock = null;
+	}
+
+	$: {
+		if ($showSearchModal) lockPageScroll();
+		else unlockPageScroll();
+	}
+
+	onDestroy(() => {
+		unlockPageScroll();
+	});
 
 	function handleResultClick(url: string) {
 		showSearchModal.set(false);
@@ -78,7 +123,8 @@
 		justify-content: center;
 		z-index: 9999;
 		padding-top: 5vh;
-		overflow-y: auto;
+		overflow: hidden;
+		overscroll-behavior: contain;
 	}
 
 	.search-modal {
@@ -132,6 +178,7 @@
 		padding: var(--spacing-md) var(--spacing-lg);
 		overflow-y: auto;
 		flex: 1;
+		overscroll-behavior: contain;
 	}
 
 	.loading,

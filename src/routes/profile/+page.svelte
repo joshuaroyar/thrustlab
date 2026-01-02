@@ -12,7 +12,7 @@
 <div class="dashboard-container">
 	<header class="dashboard-header" in:fly={{ y: -20, duration: 800, delay: 200 }}>
 		<div class="welcome-text">
-			<h1 class="gradient-animated">Profile Settings</h1>
+			<h1>Profile Settings</h1>
 			<p>Manage your account details and security preferences.</p>
 		</div>
 	</header>
@@ -170,14 +170,15 @@
 		margin: 0 auto;
 		padding: 6rem 2rem 2rem; /* align with dashboard spacing under navbar */
 		min-height: 100vh;
-		color: #fff;
+		color: var(--sky-text);
+		text-shadow: var(--sky-text-shadow);
 	}
 
 	.glass-panel {
-		background: rgba(255, 255, 255, 0.12);
+		background: var(--sky-surface-soft);
 		backdrop-filter: blur(12px);
 		-webkit-backdrop-filter: blur(12px);
-		border: 1px solid rgba(255, 255, 255, 0.22);
+		border: 1px solid var(--sky-border);
 		border-radius: 24px;
 		box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
 		transition:
@@ -205,7 +206,7 @@
 
 	.welcome-text p {
 		font-size: 1.1rem;
-		color: #f1f5f9;
+		color: var(--sky-text-muted);
 		margin: 0;
 		text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
 	}
@@ -281,7 +282,7 @@
 
 	.profile-info h2 {
 		font-size: 1.8rem;
-		color: #ffffff;
+		color: var(--sky-text);
 		margin: 0 0 0.25rem 0;
 	}
 
@@ -295,7 +296,7 @@
 	/* Activity Section */
 	.activity-section h3 {
 		font-size: 1.2rem;
-		color: #ffffff;
+		color: var(--sky-text);
 		margin: 0 0 1.5rem 0;
 	}
 
@@ -310,9 +311,9 @@
 		align-items: center;
 		gap: 1rem;
 		padding: 0.75rem;
-		background: rgba(255, 255, 255, 0.1);
+		background: var(--sky-surface);
 		border-radius: 12px;
-		border: 1px solid rgba(255, 255, 255, 0.14);
+		border: 1px solid var(--sky-border-soft);
 	}
 
 	.activity-icon {
@@ -321,21 +322,21 @@
 
 	.activity-title {
 		font-weight: 600;
-		color: rgba(255, 255, 255, 0.9);
+		color: var(--sky-text);
 		margin: 0;
 		font-size: 0.95rem;
 	}
 
 	.activity-time {
 		font-size: 0.8rem;
-		color: rgba(255, 255, 255, 0.65);
+		color: var(--sky-text-subtle);
 		margin: 0;
 	}
 
 	/* Forms */
 	.form-section h3 {
 		font-size: 1.5rem;
-		color: #ffffff;
+		color: var(--sky-text);
 		margin: 0 0 1.5rem 0;
 	}
 
@@ -353,28 +354,28 @@
 
 	label {
 		font-weight: 600;
-		color: rgba(255, 255, 255, 0.85);
+		color: var(--sky-text-muted);
 		font-size: 0.9rem;
 	}
 
 	input {
 		padding: 0.8rem 1rem;
-		border: 1px solid rgba(255, 255, 255, 0.22);
+		border: 1px solid var(--sky-border);
 		border-radius: 12px;
-		background: rgba(255, 255, 255, 0.12);
+		background: var(--sky-surface-soft);
 		font-size: 1rem;
 		transition: all 0.2s;
-		color: #ffffff;
+		color: var(--sky-text);
 	}
 
 	input::placeholder {
-		color: rgba(255, 255, 255, 0.6);
+		color: var(--sky-text-subtle);
 	}
 
 	input:focus {
 		outline: none;
 		border-color: var(--font-accent-cyan);
-		background: rgba(255, 255, 255, 0.16);
+		background: var(--sky-surface);
 		box-shadow: 0 0 0 3px rgba(0, 206, 209, 0.25);
 	}
 
@@ -404,21 +405,21 @@
 	}
 
 	.btn-secondary {
-		background: rgba(255, 255, 255, 0.14);
-		color: #ffffff;
-		border: 1px solid rgba(255, 255, 255, 0.24);
+		background: var(--sky-surface-soft);
+		color: var(--sky-text);
+		border: 1px solid var(--sky-border);
 		box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
 	}
 
 	.btn-secondary:hover {
-		background: rgba(255, 255, 255, 0.18);
+		background: var(--sky-surface);
 		transform: translateY(-2px);
 	}
 
 	/* Danger Zone */
 	.danger-zone {
 		border-color: rgba(244, 63, 94, 0.35);
-		background: rgba(255, 255, 255, 0.1);
+		background: var(--sky-surface);
 	}
 
 	.danger-zone h3 {
@@ -427,7 +428,7 @@
 	}
 
 	.danger-zone p {
-		color: rgba(255, 255, 255, 0.7);
+		color: var(--sky-text-subtle);
 		margin-bottom: 1.5rem;
 	}
 

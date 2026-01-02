@@ -93,12 +93,7 @@
 					</div>
 				</div>
 				<div class="text-content">
-					<span class="greeting">{getGreeting()}, Pilot</span>
-					<h1 class="pilot-name">{data.user?.fullName}</h1>
-					<div class="status-badge">
-						<span class="status-dot"></span>
-						Systems Nominal
-					</div>
+					<h1 class="pilot-name">{getGreeting()}, {data.user?.fullName}</h1>
 				</div>
 			</div>
 			<div class="date-widget">
@@ -258,16 +253,16 @@
 						<span>Test Bay</span>
 					</a>
 					<a href="/hangar-zone" class="action-tile">
-						<img src="/icons/hangar-zone.png" alt="Hangar" class="tile-icon" />
-						<span>Hangar</span>
+						<img src="/icons/hangar-zone.png" alt="Hangar Zone" class="tile-icon" />
+						<span>Hangar Zone</span>
 					</a>
 					<a href="/turbofan-engine" class="action-tile">
-						<img src="/icons/turbofan-engine.png" alt="Engine" class="tile-icon" />
-						<span>Engine</span>
+						<img src="/icons/turbofan-engine.png" alt="Turbofan Engine" class="tile-icon" />
+						<span>Turbofan Engine</span>
 					</a>
 					<a href="/overhaul-station" class="action-tile">
-						<img src="/icons/overhaul-station.png" alt="Overhaul" class="tile-icon" />
-						<span>Overhaul</span>
+						<img src="/icons/overhaul-station.png" alt="Overhaul Station" class="tile-icon" />
+						<span>Overhaul Station</span>
 					</a>
 					<a href="/jaja" class="action-tile">
 						<img src="/icons/jaja.png" alt="Ask JAJA" class="tile-icon" />
@@ -402,8 +397,9 @@
 		padding: 6rem 2rem 2rem; /* Top padding for navbar */
 		position: relative;
 		z-index: 1;
-		color: #fff;
-		font-family: 'Inter', sans-serif;
+		color: var(--sky-text);
+		font-family: var(--font-body);
+		text-shadow: var(--sky-text-shadow);
 	}
 
 	.dashboard-content {
@@ -419,12 +415,12 @@
 		display: flex;
 		justify-content: space-between;
 		align-items: center;
-		background: rgba(255, 255, 255, 0.14);
-		backdrop-filter: blur(12px);
-		padding: 1.5rem 2rem;
-		border-radius: 24px;
-		border: 1px solid rgba(255, 255, 255, 0.24);
-		box-shadow: 0 10px 36px rgba(0, 0, 0, 0.14);
+		background: transparent;
+		backdrop-filter: none;
+		padding: 0;
+		border-radius: 0;
+		border: none;
+		box-shadow: none;
 	}
 
 	.pilot-info {
@@ -437,22 +433,23 @@
 		width: 64px;
 		height: 64px;
 		border-radius: 50%;
-		background: linear-gradient(135deg, #4facfe, #00f2fe);
-		padding: 3px;
-		box-shadow: 0 0 15px rgba(79, 172, 254, 0.5);
+		background: transparent;
+		padding: 0;
+		box-shadow: none;
 	}
 
 	.avatar {
 		width: 100%;
 		height: 100%;
-		background: #1e3a5f;
+		background: var(--sky-surface-strong);
 		border-radius: 50%;
+		border: 1px solid var(--sky-border);
 		display: flex;
 		align-items: center;
 		justify-content: center;
 		font-size: 1.5rem;
 		font-weight: 700;
-		color: #fff;
+		color: var(--sky-text);
 	}
 
 	.text-content {
@@ -460,39 +457,12 @@
 		flex-direction: column;
 	}
 
-	.greeting {
-		font-size: 1.1rem;
-		color: rgba(255, 255, 255, 0.9);
-		text-transform: uppercase;
-		letter-spacing: 1px;
-	}
-
 	.pilot-name {
 		font-family: 'Poppins', sans-serif;
 		font-size: 2.5rem;
 		font-weight: 700;
 		margin: 0;
-		background: linear-gradient(90deg, #fff, #a5f3fc);
-		background-clip: text;
-		-webkit-background-clip: text;
-		-webkit-text-fill-color: transparent;
-	}
-
-	.status-badge {
-		display: flex;
-		align-items: center;
-		gap: 0.5rem;
-		font-size: 1rem;
-		color: #4ade80;
-		margin-top: 0.25rem;
-	}
-
-	.status-dot {
-		width: 8px;
-		height: 8px;
-		background: #4ade80;
-		border-radius: 50%;
-		box-shadow: 0 0 8px #4ade80;
+		color: var(--sky-text);
 	}
 
 	.date-widget {
@@ -500,14 +470,15 @@
 	}
 
 	.date-day {
-		font-size: 1.5rem;
-		font-weight: 600;
-		color: #fff;
+		font-size: 1.2rem;
+		font-weight: 800;
+		color: var(--sky-text);
 	}
 
 	.date-full {
-		font-size: 1.1rem;
-		color: rgba(255, 255, 255, 0.8);
+		font-size: 1rem;
+		font-weight: 700;
+		color: var(--sky-text-muted);
 	}
 
 	/* --- Stats Row --- */
@@ -518,9 +489,9 @@
 	}
 
 	.stat-card {
-		background: rgba(30, 58, 95, 0.72);
+		background: var(--sky-surface);
 		backdrop-filter: blur(12px);
-		border: 1px solid rgba(255, 255, 255, 0.14);
+		border: 1px solid var(--sky-border-soft);
 		border-radius: 20px;
 		padding: 1.5rem;
 		display: flex;
@@ -534,7 +505,7 @@
 	.stat-card:hover {
 		transform: translateY(-5px);
 		box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-		background: rgba(30, 58, 95, 0.82);
+		background: var(--sky-surface-strong);
 	}
 
 	.stat-icon-wrapper {
@@ -571,7 +542,7 @@
 
 	.stat-label {
 		font-size: 1rem;
-		color: rgba(255, 255, 255, 0.78);
+		color: var(--sky-text-subtle);
 		text-transform: uppercase;
 		letter-spacing: 0.5px;
 	}
@@ -586,13 +557,13 @@
 	.stat-number {
 		font-size: 2.5rem;
 		font-weight: 700;
-		color: #fff;
+		color: var(--sky-text);
 		line-height: 1;
 	}
 
 	.stat-unit {
 		font-size: 1.1rem;
-		color: rgba(255, 255, 255, 0.7);
+		color: var(--sky-text-subtle);
 	}
 
 	.stat-grade {
@@ -604,7 +575,7 @@
 	.progress-track {
 		width: 100%;
 		height: 6px;
-		background: rgba(255, 255, 255, 0.1);
+		background: rgba(255, 255, 255, 0.12);
 		border-radius: 3px;
 		margin-top: 0.5rem;
 		overflow: hidden;
@@ -624,9 +595,9 @@
 	}
 
 	.panel {
-		background: rgba(255, 255, 255, 0.08);
+		background: var(--sky-surface-soft);
 		backdrop-filter: blur(12px);
-		border: 1px solid rgba(255, 255, 255, 0.14);
+		border: 1px solid var(--sky-border-soft);
 		border-radius: 24px;
 		padding: 1.5rem;
 		display: flex;
@@ -639,14 +610,14 @@
 		align-items: center;
 		margin-bottom: 1.5rem;
 		padding-bottom: 1rem;
-		border-bottom: 1px solid rgba(255, 255, 255, 0.14);
+		border-bottom: 1px solid var(--sky-border-soft);
 	}
 
 	.panel-header h2 {
 		font-family: 'Poppins', sans-serif;
 		font-size: 1.5rem;
 		margin: 0;
-		color: #fff;
+		color: var(--sky-text);
 	}
 
 	.view-all {
@@ -672,14 +643,14 @@
 		align-items: center;
 		gap: 1rem;
 		padding: 1rem;
-		background: rgba(255, 255, 255, 0.06);
+		background: var(--sky-surface-soft);
 		border-radius: 16px;
-		border: 1px solid rgba(255, 255, 255, 0.1);
+		border: 1px solid var(--sky-border-soft);
 		transition: background 0.2s;
 	}
 
 	.activity-row:hover {
-		background: rgba(255, 255, 255, 0.1);
+		background: var(--sky-surface);
 	}
 
 	.activity-status-indicator {
@@ -708,7 +679,7 @@
 
 	.activity-type {
 		font-size: 0.9rem;
-		color: rgba(255, 255, 255, 0.72);
+		color: var(--sky-text-subtle);
 		text-transform: uppercase;
 		letter-spacing: 0.5px;
 	}
@@ -717,7 +688,7 @@
 		font-size: 1.2rem;
 		font-weight: 600;
 		margin: 0;
-		color: #fff;
+		color: var(--sky-text);
 	}
 
 	.activity-meta {
@@ -729,7 +700,7 @@
 
 	.activity-date {
 		font-size: 1rem;
-		color: rgba(255, 255, 255, 0.78);
+		color: var(--sky-text-subtle);
 	}
 
 	.activity-score {
@@ -776,8 +747,8 @@
 	}
 
 	.action-tile {
-		background: rgba(255, 255, 255, 0.08);
-		border: 1px solid rgba(255, 255, 255, 0.14);
+		background: var(--sky-surface-soft);
+		border: 1px solid var(--sky-border-soft);
 		border-radius: 16px;
 		padding: 1.25rem;
 		display: flex;
@@ -785,14 +756,14 @@
 		align-items: center;
 		gap: 0.75rem;
 		text-decoration: none;
-		color: #fff;
+		color: var(--sky-text);
 		transition: all 0.2s;
 	}
 
 	.action-tile:hover {
-		background: rgba(255, 255, 255, 0.18);
+		background: var(--sky-surface);
 		transform: translateY(-2px);
-		border-color: rgba(255, 255, 255, 0.26);
+		border-color: var(--sky-border);
 	}
 
 	.tile-icon {
@@ -1025,7 +996,7 @@
 	.questions-list h3 {
 		font-size: 1.1rem;
 		margin-bottom: 1rem;
-		color: #fff;
+		color: var(--sky-text);
 	}
 
 	.q-item {

@@ -29,13 +29,13 @@
 	let userAnswers = $state<(number | null)[]>([]);
 	let score = $state(0);
 	let showReview = $state(false);
-	
+
 	type FeedbackItem = {
 		questionText: string;
 		explanation: string;
 		topicToReview: string;
 	};
-	
+
 	let aiFeedback = $state<FeedbackItem[] | null>(null);
 	let isLoadingFeedback = $state(false);
 
@@ -119,9 +119,7 @@
 	}
 
 	// Derived state for current question
-	let currentQuestion = $derived(
-		selectedModule?.questions?.[currentQuestionIndex]
-	);
+	let currentQuestion = $derived(selectedModule?.questions?.[currentQuestionIndex]);
 
 	function shuffleArray<T>(array: T[]): T[] {
 		const newArray = [...array];
@@ -135,16 +133,16 @@
 	function startModule(module: Module) {
 		// Clone the module to avoid mutating the original data
 		const moduleClone = { ...module, questions: [...module.questions] };
-		
+
 		// Shuffle questions
 		moduleClone.questions = shuffleArray(moduleClone.questions);
 
 		// Shuffle options for each question
-		moduleClone.questions = moduleClone.questions.map(q => {
+		moduleClone.questions = moduleClone.questions.map((q) => {
 			const originalCorrectAnswer = q.options[q.correctAnswer];
 			const shuffledOptions = shuffleArray(q.options);
 			const newCorrectAnswerIndex = shuffledOptions.indexOf(originalCorrectAnswer);
-			
+
 			return {
 				...q,
 				options: shuffledOptions,
@@ -177,7 +175,7 @@
 
 	async function submitTest() {
 		if (!selectedModule) return;
-		
+
 		let correctCount = 0;
 		const questionsDetails: any[] = [];
 
@@ -186,7 +184,7 @@
 			if (userAnswerIdx === q.correctAnswer) {
 				correctCount++;
 			}
-			
+
 			if (userAnswerIdx !== null && userAnswerIdx !== undefined) {
 				questionsDetails.push({
 					questionText: q.text,
@@ -196,7 +194,7 @@
 				});
 			}
 		});
-		
+
 		score = Math.round((correctCount / selectedModule.questions.length) * 100);
 		viewState = 'results';
 		aiFeedback = null;
@@ -218,7 +216,7 @@
 					questions: questionsDetails
 				})
 			});
-			
+
 			if (!response.ok) {
 				console.error('Failed to submit test results');
 			}
@@ -227,7 +225,7 @@
 		}
 
 		// Get AI Feedback for incorrect answers
-		const incorrectQuestions = questionsDetails.filter(q => q.userAnswer !== q.correctAnswer);
+		const incorrectQuestions = questionsDetails.filter((q) => q.userAnswer !== q.correctAnswer);
 		if (incorrectQuestions.length > 0) {
 			isLoadingFeedback = true;
 			try {
@@ -273,7 +271,7 @@
 
 	onMount(() => {
 		document.body.classList.add('zone-testbay');
-		
+
 		// Safety: Ensure scrolling is enabled when page loads
 		if (typeof document !== 'undefined') {
 			document.body.classList.remove('page-transitioning');
@@ -281,7 +279,7 @@
 			document.documentElement.style.removeProperty('overflow');
 			console.log('Test Bay mounted - scroll enabled');
 		}
-		
+
 		return () => {
 			document.body.classList.remove('zone-testbay');
 			// Safety: Ensure scroll remains enabled on cleanup
@@ -300,22 +298,31 @@
 		<!-- Module Selection View -->
 		<div class="content-wrapper animate-on-scroll">
 			<h1 class="page-title gradient-animated">Test Bay</h1>
-			<p class="intro-text">Welcome to the Test Bay, where learning turns into a challenge. Here, students face interactive assessments designed to gauge their understanding of the Hangar Zone, Turbofan Engine Zone, and Overhaul Bay. It's not just an activity—it's a test of mastery, confidence, and readiness to take flight.</p>
+			<p class="intro-text">
+				Welcome to the Test Bay, where learning turns into a challenge. Here, students face
+				interactive assessments designed to gauge their understanding of the Hangar Zone, Turbofan
+				Engine Zone, and Overhaul Bay. It's not just an activity—it's a test of mastery, confidence,
+				and readiness to take flight.
+			</p>
 
-            <div class="info-card animate-on-scroll">
+			<div class="info-card animate-on-scroll">
 				<div class="info-content">
 					<h3>Assessment Info – Here's What You Need to Know:</h3>
 					<ul>
-						<li>Each module has 10 multiple-choice questions – a quick dive into your knowledge!</li>
+						<li>
+							Each module has 10 multiple-choice questions – a quick dive into your knowledge!
+						</li>
 						<li>You can navigate freely between questions before hitting submit.</li>
-						<li>After submission, you'll get a chance to review your answers and see how you did.</li>
+						<li>
+							After submission, you'll get a chance to review your answers and see how you did.
+						</li>
 						<li>Want a better score? Retake any module to improve and master the material!</li>
 					</ul>
 				</div>
 				<div class="jaja-character">
 					<img src="/images/jaja-standing.png" alt="JAJA Character" />
 				</div>
-            </div>
+			</div>
 
 			<div class="test-grid animate-on-scroll">
 				{#each modules as module, idx}
@@ -323,19 +330,25 @@
 						<h3 class="module-label">MODULE {String(module.id).padStart(2, '0')}:</h3>
 						<h4 class="module-title gradient-animated">{module.title.toUpperCase()}</h4>
 						<p class="module-description">{module.description}</p>
-						<button class="start-button" onclick={() => startModule(module)}>START ASSESSMENT</button>
+						<button class="start-button" onclick={() => startModule(module)}
+							>START ASSESSMENT</button
+						>
 					</div>
 				{/each}
 			</div>
 		</div>
-
 	{:else if viewState === 'quiz' && selectedModule}
 		<!-- Quiz View -->
 		<div class="quiz-container">
 			<div class="quiz-header">
 				<button type="button" class="back-button" onclick={backToSelection}>
 					<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-						<path d="M19 12H5M12 19l-7-7 7-7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+						<path
+							d="M19 12H5M12 19l-7-7 7-7"
+							stroke-width="2"
+							stroke-linecap="round"
+							stroke-linejoin="round"
+						/>
 					</svg>
 					Back to Modules
 				</button>
@@ -345,7 +358,10 @@
 			</div>
 
 			<div class="progress-bar">
-				<div class="progress-fill" style="width: {((currentQuestionIndex + 1) / selectedModule.questions.length) * 100}%"></div>
+				<div
+					class="progress-fill"
+					style="width: {((currentQuestionIndex + 1) / selectedModule.questions.length) * 100}%"
+				></div>
 			</div>
 			<div class="progress-text">
 				Question {currentQuestionIndex + 1} of {selectedModule.questions.length}
@@ -360,9 +376,9 @@
 					<div class="options-list">
 						{#each currentQuestion.options as option, idx}
 							<label class="option-item" class:selected={userAnswers[currentQuestionIndex] === idx}>
-								<input 
-									type="radio" 
-									name="answer-{currentQuestionIndex}" 
+								<input
+									type="radio"
+									name="answer-{currentQuestionIndex}"
 									value={idx}
 									checked={userAnswers[currentQuestionIndex] === idx}
 									onchange={() => selectAnswer(idx)}
@@ -376,36 +392,48 @@
 			{/if}
 
 			<div class="navigation-buttons">
-				<button 
-					class="nav-button secondary" 
+				<button
+					class="nav-button secondary"
 					onclick={previousQuestion}
 					disabled={currentQuestionIndex === 0}
 				>
 					<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-						<path d="M15 18l-6-6 6-6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+						<path
+							d="M15 18l-6-6 6-6"
+							stroke-width="2"
+							stroke-linecap="round"
+							stroke-linejoin="round"
+						/>
 					</svg>
 					Previous
 				</button>
 
 				{#if currentQuestionIndex === selectedModule.questions.length - 1}
-					<button 
-						class="nav-button primary submit-button" 
+					<button
+						class="nav-button primary submit-button"
 						onclick={submitTest}
-						disabled={userAnswers.some(a => a === null)}
+						disabled={userAnswers.some((a) => a === null)}
 					>
 						Submit Test
 						<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-							<path d="M5 13l4 4L19 7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+							<path
+								d="M5 13l4 4L19 7"
+								stroke-width="2"
+								stroke-linecap="round"
+								stroke-linejoin="round"
+							/>
 						</svg>
 					</button>
 				{:else}
-					<button 
-						class="nav-button primary" 
-						onclick={nextQuestion}
-					>
+					<button class="nav-button primary" onclick={nextQuestion}>
 						Next
 						<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-							<path d="M9 18l6-6-6-6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+							<path
+								d="M9 18l6-6-6-6"
+								stroke-width="2"
+								stroke-linecap="round"
+								stroke-linejoin="round"
+							/>
 						</svg>
 					</button>
 				{/if}
@@ -415,11 +443,11 @@
 				<p>Quick Navigation:</p>
 				<div class="question-dots">
 					{#each selectedModule.questions as _, idx}
-						<button 
-							class="dot" 
+						<button
+							class="dot"
 							class:answered={userAnswers[idx] !== null}
 							class:current={idx === currentQuestionIndex}
-							onclick={() => currentQuestionIndex = idx}
+							onclick={() => (currentQuestionIndex = idx)}
 							title="Question {idx + 1}"
 						>
 							{idx + 1}
@@ -428,7 +456,6 @@
 				</div>
 			</div>
 		</div>
-
 	{:else if viewState === 'results' && selectedModule}
 		<!-- Results View -->
 		<div class="results-container">
@@ -442,8 +469,13 @@
 					<div class="score-circle" style="--score: {score}">
 						<svg viewBox="0 0 100 100">
 							<circle cx="50" cy="50" r="45" class="score-bg"></circle>
-							<circle cx="50" cy="50" r="45" class="score-progress" 
-								style="stroke-dashoffset: {283 - (283 * score) / 100}"></circle>
+							<circle
+								cx="50"
+								cy="50"
+								r="45"
+								class="score-progress"
+								style="stroke-dashoffset: {283 - (283 * score) / 100}"
+							></circle>
 						</svg>
 						<div class="score-number">{score}%</div>
 					</div>
@@ -451,11 +483,19 @@
 				<div class="score-details">
 					<div class="stat">
 						<span class="stat-label">Correct Answers</span>
-						<span class="stat-value">{userAnswers.filter((a, i) => a === selectedModule?.questions[i].correctAnswer).length} / {selectedModule?.questions.length}</span>
+						<span class="stat-value"
+							>{userAnswers.filter((a, i) => a === selectedModule?.questions[i].correctAnswer)
+								.length} / {selectedModule?.questions.length}</span
+						>
 					</div>
 					<div class="stat">
 						<span class="stat-label">Performance</span>
-						<span class="stat-value" class:excellent={score >= 90} class:good={score >= 70 && score < 90} class:needs-improvement={score < 70}>
+						<span
+							class="stat-value"
+							class:excellent={score >= 90}
+							class:good={score >= 70 && score < 90}
+							class:needs-improvement={score < 70}
+						>
 							{score >= 90 ? 'Excellent' : score >= 70 ? 'Good' : 'Needs Improvement'}
 						</span>
 					</div>
@@ -479,7 +519,8 @@
 										{@html formatAiExplanation(item.explanation)}
 									</div>
 									<div class="review-topic">
-										<span class="topic-label">💡 Review Topic:</span> {item.topicToReview}
+										<span class="topic-label">💡 Review Topic:</span>
+										{item.topicToReview}
 									</div>
 								</div>
 							{/each}
@@ -491,20 +532,35 @@
 			<div class="results-actions">
 				<button class="action-button primary" onclick={toggleReview}>
 					<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-						<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-						<circle cx="12" cy="12" r="3" stroke-width="2"/>
+						<path
+							d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"
+							stroke-width="2"
+							stroke-linecap="round"
+							stroke-linejoin="round"
+						/>
+						<circle cx="12" cy="12" r="3" stroke-width="2" />
 					</svg>
 					{showReview ? 'Hide Review' : 'Review Answers'}
 				</button>
 				<button class="action-button secondary" onclick={retakeTest}>
 					<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-						<path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.2" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+						<path
+							d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.2"
+							stroke-width="2"
+							stroke-linecap="round"
+							stroke-linejoin="round"
+						/>
 					</svg>
 					Retake Module
 				</button>
 				<button type="button" class="action-button" onclick={backToSelection}>
 					<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-						<path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+						<path
+							d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"
+							stroke-width="2"
+							stroke-linecap="round"
+							stroke-linejoin="round"
+						/>
 					</svg>
 					Back to Modules
 				</button>
@@ -514,7 +570,11 @@
 				<div class="review-section">
 					<h3>📝 Answer Review</h3>
 					{#each selectedModule.questions as question, idx}
-						<div class="review-question" class:correct={userAnswers[idx] === question.correctAnswer} class:incorrect={userAnswers[idx] !== question.correctAnswer}>
+						<div
+							class="review-question"
+							class:correct={userAnswers[idx] === question.correctAnswer}
+							class:incorrect={userAnswers[idx] !== question.correctAnswer}
+						>
 							<div class="review-header">
 								<span class="review-number">Q{idx + 1}</span>
 								<span class="review-status">
@@ -524,7 +584,7 @@
 							<p class="review-text">{question.text}</p>
 							<div class="review-options">
 								{#each question.options as option, optIdx}
-									<div 
+									<div
 										class="review-option"
 										class:user-answer={userAnswers[idx] === optIdx}
 										class:correct-answer={question.correctAnswer === optIdx}
@@ -548,8 +608,6 @@
 		</div>
 	{/if}
 </div>
-
-
 
 <style>
 	.page-container {
@@ -575,7 +633,6 @@
 		margin: 0 0 1.5rem 0;
 		text-align: center;
 		/* Unified gradient is opt-in via `.gradient-animated` */
-		background: transparent;
 		color: var(--font-secondary);
 		filter: drop-shadow(0 4px 20px rgba(0, 0, 0, 0.9));
 		letter-spacing: -1px;
@@ -600,7 +657,7 @@
 	}
 
 	.info-card {
-		background: #FFFFFF;
+		background: #ffffff;
 		border-radius: 25px;
 		padding: var(--card-padding-mobile);
 		margin-bottom: 2rem;
@@ -675,7 +732,7 @@
 	}
 
 	.test-card {
-		background: #FFFFFF;
+		background: #ffffff;
 		border: 3px solid;
 		border-radius: 25px;
 		/* Use consistent padding with other module cards across the site */
@@ -697,7 +754,12 @@
 		left: -100%;
 		width: 100%;
 		height: 100%;
-		background: linear-gradient(90deg, transparent, rgba(var(--navbar-accent-rgb), 0.2), transparent);
+		background: linear-gradient(
+			90deg,
+			transparent,
+			rgba(var(--navbar-accent-rgb), 0.2),
+			transparent
+		);
 		transition: left 0.6s ease;
 	}
 
@@ -706,7 +768,7 @@
 	}
 
 	.test-card.module-1 {
-		border-color: #FFA500;
+		border-color: #ffa500;
 	}
 
 	.test-card.module-2 {
@@ -714,7 +776,7 @@
 	}
 
 	.test-card.module-3 {
-		border-color: #2196F3;
+		border-color: #2196f3;
 	}
 
 	.test-card:hover {
@@ -732,7 +794,7 @@
 	}
 
 	.test-card.module-1 .module-label {
-		color: #FFA500;
+		color: #ffa500;
 	}
 
 	.test-card.module-2 .module-label {
@@ -740,7 +802,7 @@
 	}
 
 	.test-card.module-3 .module-label {
-		color: #2196F3;
+		color: #2196f3;
 	}
 
 	.module-title {
@@ -784,7 +846,7 @@
 	}
 
 	.test-card.module-1 .start-button {
-		background: linear-gradient(135deg, #FFA500 0%, #FF8C00 100%);
+		background: linear-gradient(135deg, #ffa500 0%, #ff8c00 100%);
 		color: var(--font-secondary);
 	}
 
@@ -794,7 +856,7 @@
 	}
 
 	.test-card.module-3 .start-button {
-		background: linear-gradient(135deg, #2196F3 0%, #1976D2 100%);
+		background: linear-gradient(135deg, #2196f3 0%, #1976d2 100%);
 		color: var(--font-secondary);
 	}
 
@@ -825,7 +887,7 @@
 	}
 
 	.test-button {
-		background: #38C172;
+		background: #38c172;
 		color: white;
 		border: none;
 		padding: 0.75rem 2rem;
@@ -844,13 +906,11 @@
 		transform: scale(1.05);
 	}
 
-
-
 	/* Quiz Styles */
 	.quiz-container {
 		max-width: 900px;
 		margin: 0 auto;
-		background: #FFFFFF;
+		background: #ffffff;
 		border-radius: 25px;
 		padding: var(--card-padding);
 		box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
@@ -925,7 +985,7 @@
 
 	.progress-fill {
 		height: 100%;
-		background: linear-gradient(90deg, #2196F3 0%, #1976D2 100%);
+		background: linear-gradient(90deg, #2196f3 0%, #1976d2 100%);
 		transition: width 0.4s ease;
 		box-shadow: 0 2px 4px rgba(33, 150, 243, 0.3);
 	}
@@ -940,7 +1000,7 @@
 	}
 
 	.question-card {
-		background: #FFFFFF;
+		background: #ffffff;
 		border-radius: 20px;
 		padding: var(--card-padding);
 		margin-bottom: 2rem;
@@ -969,7 +1029,7 @@
 		align-items: center;
 		gap: 1rem;
 		padding: 1.25rem 1.5rem;
-		background: #FFFFFF;
+		background: #ffffff;
 		border: 2px solid rgba(224, 224, 224, 0.5);
 		border-radius: 15px;
 		cursor: pointer;
@@ -984,12 +1044,12 @@
 	}
 
 	.option-item.selected {
-		border-color: #2196F3;
+		border-color: #2196f3;
 		background: rgba(33, 150, 243, 0.15);
 		box-shadow: 0 4px 12px rgba(33, 150, 243, 0.2);
 	}
 
-	.option-item input[type="radio"] {
+	.option-item input[type='radio'] {
 		display: none;
 	}
 
@@ -1036,18 +1096,18 @@
 	}
 
 	.nav-button.primary {
-		background: linear-gradient(135deg, #2196F3 0%, #1976D2 100%);
+		background: linear-gradient(135deg, #2196f3 0%, #1976d2 100%);
 		color: var(--font-secondary);
 	}
 
 	.nav-button.primary:hover:not(:disabled) {
-		background: linear-gradient(135deg, #1976D2 0%, #1565C0 100%);
+		background: linear-gradient(135deg, #1976d2 0%, #1565c0 100%);
 		transform: translateY(-2px);
 		box-shadow: 0 6px 16px rgba(33, 150, 243, 0.3);
 	}
 
 	.nav-button.secondary {
-		background: #F5F5F5;
+		background: #f5f5f5;
 		color: var(--font-primary);
 		border: 2px solid rgba(118, 102, 127, 0.3);
 	}
@@ -1065,7 +1125,7 @@
 	}
 
 	.submit-button {
-		background: linear-gradient(135deg, #FF3C7E 0%, #e91e63 100%);
+		background: linear-gradient(135deg, #ff3c7e 0%, #e91e63 100%);
 	}
 
 	.submit-button:hover:not(:disabled) {
@@ -1074,7 +1134,7 @@
 	}
 
 	.question-nav {
-		background: #FFFFFF;
+		background: #ffffff;
 		padding: var(--spacing-md);
 		border-radius: 20px;
 		border: 1px solid rgba(255, 255, 255, 0.6);
@@ -1096,7 +1156,7 @@
 		width: 42px;
 		height: 42px;
 		border-radius: 10px;
-		background: #FFFFFF;
+		background: #ffffff;
 		border: 2px solid rgba(224, 224, 224, 0.5);
 		font-family: var(--font-heading), 'Poppins', sans-serif;
 		font-size: 0.9rem;
@@ -1116,8 +1176,8 @@
 	}
 
 	.dot.answered {
-		background: linear-gradient(135deg, #2196F3 0%, #1976D2 100%);
-		border-color: #2196F3;
+		background: linear-gradient(135deg, #2196f3 0%, #1976d2 100%);
+		border-color: #2196f3;
 		color: var(--font-secondary);
 		box-shadow: 0 4px 12px rgba(33, 150, 243, 0.3);
 	}
@@ -1132,7 +1192,7 @@
 	.results-container {
 		max-width: 900px;
 		margin: 0 auto;
-		background: #FFFFFF;
+		background: #ffffff;
 		border-radius: 25px;
 		padding: var(--card-padding);
 		box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
@@ -1156,11 +1216,7 @@
 		font-size: 2.8rem;
 		font-weight: 900;
 		margin: 0 0 1rem 0;
-		background: linear-gradient(
-			90deg,
-			var(--testbay-accent) 0%,
-			#a896b3 100%
-		);
+		background: linear-gradient(90deg, var(--testbay-accent) 0%, #a896b3 100%);
 		background-size: 200% 100%;
 		-webkit-background-clip: text;
 		-webkit-text-fill-color: transparent;
@@ -1180,7 +1236,7 @@
 		align-items: center;
 		justify-content: center;
 		padding: 2.5rem;
-		background: #FFFFFF;
+		background: #ffffff;
 		border-radius: 20px;
 		margin-bottom: 2.5rem;
 		border: 1px solid rgba(255, 255, 255, 0.6);
@@ -1205,7 +1261,7 @@
 
 	.score-bg {
 		fill: none;
-		stroke: #E0E0E0;
+		stroke: #e0e0e0;
 		stroke-width: 8;
 	}
 
@@ -1260,19 +1316,19 @@
 	}
 
 	.stat-value.excellent {
-		color: #38C172;
+		color: #38c172;
 	}
 
 	.stat-value.good {
-		color: #FFA726;
+		color: #ffa726;
 	}
 
 	.stat-value.needs-improvement {
-		color: #FF3C7E;
+		color: #ff3c7e;
 	}
 
 	.ai-feedback-section {
-		background: #FFFFFF;
+		background: #ffffff;
 		border-radius: 20px;
 		padding: var(--spacing-lg);
 		margin-bottom: 2.5rem;
@@ -1297,7 +1353,7 @@
 	}
 
 	.feedback-card {
-		background: #FFFFFF;
+		background: #ffffff;
 		border-radius: 15px;
 		padding: 1.5rem;
 		border-left: 4px solid var(--testbay-accent);
@@ -1332,7 +1388,7 @@
 		border-radius: 10px;
 		font-family: var(--font-body), 'Inter', sans-serif;
 		font-size: 0.95rem;
-		color: #223A5E;
+		color: #223a5e;
 		display: inline-block;
 	}
 
@@ -1361,7 +1417,9 @@
 	}
 
 	@keyframes spin {
-		to { transform: rotate(360deg); }
+		to {
+			transform: rotate(360deg);
+		}
 	}
 
 	.results-actions {
@@ -1406,9 +1464,9 @@
 	}
 
 	.action-button.secondary {
-		background: linear-gradient(135deg, #FFA726 0%, #fb8c00 100%);
+		background: linear-gradient(135deg, #ffa726 0%, #fb8c00 100%);
 		color: var(--font-secondary);
-		border-color: #FFA726;
+		border-color: #ffa726;
 	}
 
 	.action-button.secondary:hover {
@@ -1432,7 +1490,7 @@
 	}
 
 	.review-question {
-		background: #FFFFFF;
+		background: #ffffff;
 		border-radius: 20px;
 		padding: var(--spacing-lg);
 		margin-bottom: 1.5rem;
@@ -1452,7 +1510,7 @@
 	}
 
 	.review-question.incorrect {
-		border-left-color: #FF3C7E;
+		border-left-color: #ff3c7e;
 		background: rgba(255, 60, 126, 0.05);
 	}
 
@@ -1483,7 +1541,7 @@
 	}
 
 	.review-question.incorrect .review-status {
-		color: #FF3C7E;
+		color: #ff3c7e;
 	}
 
 	.review-text {
@@ -1506,7 +1564,7 @@
 		align-items: center;
 		gap: 1rem;
 		padding: var(--spacing-sm) var(--spacing-sm);
-		background: #FFFFFF;
+		background: #ffffff;
 		border: 2px solid rgba(224, 224, 224, 0.5);
 		border-radius: 15px;
 		position: relative;
@@ -1520,7 +1578,7 @@
 	}
 
 	.review-option.user-answer:not(.correct-answer) {
-		border-color: #FF3C7E;
+		border-color: #ff3c7e;
 		background: rgba(255, 60, 126, 0.08);
 		box-shadow: 0 2px 8px rgba(255, 60, 126, 0.15);
 	}
@@ -1543,7 +1601,7 @@
 	}
 
 	.badge.incorrect {
-		background: linear-gradient(135deg, #FF3C7E 0%, #e91e63 100%);
+		background: linear-gradient(135deg, #ff3c7e 0%, #e91e63 100%);
 		color: var(--font-secondary);
 	}
 	/* Responsive Design */
@@ -1634,7 +1692,8 @@
 			font-size: 0.95rem;
 		}
 
-		.quiz-container, .results-container {
+		.quiz-container,
+		.results-container {
 			padding: var(--spacing-md);
 		}
 
@@ -1703,7 +1762,9 @@
 	.animate-on-scroll {
 		opacity: 0;
 		transform: translateY(30px);
-		transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+		transition:
+			opacity 0.6s ease-out,
+			transform 0.6s ease-out;
 	}
 
 	.animate-on-scroll.visible {
@@ -1720,7 +1781,7 @@
 		height: 100vh;
 		z-index: 0;
 		overflow: hidden;
-		background: #87CEEB;
+		background: #87ceeb;
 	}
 
 	.parallax-layer {
@@ -1783,13 +1844,22 @@
 	.nav-link:not(:disabled):hover {
 		border-color: var(--testbay-accent);
 		/* Keep background unchanged; use a soft glow */
-		box-shadow: 0 6px 30px rgba(var(--testbay-accent-rgb, 118, 102, 127), 0.25), 0 0 18px rgba(var(--testbay-accent-rgb, 118, 102, 127), 0.18) inset;
+		box-shadow:
+			0 6px 30px rgba(var(--testbay-accent-rgb, 118, 102, 127), 0.25),
+			0 0 18px rgba(var(--testbay-accent-rgb, 118, 102, 127), 0.18) inset;
 		transform: translateY(-2px);
 	}
 
 	/* Test Bay has no bottom nav markup; nav-arrow color handled globally or by pages where navigation exists */
 
-	.nav-link.prev { justify-self: center; }
-	.nav-link.next { justify-self: center; }
-	.nav-arrow { font-size: 1.25rem; color: var(--testbay-accent); }
+	.nav-link.prev {
+		justify-self: center;
+	}
+	.nav-link.next {
+		justify-self: center;
+	}
+	.nav-arrow {
+		font-size: 1.25rem;
+		color: var(--testbay-accent);
+	}
 </style>

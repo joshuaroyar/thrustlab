@@ -1,14 +1,12 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import { goto } from '$app/navigation';
-	import SkyBackground from '$lib/components/SkyBackground.svelte';
 
 	let mounted = $state(false);
 
 	onMount(() => {
 		mounted = true;
 		document.body.classList.add('zone-overhaul');
-		
+
 		// Safety: Ensure scrolling is enabled when page loads
 		if (typeof document !== 'undefined') {
 			document.body.classList.remove('page-transitioning');
@@ -16,7 +14,7 @@
 			document.documentElement.style.removeProperty('overflow');
 			console.log('Overhaul Station mounted - scroll enabled');
 		}
-		
+
 		return () => {
 			document.body.classList.remove('zone-overhaul');
 			// Safety: Ensure scroll remains enabled on cleanup
@@ -30,11 +28,14 @@
 
 <!-- Page Content -->
 <div class="page-container">
-	
 	<div class="hero-section">
 		<h1 class="gradient-title gradient-animated">Overhaul Station</h1>
 		<p class="description">
-			Step into the Overhaul Station, where hands-on learning takes flight. In this interactive zone, students dive into the intricate process of assembling and disassembling turbofan engine components—gaining a deeper understanding of each part's role and the essential principles of gas turbine engine overhaul. It's where theory meets practice, transforming knowledge into real-world technical skill.
+			Step into the Overhaul Station, where hands-on learning takes flight. In this interactive
+			zone, students dive into the intricate process of assembling and disassembling turbofan engine
+			components—gaining a deeper understanding of each part's role and the essential principles of
+			gas turbine engine overhaul. It's where theory meets practice, transforming knowledge into
+			real-world technical skill.
 		</p>
 	</div>
 
@@ -43,10 +44,19 @@
 			<div class="card-content">
 				<span class="sub-label">LABORATORY</span>
 				<span class="main-label">MODULE:</span>
-				<h3 class="module-title-text gradient-animated">PRELIMINARY<br>LABORATORY<br>MODULE</h3>
+				<h3 class="module-title-text gradient-animated">PRELIMINARY<br />LABORATORY<br />MODULE</h3>
 			</div>
 			<div class="arrow-icon">
-				<svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+				<svg
+					width="40"
+					height="40"
+					viewBox="0 0 24 24"
+					fill="none"
+					stroke="currentColor"
+					stroke-width="3"
+					stroke-linecap="round"
+					stroke-linejoin="round"
+				>
 					<line x1="5" y1="12" x2="19" y2="12"></line>
 					<polyline points="12 5 19 12 12 19"></polyline>
 				</svg>
@@ -57,10 +67,21 @@
 			<div class="card-content">
 				<span class="sub-label">ACTIVITY</span>
 				<span class="main-label">MODULE:</span>
-				<h3 class="module-title-text gradient-animated">ASSEMBLY &<br>DISASSEMBLY<br>ACTIVITY</h3>
+				<h3 class="module-title-text gradient-animated module-title-one-line">
+					ASSEMBLY & DISASSEMBLY ACTIVITY
+				</h3>
 			</div>
 			<div class="arrow-icon">
-				<svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+				<svg
+					width="40"
+					height="40"
+					viewBox="0 0 24 24"
+					fill="none"
+					stroke="currentColor"
+					stroke-width="3"
+					stroke-linecap="round"
+					stroke-linejoin="round"
+				>
 					<line x1="5" y1="12" x2="19" y2="12"></line>
 					<polyline points="12 5 19 12 12 19"></polyline>
 				</svg>
@@ -93,7 +114,6 @@
 		font-weight: 900;
 		margin: 0 0 1.5rem 0;
 		/* Gradient moved to .gradient-animated utility */
-		background: transparent;
 		color: var(--font-secondary);
 		filter: drop-shadow(0 4px 20px rgba(0, 0, 0, 0.9));
 		letter-spacing: -1px;
@@ -190,11 +210,17 @@
 		margin: 0;
 	}
 
+	.module-title-one-line {
+		white-space: nowrap;
+		font-size: clamp(1.15rem, 1.6vw, 1.6rem);
+		letter-spacing: 0.5px;
+	}
+
 	.arrow-icon {
 		position: absolute;
 		bottom: var(--card-padding-mobile);
 		right: var(--card-padding-mobile);
-			color: var(--navbar-accent, var(--ui-yellow)); /* Responsive arrow color */
+		color: var(--navbar-accent, var(--ui-yellow)); /* Responsive arrow color */
 		transition: transform 0.3s ease;
 		z-index: 2;
 	}
@@ -231,6 +257,11 @@
 		.main-label,
 		.module-title-text {
 			font-size: 1.8rem;
+		}
+		.module-title-one-line {
+			white-space: normal;
+			font-size: 2.2rem;
+			letter-spacing: 1px;
 		}
 	}
 

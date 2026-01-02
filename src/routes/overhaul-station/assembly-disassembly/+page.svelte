@@ -57,11 +57,7 @@
 
 			<!-- Title Card -->
 			<div class="title-card">
-				<h1 class="activity-title gradient-animated">
-					Assembly and Disassembly
-					<br />
-					<span class="title-sub">Activity</span>
-				</h1>
+				<h1 class="activity-title gradient-animated">Assembly and Disassembly Activity</h1>
 				<p class="instruction-text">
 					<span class="instruction-label">Instruction:</span> Drag and drop each component of the turbofan
 					engine to its correct position inside the casing. Pay attention to the order and orientation
@@ -188,14 +184,14 @@
 		font-family: var(--font-heading, sans-serif);
 		font-size: 3.5rem;
 		font-weight: 900;
-		text-transform: uppercase;
 		margin: 0 0 1.5rem 0;
 		line-height: 1.1;
-		text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+		text-shadow: none;
 	}
 
-	.title-sub {
-		opacity: 0.95;
+	/* Keep the gradient animation but remove the heavier drop-shadow for a cleaner hero-like look */
+	.activity-title.gradient-animated {
+		filter: none;
 	}
 
 	.instruction-text {

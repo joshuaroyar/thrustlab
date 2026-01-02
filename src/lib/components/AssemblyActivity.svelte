@@ -849,6 +849,9 @@
 		overflow: hidden;
 		box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
 		display: flex;
+		max-width: 100%;
+		min-width: 0;
+		box-sizing: border-box;
 	}
 
 	.controls-overlay {
@@ -859,6 +862,9 @@
 		gap: 0.75rem;
 		z-index: 100;
 		align-items: center;
+		flex-wrap: wrap;
+		max-width: calc(100% - 2rem);
+		justify-content: flex-end;
 	}
 
 	.realtime-score {
@@ -940,34 +946,44 @@
 	}
 
 	.component-tray {
-		width: 200px;
+		width: 170px;
 		background: rgba(0, 0, 0, 0.5);
 		border-right: 2px solid rgba(79, 195, 247, 0.3);
-		padding: 1rem;
+		padding: 0.65rem;
 		overflow-y: auto;
+		overflow-x: hidden;
 		z-index: 10;
+		flex: 0 0 auto;
+		min-width: 0;
+		box-sizing: border-box;
+		scrollbar-width: none;
+		-ms-overflow-style: none;
+	}
+
+	.component-tray::-webkit-scrollbar {
+		display: none;
 	}
 
 	.component-tray h3 {
 		color: #4fc3f7;
 		font-family: 'Poppins', sans-serif;
-		font-size: 1.2rem;
+		font-size: 1.05rem;
 		font-weight: 600;
-		margin-bottom: 1rem;
+		margin-bottom: 0.65rem;
 		text-align: center;
 	}
 
 	.component-list {
 		display: flex;
 		flex-direction: column;
-		gap: 0.75rem;
+		gap: 0.55rem;
 	}
 
 	.component-card {
 		background: rgba(45, 53, 97, 0.8);
-		border: 2px solid rgba(79, 195, 247, 0.4);
-		border-radius: 8px;
-		padding: 0.75rem;
+		border: 1px solid rgba(79, 195, 247, 0.4);
+		border-radius: 7px;
+		padding: 0.5rem;
 		cursor: grab;
 		transition: all 0.3s ease;
 		text-align: center;
@@ -987,11 +1003,11 @@
 
 	.component-image-container {
 		width: 100%;
-		height: 80px;
+		height: 64px;
 		display: flex;
 		align-items: center;
 		justify-content: center;
-		margin-bottom: 0.5rem;
+		margin-bottom: 0.4rem;
 		background: rgba(0, 0, 0, 0.2);
 		border-radius: 4px;
 		overflow: hidden;
@@ -1004,7 +1020,7 @@
 	}
 
 	.component-icon {
-		font-size: 2rem;
+		font-size: 1.6rem;
 	}
 
 	.hidden {
@@ -1014,15 +1030,17 @@
 	.component-name {
 		display: block;
 		color: #e0e0e0;
-		font-size: 0.85rem;
+		font-size: 0.75rem;
 		font-weight: 500;
 	}
 
 	.babylon-canvas {
 		flex: 1;
 		height: 100%;
+		width: 100%;
 		display: block;
 		outline: none;
+		min-width: 0;
 	}
 
 	/* Instructions Overlay */
@@ -1157,6 +1175,7 @@
 		.assembly-container {
 			height: calc(100vh - 80px);
 			min-height: 500px;
+			flex-direction: column;
 		}
 
 		.instructions-modal {
@@ -1164,16 +1183,33 @@
 		}
 
 		.component-tray {
-			width: 150px;
-			padding: 0.5rem 0;
+			width: 100%;
+			padding: 0.55rem;
+			border-right: none;
+			border-top: 2px solid rgba(79, 195, 247, 0.3);
+			order: 2;
+			max-height: 180px;
 		}
 
 		.component-tray h3 {
-			padding: 0 0.5rem;
+			padding: 0;
+		}
+
+		.component-list {
+			flex-direction: row;
+			flex-wrap: wrap;
+			justify-content: center;
+			gap: 0.5rem;
 		}
 
 		.component-card {
-			padding: 0.5rem;
+			padding: 0.4rem;
+			flex: 1 1 120px;
+			max-width: 150px;
+		}
+
+		.component-image-container {
+			height: 48px;
 		}
 
 		.component-icon {
@@ -1182,6 +1218,38 @@
 
 		.component-name {
 			font-size: 0.75rem;
+		}
+
+		.babylon-canvas {
+			order: 1;
+			flex: 1;
+			min-height: 0;
+		}
+
+		.controls-overlay {
+			top: 0.5rem;
+			left: 0.5rem;
+			right: 0.5rem;
+			gap: 0.5rem;
+		}
+
+		.control-btn {
+			padding: 0.45rem 0.8rem;
+			font-size: 0.8rem;
+		}
+
+		.realtime-score {
+			margin-left: 0;
+			padding: 0.45rem 0.8rem;
+			gap: 0.5rem;
+		}
+
+		.score-label {
+			font-size: 1rem;
+		}
+
+		.score-value {
+			font-size: 1.1rem;
 		}
 	}
 
