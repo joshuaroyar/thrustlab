@@ -5,8 +5,8 @@
 	import { searchQuery, showSearchModal, performSearch } from '$lib/stores/searchStore';
 	import { MODULE_CONTENT } from '$lib/data/searchContent';
 	import SearchModal from '$lib/components/SearchModal.svelte';
-	import ImageModal from '$lib/components/ImageModal.svelte';
-	import ImageGrid from '$lib/components/ImageGrid.svelte';
+	import ImageModal from '$lib/components/ui/ImageModal.svelte';
+	import ImageGrid from '$lib/components/ui/ImageGrid.svelte';
 	
 	const totalPages = 4;
 	

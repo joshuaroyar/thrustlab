@@ -67,8 +67,8 @@
 			<div class="card-content">
 				<span class="sub-label">ACTIVITY</span>
 				<span class="main-label">MODULE:</span>
-				<h3 class="module-title-text gradient-animated module-title-one-line">
-					ASSEMBLY & DISASSEMBLY ACTIVITY
+				<h3 class="module-title-text gradient-animated">
+					ASSEMBLY &<br />DISASSEMBLY ACTIVITY
 				</h3>
 			</div>
 			<div class="arrow-icon">
@@ -208,12 +208,6 @@
 		letter-spacing: 1px;
 		line-height: 1.2;
 		margin: 0;
-	}
-
-	.module-title-one-line {
-		white-space: nowrap;
-		font-size: clamp(1.15rem, 1.6vw, 1.6rem);
-		letter-spacing: 0.5px;
 	}
 
 	.arrow-icon {

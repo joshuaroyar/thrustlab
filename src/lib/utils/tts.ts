@@ -78,11 +78,17 @@ class TTSService {
 
 				// Play the audio
 				this.currentAudio.play().catch((err) => {
-					console.error('Play error:', err);
-					this.isPlaying = false;
-					this.currentResolve = null;
-					// Try fallback if play fails
-					this.speakFallback(text).then(resolve).catch(reject);
+					// Only fallback if not intentionally stopped and still supposed to be playing
+					if (this.isPlaying) {
+						console.error('Play error:', err);
+						this.isPlaying = false;
+						this.currentResolve = null;
+						// Try fallback if play fails
+						this.speakFallback(text).then(resolve).catch(reject);
+					} else {
+						// Interrupted or handled elsewhere
+						resolve();
+					}
 				});
 			});
 		} catch (error) {

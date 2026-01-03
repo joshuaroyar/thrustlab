@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { page } from '$app/state';
-	import SkyBackground from '$lib/components/SkyBackground.svelte';
+	import SkyBackground from '$lib/components/ui/SkyBackground.svelte';
 
 	const errorCode = page.status;
 	const errorMessage = page.error?.message || 'Page not found';

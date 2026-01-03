@@ -1,21 +1,8 @@
 <script lang="ts">
 	import { onMount, onDestroy } from 'svelte';
 	import { fade } from 'svelte/transition';
-	import {
-		Engine,
-		Scene,
-		ArcRotateCamera,
-		Vector3,
-		HemisphericLight,
-		SceneLoader,
-		Color4,
-		HighlightLayer,
-		PointerEventTypes,
-		Color3,
-		Mesh
-	} from '@babylonjs/core';
-	import type { AbstractMesh } from '@babylonjs/core';
-	import '@babylonjs/loaders';
+	// Remove static Babylon imports to reduce bundle size
+	// import { ... } from '@babylonjs/core';
 	import { ttsService } from '$lib/utils/tts';
 
 	interface ModelViewerProps {
@@ -37,13 +24,31 @@
 		partDescriptions = {},
 		onModelLoaded,
 		enableTTS = true,
-		autoLoad = false
-	}: ModelViewerProps = $props();
+		autoLoad = false,
+		enableDefaultControls = true,
+		showLabels = false
+	}: ModelViewerProps & { enableDefaultControls?: boolean; showLabels?: boolean } = $props();
 
 	let canvas: HTMLCanvasElement;
-	let engine: Engine | null = null;
-	let scene: Scene | null = null;
-	let highlightLayer: HighlightLayer | null = null;
+
+	// Dynamically loaded Babylon modules
+	let Engine: any;
+	let Scene: any;
+	let ArcRotateCamera: any;
+	let Vector3: any;
+	let HemisphericLight: any;
+	let SceneLoader: any;
+	let Color4: any;
+	let HighlightLayer: any;
+	let PointerEventTypes: any;
+	let Color3: any;
+	let Mesh: any;
+	let GUI: any;
+	let TransformNode: any;
+
+	let engine: any | null = null;
+	let scene: any | null = null;
+	let highlightLayer: any | null = null;
 	let observer: IntersectionObserver | null = null;
 	let isVisible = false;
 	let hasLoaded = $state(false);
@@ -53,6 +58,9 @@
 	let isPlayingAudio = $state(false);
 	let audioError = $state<string | null>(null);
 	let showControls = $state(true);
+	let advancedTexture: any;
+	let labelControls: any[] = [];
+	let labelAnchors: any[] = [];
 
 	const sanitizeValue = (value?: string | null) =>
 		(value || '')
@@ -83,18 +91,12 @@
 		glow: hexToRgba(DEFAULT_ACCENT_HEX, 0.5)
 	});
 
-	const DEFAULT_HOVER_COLOR = Color3.FromHexString('#FACC15');
-	const GREY_OVERLAY_COLOR = Color3.FromHexString('#4B5563');
+	let DEFAULT_HOVER_COLOR: any;
+	let GREY_OVERLAY_COLOR: any;
 
-	const GROUP_STYLES: Record<string, { color: Color3; accentHex: string }> = {
-		'Air Inlet Duct': { color: Color3.FromHexString('#87CEFA'), accentHex: '#87CEFA' },
-		'Compressor Section': { color: Color3.FromHexString('#32CD32'), accentHex: '#32CD32' },
-		'Combustion Section': { color: Color3.FromHexString('#FFD700'), accentHex: '#FFD700' },
-		'Turbine Section': { color: Color3.FromHexString('#FFA500'), accentHex: '#FFA500' },
-		'Exhaust Section': { color: Color3.FromHexString('#1E3A8A'), accentHex: '#1E3A8A' }
-	};
+	let GROUP_STYLES: Record<string, { color: any; accentHex: string }> = {};
 
-	const groupMeshMap = new Map<string, Mesh[]>();
+	const groupMeshMap = new Map<string, any[]>();
 	let currentSelectedGroup: string | null = null;
 	let currentHoverGroup: string | null = null;
 
@@ -108,12 +110,137 @@
 		};
 	};
 
-	function setupHighlighting(scene: Scene) {
+	const getMeshesByGroup = (groupName: string) => {
+		if (!scene || !partDescriptions) return [];
+		const meshes: any[] = [];
+
+		// Find all parts that belong to this group
+		Object.entries(partDescriptions).forEach(([meshId, part]) => {
+			if (part.name === groupName || (part.description && part.description.includes(groupName))) {
+				const mesh = scene.getMeshByName(meshId);
+				if (mesh) meshes.push(mesh);
+			}
+		});
+
+		// If no direct matches, try to find by mesh name convention usually used in labeling
+		if (meshes.length === 0) {
+			scene.meshes.forEach((mesh: any) => {
+				if (mesh && mesh.name && mesh.name.includes(groupName)) {
+					meshes.push(mesh);
+				}
+			});
+		}
+
+		return meshes;
+	};
+
+	// Label Update Logic
+	const updateLabels = () => {
+		if (!GUI || !scene) return;
+
+		// Clean up existing labels and anchors
+		labelControls.forEach((control) => control.dispose());
+		labelControls = [];
+		labelAnchors.forEach((anchor) => anchor.dispose());
+		labelAnchors = [];
+
+		if (advancedTexture) {
+			advancedTexture.dispose();
+			advancedTexture = null;
+		}
+
+		if (!showLabels || !scene || !GUI) return;
+
+		// Create new texture
+		advancedTexture = GUI.AdvancedDynamicTexture.CreateFullscreenUI('UI');
+
+		// Create labels for each group
+		if (GROUP_STYLES) {
+			Object.entries(GROUP_STYLES).forEach(([groupName, style]) => {
+				const meshes = getMeshesByGroup(groupName);
+				if (!meshes.length) return;
+
+				// Calculate center of group
+				let min = new Vector3(Number.MAX_VALUE, Number.MAX_VALUE, Number.MAX_VALUE);
+				let max = new Vector3(Number.MIN_VALUE, Number.MIN_VALUE, Number.MIN_VALUE);
+
+				meshes.forEach((mesh: any) => {
+					const boundingInfo = mesh.getBoundingInfo();
+					min = Vector3.Minimize(min, boundingInfo.boundingBox.minimumWorld);
+					max = Vector3.Maximize(max, boundingInfo.boundingBox.maximumWorld);
+				});
+
+				const center = Vector3.Center(min, max);
+
+				// Create labels at calculated positions
+				// We create a TransformNode at the center to "anchor" the label
+				const transformNode = new TransformNode('labelClient_' + groupName, scene);
+				transformNode.position = center;
+				labelAnchors.push(transformNode);
+
+				// Create Label Container (Rectangle)
+				const rect1 = new GUI.Rectangle();
+				rect1.width = '160px';
+				rect1.height = '40px';
+				rect1.cornerRadius = 20;
+				rect1.color = style.accentHex;
+				rect1.thickness = 2;
+				rect1.background = 'rgba(10, 25, 47, 0.85)';
+				advancedTexture.addControl(rect1);
+				labelControls.push(rect1);
+
+				// Label Text
+				const label = new GUI.TextBlock();
+				label.text = groupName;
+				label.color = 'white';
+				label.fontSize = 14;
+				label.fontWeight = 'bold';
+				rect1.addControl(label);
+
+				rect1.linkWithMesh(transformNode);
+				rect1.linkOffsetY = -60;
+				rect1.linkOffsetX = 60;
+
+				// Target Dot
+				const target = new GUI.Ellipse();
+				target.width = '10px';
+				target.height = '10px';
+				target.color = style.accentHex;
+				target.thickness = 2;
+				target.background = style.accentHex;
+				advancedTexture.addControl(target);
+				labelControls.push(target);
+				target.linkWithMesh(transformNode);
+
+				// Connecting Line
+				const line = new GUI.Line();
+				line.lineWidth = 2;
+				line.color = style.accentHex;
+				line.connectedControl = rect1;
+				line.linkWithMesh(transformNode);
+				advancedTexture.addControl(line);
+				labelControls.push(line);
+			});
+		}
+	};
+
+	// Reactive effect for labels
+	$effect(() => {
+		// Re-run when model loads or toggle changes
+		if (hasLoaded && showLabels) {
+			updateLabels();
+		} else if (!showLabels) {
+			// Ensure cleanup if toggled off
+			updateLabels();
+		}
+	});
+
+	function setupHighlighting(scene: any) {
 		highlightLayer = new HighlightLayer('highlightLayer', scene);
 		highlightLayer.blurHorizontalSize = 0.8;
 		highlightLayer.blurVerticalSize = 0.8;
 
-		scene.onPointerObservable.add((pointerInfo) => {
+		scene.onPointerObservable.add((pointerInfo: any) => {
 			if (pointerInfo.type === PointerEventTypes.POINTERMOVE) {
 				const pickResult = scene.pick(scene.pointerX, scene.pointerY);
 
@@ -187,9 +314,8 @@
 			}
 		});
 	}
-	const getGroupColor = (groupName: string) => GROUP_STYLES[groupName]?.color ?? DEFAULT_HOVER_COLOR;
-
-	const getMeshesByGroup = (groupName: string) => groupMeshMap.get(groupName) ?? [];
+	const getGroupColor = (groupName: string) =>
+		GROUP_STYLES[groupName]?.color ?? DEFAULT_HOVER_COLOR;
 
 	const clearGroupHighlight = (groupName: string | null) => {
 		if (!highlightLayer || !groupName) return;
@@ -197,7 +323,7 @@
 		meshes.forEach((mesh) => highlightLayer?.removeMesh(mesh));
 	};
 
-	const addGroupHighlight = (groupName: string, color?: Color3) => {
+	const addGroupHighlight = (groupName: string, color?: any) => {
 		if (!highlightLayer) return;
 		const meshes = getMeshesByGroup(groupName);
 		if (!meshes.length) return;
@@ -207,7 +333,7 @@
 
 	const applyOverlayState = (activeGroup: string | null) => {
 		if (!scene) return;
-		scene.meshes.forEach((mesh) => {
+		scene.meshes.forEach((mesh: any) => {
 			if (!(mesh instanceof Mesh)) return;
 			const description = findPartDescription(mesh);
 			const shouldGrey = Boolean(activeGroup) && description?.name !== activeGroup;
@@ -238,7 +364,7 @@
 	};
 
 	// Helper to find description by mesh name or material name
-	function findPartDescription(mesh: AbstractMesh) {
+	function findPartDescription(mesh: any) {
 		if (!partDescriptions) return null;
 
 		const metadata = (mesh.metadata ??= {});
@@ -262,7 +388,11 @@
 			const keySearch = buildSearchable(key);
 			const keySearchLen = keySearch.trim().length;
 
-			if (meshNameLower === keyLower || materialNameLower === keyLower || meshIdLower === keyLower) {
+			if (
+				meshNameLower === keyLower ||
+				materialNameLower === keyLower ||
+				meshIdLower === keyLower
+			) {
 				(metadata as Record<string, any>).turbofanPart = partDescriptions[key];
 				return partDescriptions[key];
 			}
@@ -285,8 +415,40 @@
 		return match;
 	}
 
-	onMount(() => {
+	async function initEngine() {
 		if (!canvas) return;
+
+		// Dynamic Import
+		const babylon = await import('@babylonjs/core');
+		await import('@babylonjs/loaders');
+		GUI = await import('@babylonjs/gui');
+
+		Engine = babylon.Engine;
+		Scene = babylon.Scene;
+		ArcRotateCamera = babylon.ArcRotateCamera;
+		Vector3 = babylon.Vector3;
+		HemisphericLight = babylon.HemisphericLight;
+		SceneLoader = babylon.SceneLoader;
+		Color4 = babylon.Color4;
+		HighlightLayer = babylon.HighlightLayer;
+		PointerEventTypes = babylon.PointerEventTypes;
+		Color3 = babylon.Color3;
+		Mesh = babylon.Mesh;
+		TransformNode = babylon.TransformNode;
+
+		// Disable default loading screen
+		SceneLoader.ShowLoadingScreen = false;
+
+		// Initialize colors with loaded Color3
+		DEFAULT_HOVER_COLOR = Color3.FromHexString('#FACC15');
+		GREY_OVERLAY_COLOR = Color3.FromHexString('#4B5563');
+		GROUP_STYLES = {
+			'Air Inlet Duct': { color: Color3.FromHexString('#87CEFA'), accentHex: '#87CEFA' },
+			'Compressor Section': { color: Color3.FromHexString('#32CD32'), accentHex: '#32CD32' },
+			'Combustion Section': { color: Color3.FromHexString('#FFD700'), accentHex: '#FFD700' },
+			'Turbine Section': { color: Color3.FromHexString('#FFA500'), accentHex: '#FFA500' },
+			'Exhaust Section': { color: Color3.FromHexString('#1E3A8A'), accentHex: '#1E3A8A' }
+		};
 
 		// 1. Initialize Engine
 		// optimize: disable preserveDrawingBuffer for performance unless needed for screenshots
@@ -335,10 +497,18 @@
 		if (autoLoad) {
 			loadModel();
 		}
+	}
+
+	onMount(() => {
+		initEngine();
 	});
 
 	function loadModel() {
-		if (!scene) return;
+		if (!scene || !SceneLoader) {
+			// If not yet initialized, wait for it
+			setTimeout(loadModel, 100);
+			return;
+		}
 
 		groupMeshMap.clear();
 		currentSelectedGroup = null;
@@ -352,13 +522,13 @@
 			'',
 			modelPath,
 			scene,
-			(loadedScene) => {
+			(loadedScene: any) => {
 				hasLoaded = true;
 				isLoading = false;
 
 				// Log all meshes for debugging and map them to component groups
 				console.log('=== LOADED MODEL MESHES ===');
-				loadedScene.meshes.forEach((mesh, index) => {
+				loadedScene.meshes.forEach((mesh: any, index: number) => {
 					console.log(`Mesh ${index}:`, {
 						name: mesh.name,
 						id: mesh.id,
@@ -369,7 +539,7 @@
 					const partInfo = findPartDescription(mesh);
 					if (partInfo) {
 						const existing = groupMeshMap.get(partInfo.name) ?? [];
-						existing.push(mesh as Mesh);
+						existing.push(mesh as typeof Mesh);
 						groupMeshMap.set(partInfo.name, existing);
 					}
 				});
@@ -379,7 +549,7 @@
 				loadedScene.createDefaultCameraOrLight(true, true, true);
 
 				// Re-attach controls to the new camera
-				const activeCam = loadedScene.activeCamera as ArcRotateCamera;
+				const activeCam = loadedScene.activeCamera as typeof ArcRotateCamera;
 				if (activeCam) {
 					// Explicitly attach controls to ensure events are captured
 					activeCam.attachControl(canvas, true);
@@ -396,11 +566,7 @@
 						activeCam.framingBehavior.autoCorrectCameraLimitsAndSensibility = false;
 
 						const worldExtends = loadedScene.getWorldExtends();
-						activeCam.framingBehavior.zoomOnBoundingInfo(
-							worldExtends.min,
-							worldExtends.max,
-							false
-						);
+						activeCam.framingBehavior.zoomOnBoundingInfo(worldExtends.min, worldExtends.max, false);
 					}
 
 					// --- Smoothness with Control (Low Inertia) ---
@@ -409,7 +575,7 @@
 					activeCam.inertia = 0.85;
 
 					// --- Industry Standard Sensitivity ---
-					
+
 					// Rotate Speed: Fast & Even across all angles
 					// Lower value = Faster rotation.
 					// Setting both X and Y to same value (400) for consistent speed everywhere
@@ -479,7 +645,7 @@
 			// Progress callback
 			undefined,
 			// Error callback
-			(scene, message, exception) => {
+			(scene: any, message: any, exception: any) => {
 				console.error('Error loading model:', message, exception);
 				isLoading = false;
 			}
@@ -520,7 +686,6 @@
 			isPlayingAudio = false;
 		}
 	}
-
 </script>
 
 <div class="model-viewer-container">
@@ -546,12 +711,22 @@
 			style={`--accent-color:${activeAccent.hex}; --accent-soft:${activeAccent.soft}; --accent-glow:${activeAccent.glow};`}
 		>
 			<button class="tooltip-close" onclick={resetSelection} aria-label="Close tooltip">
-				<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+				<svg
+					xmlns="http://www.w3.org/2000/svg"
+					width="18"
+					height="18"
+					viewBox="0 0 24 24"
+					fill="none"
+					stroke="currentColor"
+					stroke-width="2"
+					stroke-linecap="round"
+					stroke-linejoin="round"
+				>
 					<line x1="18" y1="6" x2="6" y2="18"></line>
 					<line x1="6" y1="6" x2="18" y2="18"></line>
 				</svg>
 			</button>
-			
+
 			{#if enableTTS && isPlayingAudio}
 				<div class="audio-indicator">
 					<div class="audio-wave">
@@ -562,32 +737,44 @@
 					<span class="audio-text">Playing audio...</span>
 				</div>
 			{/if}
-			
+
 			{#if audioError}
 				<div class="audio-error">
 					⚠️ {audioError}
 				</div>
 			{/if}
-			
+
 			<h4>{tooltipContent.name}</h4>
 			<p>{tooltipContent.description}</p>
 		</div>
 	{/if}
 
-	<button 
-		class="controls-toggle" 
-		onclick={() => showControls = !showControls}
-		aria-label={showControls ? "Hide Instructions" : "Show Instructions"}
-	>
-		<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-			<circle cx="12" cy="12" r="10"></circle>
-			<path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
-			<line x1="12" y1="17" x2="12.01" y2="17"></line>
-		</svg>
-		{showControls ? 'Hide Instructions' : 'Show Instructions'}
-	</button>
+	{#if enableDefaultControls}
+		<button
+			class="controls-toggle"
+			onclick={() => (showControls = !showControls)}
+			aria-label={showControls ? 'Hide Instructions' : 'Show Instructions'}
+		>
+			<svg
+				xmlns="http://www.w3.org/2000/svg"
+				width="16"
+				height="16"
+				viewBox="0 0 24 24"
+				fill="none"
+				stroke="currentColor"
+				stroke-width="2"
+				stroke-linecap="round"
+				stroke-linejoin="round"
+			>
+				<circle cx="12" cy="12" r="10"></circle>
+				<path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
+				<line x1="12" y1="17" x2="12.01" y2="17"></line>
+			</svg>
+			{showControls ? 'Hide Instructions' : 'Show Instructions'}
+		</button>
+	{/if}
 
-	{#if showControls}
+	{#if showControls && enableDefaultControls}
 		<div class="controls-info" transition:fade={{ duration: 200 }}>
 			<div class="control-item highlight">
 				<strong>Click</strong> on any colored component to learn more
@@ -633,11 +820,13 @@
 		pointer-events: auto;
 		z-index: 1000;
 		max-width: 300px;
-		box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5), 0 0 0 2px var(--accent-glow, rgba(255, 215, 0, 0.3));
-		border: 2px solid var(--accent-color, #FFD700);
+		box-shadow:
+			0 8px 32px rgba(0, 0, 0, 0.5),
+			0 0 0 2px var(--accent-glow, rgba(255, 215, 0, 0.3));
+		border: 2px solid var(--accent-color, #ffd700);
 		backdrop-filter: blur(10px);
 		animation: tooltipSlideIn 0.3s ease-out;
-		--accent-color: #FFD700;
+		--accent-color: #ffd700;
 		--accent-soft: rgba(255, 215, 0, 0.15);
 		--accent-glow: rgba(255, 215, 0, 0.5);
 	}
@@ -691,7 +880,7 @@
 		margin: 0 0 12px 0;
 		font-size: 18px;
 		font-weight: 700;
-		color: var(--accent-color, #FFD700);
+		color: var(--accent-color, #ffd700);
 		text-shadow: 0 0 10px var(--accent-glow, rgba(255, 215, 0, 0.5));
 		letter-spacing: 0.5px;
 	}
@@ -711,7 +900,7 @@
 		padding: 8px 12px;
 		background: var(--accent-soft, rgba(255, 215, 0, 0.1));
 		border-radius: 6px;
-		border-left: 3px solid var(--accent-color, #FFD700);
+		border-left: 3px solid var(--accent-color, #ffd700);
 	}
 
 	.audio-wave {
@@ -725,7 +914,7 @@
 		display: inline-block;
 		width: 3px;
 		height: 100%;
-		background: var(--accent-color, #FFD700);
+		background: var(--accent-color, #ffd700);
 		border-radius: 2px;
 		animation: audioWave 1s ease-in-out infinite;
 	}
@@ -743,7 +932,8 @@
 	}
 
 	@keyframes audioWave {
-		0%, 100% {
+		0%,
+		100% {
 			transform: scaleY(0.3);
 		}
 		50% {
@@ -753,7 +943,7 @@
 
 	.audio-text {
 		font-size: 12px;
-		color: var(--accent-color, #FFD700);
+		color: var(--accent-color, #ffd700);
 		font-weight: 500;
 	}
 
@@ -834,7 +1024,8 @@
 	}
 
 	@keyframes pulse {
-		0%, 100% {
+		0%,
+		100% {
 			box-shadow: 0 0 5px rgba(0, 212, 255, 0.3);
 		}
 		50% {

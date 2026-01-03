@@ -1,7 +1,7 @@
 <script lang="ts">
 	import type { PageData, ActionData } from './$types';
 	import { enhance } from '$app/forms';
-	import SkyBackground from '$lib/components/SkyBackground.svelte';
+	import SkyBackground from '$lib/components/ui/SkyBackground.svelte';
 	import { fade, fly, scale } from 'svelte/transition';
 
 	let { data, form } = $props<{ data: PageData; form: ActionData }>();

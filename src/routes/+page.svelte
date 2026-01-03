@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import SkyBackground from '$lib/components/SkyBackground.svelte';
+	import SkyBackground from '$lib/components/ui/SkyBackground.svelte';
 
 	let { data } = $props();
 	let isHovering = $state(false);

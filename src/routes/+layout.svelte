@@ -6,8 +6,8 @@
 	import favicon from '$lib/assets/favicon.svg';
 	import Navbar from '$lib/components/navbar/Navbar.svelte';
 	import ChatbotPopup from '$lib/components/chatbot/ChatbotPopup.svelte';
-	import ImageModal from '$lib/components/ImageModal.svelte';
-	import TransitionOverlay from '$lib/components/TransitionOverlay.svelte';
+	import ImageModal from '$lib/components/ui/ImageModal.svelte';
+	import TransitionOverlay from '$lib/components/ui/TransitionOverlay.svelte';
 	import type { LayoutData } from './$types';
 	import type { AuthChangeEvent, Session } from '@supabase/supabase-js';
 

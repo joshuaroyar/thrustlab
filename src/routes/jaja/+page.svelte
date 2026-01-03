@@ -3,7 +3,7 @@
 	import type { UIMessage } from 'ai';
 	import { fly, fade } from 'svelte/transition';
 	import { onMount } from 'svelte';
-	import SkyBackground from '$lib/components/SkyBackground.svelte';
+	import SkyBackground from '$lib/components/ui/SkyBackground.svelte';
 	import MarkdownRenderer from '$lib/components/MarkdownRenderer.svelte';
 
 	type Citation = { source: string; preview: string };

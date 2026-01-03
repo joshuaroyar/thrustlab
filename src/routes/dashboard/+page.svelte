@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import SkyBackground from '$lib/components/SkyBackground.svelte';
+	import SkyBackground from '$lib/components/ui/SkyBackground.svelte';
 	import type { PageData } from './$types';
 	import { fade, fly, scale, slide } from 'svelte/transition';
 	import { quintOut } from 'svelte/easing';

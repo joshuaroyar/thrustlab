@@ -1,5 +1,5 @@
 import { json, type RequestHandler } from '@sveltejs/kit';
-import { ElevenLabsClient } from 'elevenlabs';
+import { ElevenLabsClient } from '@elevenlabs/elevenlabs-js';
 import { env } from '$env/dynamic/private';
 import { Buffer } from 'node:buffer';
 
@@ -35,23 +35,18 @@ export const POST: RequestHandler = async ({ request }) => {
 			'21m00Tcm4TlvDq8ikWAM', // Rachel voice ID (female)
 			{
 				text,
-				model_id: 'eleven_multilingual_v2', // Supports multiple languages with high quality
-				voice_settings: {
+				modelId: 'eleven_multilingual_v2', // Supports multiple languages with high quality
+				voiceSettings: {
 					stability: 0.5,
-					similarity_boost: 0.75,
+					similarityBoost: 0.75,
 					style: 0.0,
-					use_speaker_boost: true
+					useSpeakerBoost: true
 				}
 			}
 		);
 
 		// Convert stream to buffer
-		const chunks: Uint8Array[] = [];
-		for await (const chunk of audioStream) {
-			chunks.push(chunk);
-		}
-
-		const audioBuffer = Buffer.concat(chunks);
+		const audioBuffer = Buffer.from(await new Response(audioStream).arrayBuffer());
 
 		// Return audio as response
 		return new Response(audioBuffer, {

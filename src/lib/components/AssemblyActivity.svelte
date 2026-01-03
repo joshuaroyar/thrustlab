@@ -139,14 +139,7 @@
 	let scoreSaved = $state(false);
 
 	// Realtime score calculation
-	let currentScore = $derived(
-		assemblyOrder.reduce((score, id, index) => {
-			if (index < CORRECT_ORDER.length && id === CORRECT_ORDER[index]) {
-				return score + 20;
-			}
-			return score;
-		}, 0)
-	);
+	let currentScore = $derived(assembledCount * 20);
 
 	const SNAP_THRESHOLD = 3.0; // Distance threshold for snapping
 
@@ -163,10 +156,11 @@
 	 * Calculate score based on correct assembly order
 	 */
 	function calculateScore() {
-		const componentResults = CORRECT_ORDER.map((correctId, index) => {
+		const componentResults = CORRECT_ORDER.map((correctId) => {
 			const component = COMPONENTS.find((c) => c.id === correctId);
-			const assembledId = assemblyOrder[index];
-			const isCorrect = assembledId === correctId;
+			// Check if this component is assembled (snapped)
+			const isCorrect =
+				placedComponents.has(correctId) && componentMeshes.get(correctId)?.metadata?.isAssembled;
 
 			return {
 				id: correctId,
@@ -611,6 +605,7 @@
 	}
 
 	onMount(() => {
+		shuffleComponents();
 		initScene();
 	});
 
@@ -738,7 +733,14 @@
 
 	<!-- Controls Overlay -->
 	<div class="controls-overlay">
-		<button class="control-btn" onclick={() => window.location.reload()} title="Reset Scene">
+		<button
+			class="control-btn"
+			onclick={() => {
+				window.location.reload();
+				shuffleComponents();
+			}}
+			title="Reset Scene"
+		>
 			Reset
 		</button>
 		<button class="control-btn" onclick={shuffleComponents} title="Shuffle Components">
@@ -754,10 +756,12 @@
 		>
 			Help
 		</button>
-		<div class="realtime-score">
-			<span class="score-label">Score:</span>
-			<span class="score-value">{currentScore}</span>
-		</div>
+		{#if scoreSaved}
+			<div class="realtime-score">
+				<span class="score-label">Score:</span>
+				<span class="score-value">{currentScore}</span>
+			</div>
+		{/if}
 	</div>
 
 	<!-- Score Feedback Modal -->
@@ -946,7 +950,7 @@
 	}
 
 	.component-tray {
-		width: 170px;
+		width: 220px;
 		background: rgba(0, 0, 0, 0.5);
 		border-right: 2px solid rgba(79, 195, 247, 0.3);
 		padding: 0.65rem;
@@ -1003,7 +1007,7 @@
 
 	.component-image-container {
 		width: 100%;
-		height: 64px;
+		height: 100px;
 		display: flex;
 		align-items: center;
 		justify-content: center;
@@ -1028,7 +1032,7 @@
 	}
 
 	.component-name {
-		display: block;
+		display: none;
 		color: #e0e0e0;
 		font-size: 0.75rem;
 		font-weight: 500;
@@ -1052,10 +1056,12 @@
 		height: 100%;
 		background: rgba(0, 0, 0, 0.85);
 		display: flex;
-		align-items: center;
+		align-items: flex-start; /* Changd from center to flex-start to allow scrolling */
 		justify-content: center;
 		z-index: 1000;
 		backdrop-filter: blur(5px);
+		overflow-y: auto; /* Allow overlay itself to scroll */
+		padding: 2rem 0; /* Add padding to top/bottom */
 	}
 
 	.instructions-modal {
@@ -1064,10 +1070,11 @@
 		padding: 2rem;
 		max-width: 600px;
 		width: 90%;
-		max-height: 80vh;
-		overflow-y: auto;
+		/* max-height removed to allow growth */
+		/* overflow-y removed to prevent internal scrollbar */
 		box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
 		border: 2px solid rgba(255, 255, 255, 0.1);
+		margin: auto; /* Helps center vertically if content is small, but respects flex-start if large */
 	}
 
 	.instructions-modal h2 {

@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-    import ImageGrid from '$lib/components/ImageGrid.svelte';
+    import ImageGrid from '$lib/components/ui/ImageGrid.svelte';
 	import MarkdownRenderer from '$lib/components/MarkdownRenderer.svelte';
 	import { goto } from '$app/navigation';
 	import { fade, fly } from 'svelte/transition';
@@ -9,7 +9,7 @@
 	import { searchQuery, showSearchModal, performSearch } from '$lib/stores/searchStore';
 	import { MODULE_CONTENT } from '$lib/data/searchContent';
 	import SearchModal from '$lib/components/SearchModal.svelte';
-	import ImageModal from '$lib/components/ImageModal.svelte';
+	import ImageModal from '$lib/components/ui/ImageModal.svelte';
 
 	let mounted = $state(false);
 
@@ -195,7 +195,7 @@
 						<button
 							class="zoom-icon"
 							title="View Instructions & Fullscreen"
-							onclick={() => goto('/turbofan-engine/engine-instructions')}
+							onclick={() => goto('/turbofan-engine/engine-fullscreen')}
 						>
 							<svg
 								xmlns="http://www.w3.org/2000/svg"

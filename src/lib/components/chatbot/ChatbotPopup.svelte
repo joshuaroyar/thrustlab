@@ -390,7 +390,6 @@
 		flex: 1;
 		padding: var(--spacing-md);
 		overflow-y: auto;
-		background: transparent;
 		min-height: 300px;
 		max-height: 440px;
 	}
@@ -464,12 +463,12 @@
 		background: var(--navbar-bg-color, #1c3e4a);
 		border: 1px solid rgba(135, 206, 235, 0.2);
 		border-top-left-radius: 0.25rem;
-		color: var(--font-secondary);
+		color: #ffffff;
 	}
 
 	.user-bubble {
 		background: var(--navbar-bg-color, #1c3e4a);
-		color: var(--font-secondary);
+		color: #ffffff;
 		border-top-right-radius: 0.25rem;
 		order: 1;
 		font-weight: 600;
@@ -484,7 +483,7 @@
 	}
 
 	.ai-bubble p {
-		color: var(--font-secondary);
+		color: #ffffff;
 	}
 
 	/* Formatted content styles */
@@ -541,7 +540,7 @@
 		font-size: 0.9rem;
 		transition: all 0.3s ease;
 		background: rgba(0, 0, 0, 0.4);
-		color: var(--font-secondary);
+		color: #ffffff;
 	}
 
 	.chat-input::placeholder {

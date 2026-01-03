@@ -38,13 +38,13 @@ export const POST: RequestHandler = async ({ request }) => {
 
   // Only perform RAG retrieval for non-greeting queries
   if (!isGreeting && lastMessageText.trim().length > 0) {
-    const pinecone = new Pinecone({ apiKey: env.PINECONE_API_KEY });
+    const pinecone = new Pinecone({ apiKey: env.PINECONE_API_KEY || '' });
     const pineconeIndex = pinecone.Index(env.PINECONE_INDEX || 'thrustlab-rag');
-    
+
     const vectorStore = await PineconeStore.fromExistingIndex(
       new HuggingFaceInferenceEmbeddings({
-          apiKey: env.HUGGINGFACE_API_KEY,
-          model: 'BAAI/bge-large-en-v1.5',
+        apiKey: env.HUGGINGFACE_API_KEY,
+        model: 'BAAI/bge-large-en-v1.5',
       }),
       { pineconeIndex }
     );
@@ -54,7 +54,7 @@ export const POST: RequestHandler = async ({ request }) => {
     contextBlock = retrievalResults
       .map((doc, index) => `Context Chunk ${index + 1}:\n${doc.pageContent}`)
       .join('\n\n');
-    
+
     citations = retrievalResults.map((doc) => ({
       source: doc.metadata.source,
       preview: doc.pageContent.substring(0, 60) + "..."

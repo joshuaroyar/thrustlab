@@ -3,8 +3,8 @@
 	import { onMount } from 'svelte';
 	import { page } from '$app/stores';
 	import { fade, fly } from 'svelte/transition';
-	import ImageModal from '$lib/components/ImageModal.svelte';
-	import ImageGrid from '$lib/components/ImageGrid.svelte';
+	import ImageModal from '$lib/components/ui/ImageModal.svelte';
+	import ImageGrid from '$lib/components/ui/ImageGrid.svelte';
 
 	let totalPages = 3;
 	$: currentPage = parseInt($page.url.searchParams.get('page') || '1');
@@ -279,7 +279,7 @@
 		line-height: 1.1;
 		animation: gradient-flash var(--gradient-duration) ease-in-out infinite;
 		filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.2));
-		text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+		text-shadow: 0 2px rgba(0, 0, 0, 0.2);
 	}
 
 	/* Content Sections */
