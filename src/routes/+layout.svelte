@@ -11,6 +11,9 @@
 	import type { LayoutData } from './$types';
 	import type { AuthChangeEvent, Session } from '@supabase/supabase-js';
 
+	import { dev } from '$app/environment';
+	import { inject } from '@vercel/analytics';
+
 	const TITLE_MAP: Record<string, string> = {
 		'/': 'ThrustLab | Home',
 		'/dashboard': 'ThrustLab | Dashboard',
@@ -68,6 +71,9 @@
 	});
 
 	onMount(() => {
+
+		inject({mode: dev ? 'development' : 'production'})
+		
 		// Safety: Ensure scrolling is enabled on layout mount
 		if (typeof document !== 'undefined') {
 			document.body.classList.remove('page-transitioning');

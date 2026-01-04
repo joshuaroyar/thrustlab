@@ -66,6 +66,7 @@
 		"@supabase/ssr": "^0.8.0",
 		"@supabase/supabase-js": "^2.86.0",
 		"@types/babylonjs": "^2.3.31",
+		"@vercel/analytics": "^1.6.1",
 		"ai": "^5.0.93",
 		"cookie": "^1.0.2",
 		"dompurify": "^3.3.0",
@@ -79,6 +80,7 @@
 	"overrides": {
 		"cookie": "^1.0.2",
 		"esbuild": "^0.27.0",
-		"@pinecone-database/pinecone": "^5.0.2"
+		"@pinecone-database/pinecone": "^5.0.2",
+		"html-encoding-sniffer": "^4.0.0"
 	}
 }
