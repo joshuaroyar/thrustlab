@@ -252,11 +252,6 @@
 		.module-title-text {
 			font-size: 1.8rem;
 		}
-		.module-title-one-line {
-			white-space: normal;
-			font-size: 2.2rem;
-			letter-spacing: 1px;
-		}
 	}
 
 	@media (max-width: 480px) {

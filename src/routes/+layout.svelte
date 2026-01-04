@@ -10,9 +10,10 @@
 	import TransitionOverlay from '$lib/components/ui/TransitionOverlay.svelte';
 	import type { LayoutData } from './$types';
 	import type { AuthChangeEvent, Session } from '@supabase/supabase-js';
-
 	import { dev } from '$app/environment';
-	import { inject } from '@vercel/analytics';
+	import { injectAnalytics } from '@vercel/analytics/sveltekit';
+
+	injectAnalytics({ mode: dev ? 'development' : 'production' });
 
 	const TITLE_MAP: Record<string, string> = {
 		'/': 'ThrustLab | Home',
@@ -71,9 +72,6 @@
 	});
 
 	onMount(() => {
-
-		inject({mode: dev ? 'development' : 'production'})
-		
 		// Safety: Ensure scrolling is enabled on layout mount
 		if (typeof document !== 'undefined') {
 			document.body.classList.remove('page-transitioning');
