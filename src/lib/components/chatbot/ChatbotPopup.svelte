@@ -4,12 +4,12 @@
 	import { fly, fade } from 'svelte/transition';
 	import { parseMarkdown } from '$lib/utils/formatting';
 	import MarkdownRenderer from '$lib/components/MarkdownRenderer.svelte';
+	import { isChatOpen } from '$lib/stores/chatStore';
 
 	type Citation = { source: string; preview: string };
 	type JajaMessage = UIMessage<unknown, { citations: Citation[] }>;
 	type CitationPart = Extract<JajaMessage['parts'][number], { type: 'data-citations' }>;
 
-	let isOpen = $state(false);
 	let isMinimized = $state(false);
 	let chatContainer = $state<HTMLElement | null>(null);
 	let inputValue = $state('');
@@ -70,8 +70,8 @@
 	}
 
 	function toggleChat() {
-		isOpen = !isOpen;
-		if (isOpen) {
+		$isChatOpen = !$isChatOpen;
+		if ($isChatOpen) {
 			isMinimized = false;
 		}
 	}
@@ -88,8 +88,8 @@
 	});
 </script>
 
-{#if !isOpen}
-	<button class="chat-fab" onclick={toggleChat} aria-label="Open JAJA Assistant">
+{#if !$isChatOpen}
+	<button class="chat-fab md:flex hidden" onclick={toggleChat} aria-label="Open JAJA Assistant">
 		<img src="/images/jaja-popup.png" alt="JAJA Assistant" class="fab-image" />
 	</button>
 {:else}
@@ -600,7 +600,7 @@
 
 		.chat-fab {
 			right: 1rem;
-			bottom: 1rem;
+			bottom: 5.5rem; /* Above bottom navbar */
 		}
 
 		.fab-image {

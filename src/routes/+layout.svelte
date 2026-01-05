@@ -5,6 +5,7 @@
 	import { invalidate, afterNavigate } from '$app/navigation';
 	import favicon from '$lib/assets/favicon.svg';
 	import Navbar from '$lib/components/navbar/Navbar.svelte';
+	import MobileNavbar from '$lib/components/navbar/MobileNavbar.svelte';
 	import ChatbotPopup from '$lib/components/chatbot/ChatbotPopup.svelte';
 	import ImageModal from '$lib/components/ui/ImageModal.svelte';
 	import TransitionOverlay from '$lib/components/ui/TransitionOverlay.svelte';
@@ -20,13 +21,13 @@
 		'/dashboard': 'ThrustLab | Dashboard',
 		'/login': 'ThrustLab | Login',
 		'/sign-up': 'ThrustLab | Join ThrustLab',
-		'/profile': 'ThrustLab | Pilot Profile',
-		'/hangar-zone': 'ThrustLab | Hangar Zone',
+		'/profile': 'ThrustLab | Profile',
 		'/overhaul-station': 'ThrustLab | Overhaul Station',
 		'/overhaul-station/assembly-disassembly': 'ThrustLab | Assembly & Disassembly',
 		'/overhaul-station/preliminary-module': 'ThrustLab | Preliminary Module',
 		'/test-bay': 'ThrustLab | Test Bay',
-		'/turbofan-engine': 'ThrustLab | Turbofan Engine'
+		'/turbofan-engine': 'ThrustLab | Turbofan Engine',
+		'/hangar-zone': 'ThrustLab | Hangar Zone'
 	};
 	const DEFAULT_TITLE = 'ThrustLab';
 
@@ -174,13 +175,38 @@
 	/>
 </svelte:head>
 
-<Navbar user={data.user} isTransparent />
+{#if !page.url.pathname.startsWith('/login') && !page.url.pathname.startsWith('/sign-up')}
+	<div
+		class="pointer-events-none absolute top-0 right-0 left-0 z-40 flex w-full justify-center md:hidden"
+	>
+		<a
+			href="/"
+			class="text-decoration-none pointer-events-auto flex flex-col items-center"
+			aria-label="ThrustLab"
+		>
+			<img
+				src="/icons/thrustlab-logo.png"
+				alt="ThrustLab"
+				class="h-36 w-auto object-contain
+		drop-shadow-xl"
+			/>
+		</a>
+	</div>
+{/if}
 
-<main class:home-page={isHomePage}>
+<!-- Hide Desktop Navbar on mobile -->
+<div class="hidden md:block">
+	<Navbar user={data.user} isTransparent />
+</div>
+
+<!-- Mobile Bottom Navbar -->
+<MobileNavbar user={data.user} />
+
+<main class:home-page={isHomePage} class="pb-24 md:pb-0">
 	{@render children()}
 </main>
 
-{#if !isTestBayPage && !isJajaPage && !isAssemblyDisassemblyPage}
+{#if !isTestBayPage && !isJajaPage && !isAssemblyDisassemblyPage && !page.url.pathname.startsWith('/dashboard') && !page.url.pathname.startsWith('/profile') && !page.url.pathname.startsWith('/login') && !page.url.pathname.startsWith('/sign-up')}
 	<ChatbotPopup />
 {/if}
 

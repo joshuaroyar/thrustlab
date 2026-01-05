@@ -17,7 +17,7 @@
 
 		window.addEventListener('scroll', handleScroll);
 		handleScroll(); // Initial call
-		
+
 		return () => window.removeEventListener('scroll', handleScroll);
 	});
 
@@ -48,9 +48,7 @@
 		{ href: '/login', label: 'Log In' }
 	];
 
-	const protectedLinks = [
-		{ href: '/test-bay', label: 'Test Bay' }
-	];
+	const protectedLinks = [{ href: '/test-bay', label: 'Test Bay' }];
 
 	const hamburgerLinks = [
 		{ href: '/profile', label: 'Profile' },
@@ -66,9 +64,9 @@
 	}
 </script>
 
-<nav 
-	class="navbar" 
-	class:scrolled={isScrolled} 
+<nav
+	class="navbar"
+	class:scrolled={isScrolled}
 	class:transparent={isTransparent && !isScrolled}
 	style="--navbar-bg-color: {navbarBgColor};"
 >
@@ -84,11 +82,7 @@
 		<div class="navbar-menu">
 			<!-- Public Links -->
 			{#each publicLinks as link}
-				<a
-					href={link.href}
-					class="nav-link"
-					class:active={page.url.pathname === link.href}
-				>
+				<a href={link.href} class="nav-link" class:active={page.url.pathname === link.href}>
 					{link.label}
 				</a>
 			{/each}
@@ -96,21 +90,13 @@
 			<!-- Auth or Protected Links -->
 			{#if user}
 				{#each protectedLinks as link}
-					<a
-						href={link.href}
-						class="nav-link"
-						class:active={page.url.pathname === link.href}
-					>
+					<a href={link.href} class="nav-link" class:active={page.url.pathname === link.href}>
 						{link.label}
 					</a>
 				{/each}
 			{:else}
 				{#each authLinks as link}
-					<a
-						href={link.href}
-						class="nav-link"
-						class:active={page.url.pathname === link.href}
-					>
+					<a href={link.href} class="nav-link" class:active={page.url.pathname === link.href}>
 						{link.label}
 					</a>
 				{/each}
@@ -119,9 +105,18 @@
 
 		<!-- Hamburger Menu Button (only when logged in) - on the right side -->
 		{#if user}
-			<button class="hamburger-menu-button" onclick={toggleHamburgerMenu} aria-label="Toggle user menu">
+			<button
+				class="hamburger-menu-button"
+				onclick={toggleHamburgerMenu}
+				aria-label="Toggle user menu"
+			>
 				<svg class="menu-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-					<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+					<path
+						stroke-linecap="round"
+						stroke-linejoin="round"
+						stroke-width="2"
+						d="M4 6h16M4 12h16M4 18h16"
+					/>
 				</svg>
 			</button>
 		{/if}
@@ -130,11 +125,21 @@
 		<button class="mobile-menu-button" onclick={toggleMobileMenu} aria-label="Toggle menu">
 			{#if mobileMenuOpen}
 				<svg class="menu-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-					<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+					<path
+						stroke-linecap="round"
+						stroke-linejoin="round"
+						stroke-width="2"
+						d="M6 18L18 6M6 6l12 12"
+					/>
 				</svg>
 			{:else}
 				<svg class="menu-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-					<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+					<path
+						stroke-linecap="round"
+						stroke-linejoin="round"
+						stroke-width="2"
+						d="M4 6h16M4 12h16M4 18h16"
+					/>
 				</svg>
 			{/if}
 		</button>
@@ -165,7 +170,7 @@
 						{link.label}
 					</a>
 				{/each}
-				
+
 				<!-- Hamburger links merged into mobile menu -->
 				{#each hamburgerLinks as link}
 					<a
@@ -177,8 +182,12 @@
 						{link.label}
 					</a>
 				{/each}
-				
-				<button onclick={handleLogout} class="mobile-nav-link logout-button">
+
+				<button
+					onclick={handleLogout}
+					title="Sign out of your account"
+					class="mobile-nav-link logout-button"
+				>
 					Log Out
 				</button>
 			{:else}
@@ -209,9 +218,7 @@
 					{link.label}
 				</a>
 			{/each}
-			<button onclick={handleLogout} class="hamburger-nav-link logout-button">
-				Log Out
-			</button>
+			<button onclick={handleLogout} class="hamburger-nav-link logout-button"> Log Out </button>
 		</div>
 	{/if}
 </nav>
@@ -229,6 +236,16 @@
 		z-index: 1000;
 		width: 100%;
 		transition: all 0.5s ease;
+	}
+
+	/* Disable frosted glass on Dashboard and Profile pages */
+	:global(body.dashboard-page) .navbar,
+	:global(body.profile-page) .navbar {
+		background: transparent !important;
+		backdrop-filter: none !important;
+		-webkit-backdrop-filter: none !important;
+		box-shadow: none !important;
+		border-bottom: none !important;
 	}
 
 	.navbar.transparent {
@@ -267,7 +284,7 @@
 		padding: 0.5rem;
 		background: none;
 		border: none;
-		color: #FFFFFF;
+		color: #ffffff;
 		cursor: pointer;
 		border-radius: 0.375rem;
 		transition: background-color 0.3s ease;
@@ -361,7 +378,7 @@
 		font-family: var(--font-heading); /* Match logo/title font */
 		font-size: 1rem;
 		font-weight: 700;
-		color: #FFFFFF; /* Pure white for maximum readability */
+		color: #ffffff; /* Pure white for maximum readability */
 		text-decoration: none;
 		padding: 0.5rem 1rem;
 		border-radius: 0.375rem;
@@ -383,13 +400,15 @@
 	/* Use per-page navbar accent defined on the page container (default to ui-yellow) */
 	.nav-link:hover {
 		background-color: transparent; /* Do not fill background on hover */
-		color: #FFFFFF;
-		box-shadow: 0 6px 30px rgba(var(--navbar-accent-rgb, 255, 217, 102), 0.25), 0 0 18px rgba(var(--navbar-accent-rgb, 255, 217, 102), 0.18);
+		color: #ffffff;
+		box-shadow:
+			0 6px 30px rgba(var(--navbar-accent-rgb, 255, 217, 102), 0.25),
+			0 0 18px rgba(var(--navbar-accent-rgb, 255, 217, 102), 0.18);
 	}
 
 	.nav-link.active {
 		background-color: var(--navbar-accent, var(--ui-yellow)); /* Per-page accent */
-		color: #FFFFFF;
+		color: #ffffff;
 		font-weight: 600;
 		text-shadow: none;
 		box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
@@ -447,7 +466,7 @@
 		font-family: var(--font-heading); /* Match logo/title font */
 		font-size: 1rem;
 		font-weight: 700;
-		color: #FFFFFF; /* Pure white for maximum readability */
+		color: #ffffff; /* Pure white for maximum readability */
 		text-decoration: none;
 		padding: 0.75rem 1rem;
 		border-radius: 0.375rem;
@@ -460,13 +479,15 @@
 
 	.mobile-nav-link:hover {
 		background-color: transparent; /* Do not fill mobile background on hover */
-		color: #FFFFFF;
-		box-shadow: 0 6px 30px rgba(var(--navbar-accent-rgb, 255, 217, 102), 0.25), 0 0 18px rgba(var(--navbar-accent-rgb, 255, 217, 102), 0.18);
+		color: #ffffff;
+		box-shadow:
+			0 6px 30px rgba(var(--navbar-accent-rgb, 255, 217, 102), 0.25),
+			0 0 18px rgba(var(--navbar-accent-rgb, 255, 217, 102), 0.18);
 	}
 
 	.mobile-nav-link.active {
 		background-color: var(--navbar-accent, var(--ui-yellow)); /* Per-page accent */
-		color: #FFFFFF;
+		color: #ffffff;
 		font-weight: 600;
 		text-shadow: none;
 		box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
@@ -523,7 +544,7 @@
 		font-family: var(--font-heading);
 		font-size: 1rem;
 		font-weight: 700;
-		color: #FFFFFF;
+		color: #ffffff;
 		text-decoration: none;
 		padding: 0.75rem 1rem;
 		border-radius: 0.375rem;
@@ -540,8 +561,10 @@
 
 	.hamburger-nav-link:hover {
 		background-color: transparent; /* Do not fill background on hover; use glow instead */
-		color: #FFFFFF;
-		box-shadow: 0 6px 30px rgba(var(--navbar-accent-rgb, 255, 217, 102), 0.25), 0 0 18px rgba(var(--navbar-accent-rgb, 255, 217, 102), 0.18);
+		color: #ffffff;
+		box-shadow:
+			0 6px 30px rgba(var(--navbar-accent-rgb, 255, 217, 102), 0.25),
+			0 0 18px rgba(var(--navbar-accent-rgb, 255, 217, 102), 0.18);
 	}
 
 	.hamburger-nav-link.active {

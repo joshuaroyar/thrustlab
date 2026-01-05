@@ -88,7 +88,8 @@ export const load: PageServerLoad = async ({ locals: { safeGetSession } }) => {
             username:
                 dbUser?.username || user.user_metadata?.username || user.email?.split('@')[0] || 'User',
             fullName: dbUser?.fullName || user.user_metadata?.full_name || 'Pilot',
-            email: user.email
+            email: user.email,
+            avatarUrl: dbUser?.avatarUrl || user.user_metadata?.avatar_url || ''
         },
         stats: {
             progress,

@@ -3,7 +3,8 @@ import { pgTable, serial, integer, text, timestamp, jsonb } from 'drizzle-orm/pg
 export const user = pgTable('user', {
 	id: text('id').primaryKey(),
 	username: text('username'),
-	fullName: text('full_name')
+	fullName: text('full_name'),
+	avatarUrl: text('avatar_url')
 });
 
 export const session = pgTable('session', {

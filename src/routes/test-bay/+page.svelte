@@ -257,7 +257,6 @@
 		score = 0;
 		showReview = false;
 		viewState = 'selection';
-		location.reload();
 	}
 
 	function toggleReview() {
@@ -267,6 +266,16 @@
 	$effect(() => {
 		// Scroll to top when changing questions or views
 		window.scrollTo({ top: 0, behavior: 'smooth' });
+
+		// Re-trigger animations when returning to selection view
+		if (viewState === 'selection') {
+			setTimeout(() => {
+				const animateElements = document.querySelectorAll(
+					'.animate-on-scroll, .animate-slide-left, .animate-slide-right, .animate-scale, .animate-fade'
+				);
+				animateElements.forEach((el) => el.classList.add('visible'));
+			}, 100);
+		}
 	});
 
 	onMount(() => {
@@ -293,55 +302,103 @@
 
 <SkyBackground dawn={true} />
 
-<div class="page-container">
+<div
+	class="relative z-10 mx-auto min-h-screen max-w-[1400px] px-4 pt-32 pb-24 md:px-8 md:pt-40 md:pb-16"
+>
 	{#if viewState === 'selection'}
 		<!-- Module Selection View -->
-		<div class="content-wrapper animate-on-scroll">
-			<h1 class="page-title gradient-animated">Test Bay</h1>
-			<p class="intro-text">
+		<div class="content-wrapper animate-on-scroll mx-auto max-w-[1200px]">
+			<h1
+				class="page-title animate-gradient-flash font-heading mb-6 bg-gradient-to-r from-blue-400 via-cyan-400 to-blue-400 bg-clip-text text-center text-4xl font-black tracking-tight text-transparent drop-shadow-xl md:text-6xl"
+			>
+				Test Bay
+			</h1>
+			<p
+				class="intro-text font-body mx-auto mb-8 max-w-[900px] text-justify text-xl leading-relaxed font-bold text-[#1b3558] md:text-2xl"
+			>
 				Welcome to the Test Bay, where learning turns into a challenge. Here, students face
 				interactive assessments designed to gauge their understanding of the Hangar Zone, Turbofan
 				Engine Zone, and Overhaul Bay. It's not just an activity—it's a test of mastery, confidence,
 				and readiness to take flight.
 			</p>
 
-			<div class="info-card animate-on-scroll">
-				<div class="info-content">
-					<h3>Assessment Info – Here's What You Need to Know:</h3>
-					<ul>
-						<li>
+			<div
+				class="info-card animate-on-scroll mb-8 flex flex-col items-center gap-6 rounded-[25px] border-2 border-white/50 bg-white p-6 shadow-lg transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl md:flex-row md:p-8"
+			>
+				<div class="info-content flex-1">
+					<h3 class="font-heading mb-6 text-2xl font-black text-[#1b3558]">
+						Assessment Info – Here's What You Need to Know:
+					</h3>
+					<ul class="m-0 list-none p-0">
+						<li
+							class="font-body relative mb-3 pl-8 text-base leading-relaxed text-[#222831] before:absolute before:left-2 before:text-[#4caf50] before:content-['▶']"
+						>
 							Each module has 10 multiple-choice questions – a quick dive into your knowledge!
 						</li>
-						<li>You can navigate freely between questions before hitting submit.</li>
-						<li>
+						<li
+							class="font-body relative mb-3 pl-8 text-base leading-relaxed text-[#222831] before:absolute before:left-2 before:text-[#4caf50] before:content-['▶']"
+						>
+							You can navigate freely between questions before hitting submit.
+						</li>
+						<li
+							class="font-body relative mb-3 pl-8 text-base leading-relaxed text-[#222831] before:absolute before:left-2 before:text-[#4caf50] before:content-['▶']"
+						>
 							After submission, you'll get a chance to review your answers and see how you did.
 						</li>
-						<li>Want a better score? Retake any module to improve and master the material!</li>
+						<li
+							class="font-body relative mb-3 pl-8 text-base leading-relaxed text-[#222831] before:absolute before:left-2 before:text-[#4caf50] before:content-['▶']"
+						>
+							Want a better score? Retake any module to improve and master the material!
+						</li>
 					</ul>
 				</div>
-				<div class="jaja-character">
-					<img src="/images/jaja-standing.png" alt="JAJA Character" />
+				<div
+					class="jaja-character flex h-[150px] w-[150px] shrink-0 items-center justify-center md:h-[180px] md:w-[180px]"
+				>
+					<img
+						src="/images/jaja-standing.png"
+						alt="JAJA Character"
+						class="h-auto max-w-full drop-shadow-md"
+					/>
 				</div>
 			</div>
 
-			<div class="test-grid animate-on-scroll">
+			<div class="test-grid grid grid-cols-1 gap-6 md:grid-cols-3">
 				{#each modules as module, idx}
-					<div class="test-card module-{module.id}" style="--delay: {idx * 0.1}s">
-						<h3 class="module-label">MODULE {String(module.id).padStart(2, '0')}:</h3>
-						<h4 class="module-title gradient-animated">{module.title.toUpperCase()}</h4>
-						<p class="module-description">{module.description}</p>
-						<button class="start-button" onclick={() => startModule(module)}
-							>START ASSESSMENT</button
+					<div
+						class="test-card module-{module.id} group relative flex flex-col items-center justify-center overflow-hidden rounded-[25px] border-3 bg-white p-8 text-center shadow-lg transition-all duration-400 hover:-translate-y-2 hover:scale-[1.02] hover:shadow-2xl"
+						style="--delay: {idx * 0.1}s; border-color: #2196f3;"
+					>
+						<h3 class="font-heading mb-2 font-bold text-[#222831]">
+							MODULE {String(module.id).padStart(2, '0')}:
+						</h3>
+						<h4
+							class="font-heading animate-gradient-flash mb-4 bg-gradient-to-r from-blue-500 via-cyan-500 to-blue-500 bg-clip-text text-2xl font-black text-transparent md:text-3xl"
 						>
+							{module.title.toUpperCase()}
+						</h4>
+						<p class="font-body mb-6 text-sm text-[#222831]/80 md:text-base">
+							{module.description}
+						</p>
+						<button
+							class="start-button rounded-full bg-[#1b3558] px-8 py-3 font-bold text-white transition-all hover:scale-105 hover:bg-[#1b3558]/90 hover:shadow-lg"
+							onclick={() => startModule(module)}
+						>
+							START ASSESSMENT
+						</button>
 					</div>
 				{/each}
 			</div>
 		</div>
 	{:else if viewState === 'quiz' && selectedModule}
 		<!-- Quiz View -->
-		<div class="quiz-container">
-			<div class="quiz-header">
-				<button type="button" class="back-button" onclick={backToSelection}>
+		<div class="quiz-container mx-auto max-w-[800px] p-4 md:p-8">
+			<div class="quiz-header mb-8 flex items-center justify-between gap-4">
+				<button
+					type="button"
+					class="back-button font-body flex items-center gap-2 rounded-xl border-2 border-[#76667F]/30 bg-white/90 px-5 py-3 font-bold text-[#76667F] backdrop-blur-md transition-all duration-300 hover:-translate-x-1 hover:border-[#76667F] hover:shadow-lg"
+					onclick={backToSelection}
+				>
 					<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
 						<path
 							d="M19 12H5M12 19l-7-7 7-7"
@@ -353,47 +410,72 @@
 					Back to Modules
 				</button>
 				<div class="module-title">
-					<h2>Module {selectedModule.id}: {selectedModule.title}</h2>
+					<h2 class="font-heading text-xl font-extrabold text-[#1b3558] drop-shadow-sm md:text-2xl">
+						Module {selectedModule.id}: {selectedModule.title}
+					</h2>
 				</div>
 			</div>
 
-			<div class="progress-bar">
+			<div
+				class="progress-bar mb-3 h-3 w-full overflow-hidden rounded-full border border-white/30 bg-white/20"
+			>
 				<div
-					class="progress-fill"
+					class="progress-fill h-full rounded-full bg-[#2196f3] shadow-[0_0_10px_rgba(33,150,243,0.5)] transition-all duration-300 ease-out"
 					style="width: {((currentQuestionIndex + 1) / selectedModule.questions.length) * 100}%"
 				></div>
 			</div>
-			<div class="progress-text">
+			<div class="progress-text font-body mb-8 text-right text-sm font-semibold text-[#1b3558]">
 				Question {currentQuestionIndex + 1} of {selectedModule.questions.length}
 			</div>
 
 			{#if currentQuestion}
-				<div class="question-card">
-					<h3 class="question-text">
+				<div
+					class="question-card mb-8 rounded-[25px] border border-white/50 bg-white p-6 shadow-xl md:p-8"
+				>
+					<h3
+						class="question-text font-heading mb-8 text-xl leading-relaxed font-bold text-[#222831] md:text-2xl"
+					>
 						{currentQuestionIndex + 1}. {currentQuestion.text}
 					</h3>
 
-					<div class="options-list">
+					<div class="options-list flex flex-col gap-4">
 						{#each currentQuestion.options as option, idx}
-							<label class="option-item" class:selected={userAnswers[currentQuestionIndex] === idx}>
+							<label
+								class="option-item relative flex cursor-pointer items-center rounded-2xl border-2 border-[#E9ECEF] bg-[#F8F9FA] px-6 py-5 transition-all duration-200 hover:translate-x-1 hover:border-[#B0BEC5] hover:bg-[#E9ECEF] {userAnswers[
+									currentQuestionIndex
+								] === idx
+									? '!border-[#76667F] !bg-[#76667F]/10 shadow-[0_4px_12px_rgba(118,102,127,0.15)]'
+									: ''}"
+							>
 								<input
 									type="radio"
 									name="answer-{currentQuestionIndex}"
 									value={idx}
 									checked={userAnswers[currentQuestionIndex] === idx}
 									onchange={() => selectAnswer(idx)}
+									class="absolute opacity-0"
 								/>
-								<span class="option-label">{String.fromCharCode(65 + idx)}</span>
-								<span class="option-text">{option}</span>
+								<span
+									class="option-label font-heading mr-5 flex h-9 w-9 items-center justify-center rounded-[10px] bg-[#E9ECEF] text-lg font-extrabold text-[#222831] transition-all duration-200 {userAnswers[
+										currentQuestionIndex
+									] === idx
+										? '!bg-[#76667F] text-white'
+										: ''}">{String.fromCharCode(65 + idx)}</span
+								>
+								<span class="option-text font-body flex-1 text-lg font-medium text-[#222831]"
+									>{option}</span
+								>
 							</label>
 						{/each}
 					</div>
 				</div>
 			{/if}
 
-			<div class="navigation-buttons">
+			<div
+				class="navigation-buttons fixed right-0 bottom-20 left-0 z-50 flex items-center justify-between border-t border-gray-200 bg-white p-4 shadow-lg md:static md:mt-8 md:border-none md:bg-transparent md:p-0 md:shadow-none"
+			>
 				<button
-					class="nav-button secondary"
+					class="nav-button secondary flex items-center gap-2 rounded-xl bg-gray-100 px-6 py-3 font-bold text-gray-700 hover:bg-gray-200 disabled:opacity-50"
 					onclick={previousQuestion}
 					disabled={currentQuestionIndex === 0}
 				>
@@ -410,7 +492,7 @@
 
 				{#if currentQuestionIndex === selectedModule.questions.length - 1}
 					<button
-						class="nav-button primary submit-button"
+						class="nav-button primary submit-button flex items-center gap-2 rounded-xl bg-green-500 px-8 py-3 font-bold text-white hover:bg-green-600 disabled:opacity-50"
 						onclick={submitTest}
 						disabled={userAnswers.some((a) => a === null)}
 					>
@@ -425,7 +507,10 @@
 						</svg>
 					</button>
 				{:else}
-					<button class="nav-button primary" onclick={nextQuestion}>
+					<button
+						class="nav-button primary flex items-center gap-2 rounded-xl bg-[#1b3558] px-8 py-3 font-bold text-white hover:bg-[#1b3558]/90"
+						onclick={nextQuestion}
+					>
 						Next
 						<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
 							<path
@@ -439,14 +524,22 @@
 				{/if}
 			</div>
 
-			<div class="question-nav">
-				<p>Quick Navigation:</p>
-				<div class="question-dots">
+			<div
+				class="question-nav mb-24 rounded-[20px] border border-white/20 bg-white/10 p-6 backdrop-blur-md md:mb-0"
+			>
+				<p class="font-heading mb-4 text-center font-semibold tracking-wide text-[#1b3558]">
+					Quick Navigation:
+				</p>
+				<div class="question-dots flex flex-wrap justify-center gap-3">
 					{#each selectedModule.questions as _, idx}
 						<button
-							class="dot"
-							class:answered={userAnswers[idx] !== null}
-							class:current={idx === currentQuestionIndex}
+							class="dot font-body flex h-10 w-10 items-center justify-center rounded-xl border-2 border-transparent bg-white/20 font-bold text-[#1b3558] transition-all duration-300 hover:scale-110 hover:bg-white/30 {userAnswers[
+								idx
+							] !== null
+								? '!bg-white/80 !text-[#222831]'
+								: ''} {idx === currentQuestionIndex
+								? '!scale-115 !border-white !bg-[#2196f3] !text-white shadow-[0_0_15px_rgba(33,150,243,0.6)]'
+								: ''}"
 							onclick={() => (currentQuestionIndex = idx)}
 							title="Question {idx + 1}"
 						>
@@ -458,43 +551,63 @@
 		</div>
 	{:else if viewState === 'results' && selectedModule}
 		<!-- Results View -->
-		<div class="results-container">
+		<!-- Results View -->
+		<div class="results-container mx-auto max-w-[900px] p-4 text-center md:p-8">
 			<div class="results-header">
-				<h1>{score >= 70 ? 'Congratulations!' : 'Assessment Complete'}</h1>
-				<p class="results-subtitle">Module {selectedModule.id}: {selectedModule.title}</p>
+				<h1
+					class="font-heading mb-2 bg-gradient-to-br from-white to-gray-300 bg-clip-text text-4xl font-black text-transparent drop-shadow-sm md:text-6xl"
+				>
+					{score >= 70 ? 'Congratulations!' : 'Assessment Complete'}
+				</h1>
+				<p class="results-subtitle font-heading mb-12 text-2xl text-[#E8F4FA]/90 opacity-90">
+					Module {selectedModule.id}: {selectedModule.title}
+				</p>
 			</div>
 
-			<div class="score-card">
-				<div class="score-display">
-					<div class="score-circle" style="--score: {score}">
-						<svg viewBox="0 0 100 100">
-							<circle cx="50" cy="50" r="45" class="score-bg"></circle>
+			<div
+				class="score-card relative mb-12 flex flex-col items-center gap-8 overflow-hidden rounded-[30px] bg-white p-8 shadow-2xl md:flex-row md:gap-16 md:p-12"
+			>
+				<div
+					class="absolute top-0 left-0 h-2 w-full bg-gradient-to-r from-[#2196f3] to-[#1976d2]"
+				></div>
+				<div class="score-display shrink-0">
+					<div class="score-circle relative flex h-[200px] w-[200px] items-center justify-center">
+						<svg viewBox="0 0 100 100" class="h-full w-full -rotate-90">
+							<circle cx="50" cy="50" r="45" class="score-bg fill-none stroke-[#E9ECEF] stroke-[8]"
+							></circle>
 							<circle
 								cx="50"
 								cy="50"
 								r="45"
-								class="score-progress"
-								style="stroke-dashoffset: {283 - (283 * score) / 100}"
+								class="score-progress fill-none stroke-[#2196f3] stroke-[8] transition-all duration-1500 ease-out"
+								style="stroke-dasharray: 283; stroke-dashoffset: {283 - (283 * score) / 100}"
+								stroke-linecap="round"
 							></circle>
 						</svg>
-						<div class="score-number">{score}%</div>
+						<div class="score-number font-heading absolute text-6xl font-black text-[#222831]">
+							{score}%
+						</div>
 					</div>
 				</div>
-				<div class="score-details">
-					<div class="stat">
-						<span class="stat-label">Correct Answers</span>
-						<span class="stat-value"
+				<div class="score-details flex flex-1 flex-col gap-8">
+					<div class="stat flex flex-col gap-2 text-left">
+						<span class="stat-label text-sm font-semibold tracking-widest text-[#666] uppercase"
+							>Correct Answers</span
+						>
+						<span class="stat-value font-heading text-4xl font-extrabold text-[#222831]"
 							>{userAnswers.filter((a, i) => a === selectedModule?.questions[i].correctAnswer)
 								.length} / {selectedModule?.questions.length}</span
 						>
 					</div>
-					<div class="stat">
-						<span class="stat-label">Performance</span>
+					<div class="stat flex flex-col gap-2 text-left">
+						<span class="stat-label text-sm font-semibold tracking-widest text-[#666] uppercase"
+							>Performance</span
+						>
 						<span
-							class="stat-value"
-							class:excellent={score >= 90}
-							class:good={score >= 70 && score < 90}
-							class:needs-improvement={score < 70}
+							class="stat-value font-heading text-4xl font-extrabold"
+							class:text-green-500={score >= 90}
+							class:text-[#2196f3]={score >= 70 && score < 90}
+							class:text-[#ef4444]={score < 70}
 						>
 							{score >= 90 ? 'Excellent' : score >= 70 ? 'Good' : 'Needs Improvement'}
 						</span>
@@ -503,22 +616,36 @@
 			</div>
 
 			{#if aiFeedback || isLoadingFeedback}
-				<div class="ai-feedback-section">
-					<h3>🤖 Feedback</h3>
+				<div
+					class="ai-feedback-section mb-8 rounded-3xl border border-black/5 bg-gradient-to-br from-white to-[#F8F9FA] p-8 shadow-lg"
+				>
+					<h3
+						class="font-heading mb-6 flex items-center gap-3 text-2xl font-extrabold text-[#2d3748]"
+					>
+						🤖 Feedback
+					</h3>
 					{#if isLoadingFeedback}
-						<div class="loading-feedback">
-							<div class="spinner"></div>
+						<div class="loading-feedback flex flex-col items-center gap-4 p-8 text-[#718096]">
+							<div
+								class="spinner h-10 w-10 animate-spin rounded-full border-4 border-[#e2e8f0] border-t-[#3182ce]"
+							></div>
 							<p>Analyzing your performance...</p>
 						</div>
 					{:else if aiFeedback}
-						<div class="feedback-grid">
+						<div class="feedback-grid grid gap-6 text-left">
 							{#each aiFeedback as item}
-								<div class="feedback-card">
-									<h4>{item.questionText}</h4>
-									<div class="explanation">
+								<div
+									class="feedback-card rounded-2xl border border-[#e2e8f0] bg-white p-6 shadow-sm transition-transform duration-200 hover:-translate-y-1 hover:shadow-md"
+								>
+									<h4 class="font-heading mb-4 text-lg leading-snug font-bold text-[#2d3748]">
+										{item.questionText}
+									</h4>
+									<div class="explanation prose prose-sm mb-4 text-[#4a5568]">
 										{@html formatAiExplanation(item.explanation)}
 									</div>
-									<div class="review-topic">
+									<div
+										class="review-topic inline-flex items-center gap-2 rounded-lg bg-[#fff5f5] px-4 py-2 text-sm font-semibold text-[#e53e3e]"
+									>
 										<span class="topic-label">💡 Review Topic:</span>
 										{item.topicToReview}
 									</div>
@@ -529,8 +656,11 @@
 				</div>
 			{/if}
 
-			<div class="results-actions">
-				<button class="action-button primary" onclick={toggleReview}>
+			<div class="results-actions mb-12 flex flex-col justify-center gap-4 md:flex-row md:gap-6">
+				<button
+					class="action-button primary font-heading flex cursor-pointer items-center justify-center gap-3 rounded-2xl border-2 border-transparent bg-[#1b3558] px-8 py-4 text-lg font-bold text-white shadow-lg transition-all hover:-translate-y-1 hover:bg-[#254675] hover:shadow-xl"
+					onclick={toggleReview}
+				>
 					<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
 						<path
 							d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"
@@ -542,7 +672,10 @@
 					</svg>
 					{showReview ? 'Hide Review' : 'Review Answers'}
 				</button>
-				<button class="action-button secondary" onclick={retakeTest}>
+				<button
+					class="action-button secondary font-heading flex cursor-pointer items-center justify-center gap-3 rounded-2xl border-2 border-[#1b3558] bg-white px-8 py-4 text-lg font-bold text-[#1b3558] transition-all hover:-translate-y-1 hover:bg-[#F8F9FA] hover:shadow-md"
+					onclick={retakeTest}
+				>
 					<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
 						<path
 							d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.2"
@@ -553,7 +686,11 @@
 					</svg>
 					Retake Module
 				</button>
-				<button type="button" class="action-button" onclick={backToSelection}>
+				<button
+					type="button"
+					class="action-button font-heading flex cursor-pointer items-center justify-center gap-3 rounded-2xl border-2 border-transparent bg-[#F8F9FA] px-8 py-4 text-lg font-bold text-[#1b3558] transition-all hover:-translate-y-1 hover:bg-[#e9ecef]"
+					onclick={backToSelection}
+				>
 					<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
 						<path
 							d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"
@@ -567,36 +704,64 @@
 			</div>
 
 			{#if showReview}
-				<div class="review-section">
-					<h3>📝 Answer Review</h3>
+				<div class="review-section mx-auto max-w-[800px] text-left">
+					<h3 class="font-heading mb-8 text-3xl font-extrabold text-[#E8F4FA] drop-shadow-sm">
+						📝 Answer Review
+					</h3>
 					{#each selectedModule.questions as question, idx}
 						<div
-							class="review-question"
-							class:correct={userAnswers[idx] === question.correctAnswer}
-							class:incorrect={userAnswers[idx] !== question.correctAnswer}
+							class="review-question mb-6 rounded-[20px] border-l-4 bg-white p-6 shadow-sm transition-all hover:translate-x-1 {userAnswers[
+								idx
+							] === question.correctAnswer
+								? 'border-green-500 bg-green-50/50'
+								: 'border-[#ff3c7e] bg-[#ff3c7e]/5'}"
 						>
-							<div class="review-header">
-								<span class="review-number">Q{idx + 1}</span>
-								<span class="review-status">
+							<div class="review-header mb-5 flex items-center justify-between">
+								<span class="review-number font-heading text-lg font-black text-[#222831]"
+									>Q{idx + 1}</span
+								>
+								<span
+									class="review-status font-body text-sm font-bold tracking-wide uppercase {userAnswers[
+										idx
+									] === question.correctAnswer
+										? 'text-green-600'
+										: 'text-[#ff3c7e]'}"
+								>
 									{userAnswers[idx] === question.correctAnswer ? '✓ Correct' : '✗ Incorrect'}
 								</span>
 							</div>
-							<p class="review-text">{question.text}</p>
-							<div class="review-options">
+							<p
+								class="review-text font-body mb-6 text-justify text-[1.05rem] leading-relaxed text-[#222831]"
+							>
+								{question.text}
+							</p>
+							<div class="review-options flex flex-col gap-4">
 								{#each question.options as option, optIdx}
 									<div
-										class="review-option"
-										class:user-answer={userAnswers[idx] === optIdx}
-										class:correct-answer={question.correctAnswer === optIdx}
+										class="review-option relative flex items-center gap-4 rounded-2xl border-2 bg-white px-4 py-3 transition-all {question.correctAnswer ===
+										optIdx
+											? 'border-green-500 bg-green-100/30 shadow-sm'
+											: userAnswers[idx] === optIdx && userAnswers[idx] !== question.correctAnswer
+												? 'border-[#ff3c7e] bg-[#ff3c7e]/10 shadow-sm'
+												: 'border-gray-200/50'}"
 									>
-										<span class="option-label">{String.fromCharCode(65 + optIdx)}</span>
+										<span class="option-label font-body">{String.fromCharCode(65 + optIdx)}</span>
 										<span class="option-text">{option}</span>
 										{#if userAnswers[idx] === optIdx && question.correctAnswer === optIdx}
-											<span class="badge correct">Your Answer ✓</span>
+											<span
+												class="badge font-body ml-auto rounded-xl bg-gradient-to-br from-green-500 to-green-600 px-4 py-1.5 text-xs font-bold tracking-wide text-white uppercase shadow-sm"
+												>Your Answer ✓</span
+											>
 										{:else if userAnswers[idx] === optIdx}
-											<span class="badge incorrect">Your Answer</span>
+											<span
+												class="badge font-body ml-auto rounded-xl bg-gradient-to-br from-[#ff3c7e] to-[#e91e63] px-4 py-1.5 text-xs font-bold tracking-wide text-white uppercase shadow-sm"
+												>Your Answer</span
+											>
 										{:else if question.correctAnswer === optIdx}
-											<span class="badge correct">Correct Answer</span>
+											<span
+												class="badge font-body ml-auto rounded-xl bg-gradient-to-br from-[#2196f3] to-[#1976d2] px-4 py-1.5 text-xs font-bold tracking-wide text-white uppercase shadow-sm"
+												>Correct Answer</span
+											>
 										{/if}
 									</div>
 								{/each}
@@ -608,1258 +773,3 @@
 		</div>
 	{/if}
 </div>
-
-<style>
-	.page-container {
-		position: relative;
-		min-height: 100vh;
-		/* Align padding with the standard used across pages (Hangar/Overhaul) */
-		padding: var(--spacing-xxl) var(--container-side-padding) var(--spacing-xl); /* increase side padding to align description text */
-		max-width: 1400px;
-		margin: 0 auto;
-		z-index: 5;
-	}
-
-	/* Module Selection Styles */
-	.content-wrapper {
-		max-width: 1200px;
-		margin: 0 auto;
-	}
-
-	.page-title {
-		font-family: var(--font-heading), 'Poppins', sans-serif;
-		font-size: clamp(2rem, 4vw, 3.5rem);
-		font-weight: 900;
-		margin: 0 0 1.5rem 0;
-		text-align: center;
-		/* Unified gradient is opt-in via `.gradient-animated` */
-		color: var(--font-secondary);
-		filter: drop-shadow(0 4px 20px rgba(0, 0, 0, 0.9));
-		letter-spacing: -1px;
-	}
-
-	/* gradient-flash keyframes moved to global app.css */
-
-	.intro-text {
-		font-family: var(--font-heading), 'Poppins', sans-serif;
-		/* Match Hangar Zone hero description sizing for consistent layout */
-		font-size: clamp(1.1rem, 2vw, 1.3rem);
-		line-height: 1.8;
-		color: var(--font-primary);
-		max-width: 900px;
-		margin: 0 auto 2rem auto;
-		text-align: justify;
-		background: transparent;
-		padding: 0 var(--card-padding);
-		border-radius: 0;
-		box-shadow: none;
-		border: none;
-	}
-
-	.info-card {
-		background: #ffffff;
-		border-radius: 25px;
-		padding: var(--card-padding-mobile);
-		margin-bottom: 2rem;
-		box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
-		border: 2px solid rgba(255, 255, 255, 0.5);
-		display: flex;
-		gap: var(--card-padding-mobile);
-		align-items: center;
-		transition: all 0.3s ease;
-	}
-
-	.info-card:hover {
-		box-shadow: 0 12px 40px rgba(0, 0, 0, 0.2);
-		transform: translateY(-4px);
-	}
-
-	.info-content {
-		flex: 1;
-	}
-
-	.info-content h3 {
-		font-family: var(--font-heading), 'Poppins', sans-serif;
-		color: var(--font-primary);
-		font-size: 1.4rem;
-		margin: 0 0 1.5rem 0;
-		font-weight: 900;
-	}
-
-	.info-content ul {
-		list-style: none;
-		padding: 0;
-		margin: 0;
-	}
-
-	.info-content ul li {
-		font-family: var(--font-body), 'Inter', sans-serif;
-		color: var(--font-primary);
-		font-size: 1rem;
-		line-height: 1.8;
-		margin-bottom: 0.75rem;
-		padding-left: 2rem;
-		position: relative;
-	}
-
-	.info-content ul li::before {
-		content: '▶';
-		position: absolute;
-		left: 0.5rem;
-		color: var(--testbay-accent);
-		font-size: 0.8rem;
-	}
-
-	.jaja-character {
-		flex-shrink: 0;
-		width: 180px;
-		height: 180px;
-		display: flex;
-		align-items: center;
-		justify-content: center;
-	}
-
-	.jaja-character img {
-		max-width: 100%;
-		height: auto;
-		filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.1));
-	}
-
-	.test-grid {
-		display: grid;
-		grid-template-columns: repeat(3, 1fr);
-		gap: var(--card-padding-mobile);
-	}
-
-	.test-card {
-		background: #ffffff;
-		border: 3px solid;
-		border-radius: 25px;
-		/* Use consistent padding with other module cards across the site */
-		padding: var(--card-padding);
-		text-align: center;
-		transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-		transition-delay: var(--delay, 0s);
-		display: flex;
-		flex-direction: column;
-		position: relative;
-		overflow: hidden;
-		cursor: pointer;
-	}
-
-	.test-card::before {
-		content: '';
-		position: absolute;
-		top: 0;
-		left: -100%;
-		width: 100%;
-		height: 100%;
-		background: linear-gradient(
-			90deg,
-			transparent,
-			rgba(var(--navbar-accent-rgb), 0.2),
-			transparent
-		);
-		transition: left 0.6s ease;
-	}
-
-	.test-card:hover::before {
-		left: 100%;
-	}
-
-	.test-card.module-1 {
-		border-color: #ffa500;
-	}
-
-	.test-card.module-2 {
-		border-color: var(--font-accent-green);
-	}
-
-	.test-card.module-3 {
-		border-color: #2196f3;
-	}
-
-	.test-card:hover {
-		transform: translateY(-8px) scale(1.02);
-		box-shadow: 0 20px 60px rgba(0, 0, 0, 0.25);
-	}
-
-	.module-label {
-		font-family: var(--font-body), 'Inter', sans-serif;
-		font-size: 0.95rem;
-		margin: 0 0 0.75rem 0;
-		font-weight: 600;
-		letter-spacing: 2px;
-		text-transform: uppercase;
-	}
-
-	.test-card.module-1 .module-label {
-		color: #ffa500;
-	}
-
-	.test-card.module-2 .module-label {
-		color: var(--font-accent-green);
-	}
-
-	.test-card.module-3 .module-label {
-		color: #2196f3;
-	}
-
-	.module-title {
-		font-family: var(--font-heading), 'Poppins', sans-serif;
-		color: var(--font-primary);
-		/* Larger module title size — aligned more closely to Hangar module titles */
-		font-size: 1.6rem;
-		margin: 0 0 1.5rem 0;
-		font-weight: 900;
-		line-height: 1.3;
-		/* Module title gradient is opt-in via `.gradient-animated` */
-		background: transparent;
-		color: var(--font-primary);
-	}
-
-	.module-description {
-		font-family: var(--font-body), 'Inter', sans-serif;
-		color: var(--font-primary);
-		/* Match Hangar description sizing and rhythm */
-		font-size: clamp(1rem, 1.9vw, 1.15rem);
-		margin-bottom: auto;
-		line-height: 1.75;
-		flex-grow: 1;
-		opacity: 0.9;
-		text-align: justify;
-	}
-
-	.start-button {
-		margin-top: 2rem;
-		padding: var(--spacing-sm) var(--spacing-lg);
-		font-family: var(--font-heading), 'Poppins', sans-serif;
-		font-weight: 700;
-		font-size: 1rem;
-		letter-spacing: 1px;
-		text-transform: uppercase;
-		border: none;
-		border-radius: 12px;
-		cursor: pointer;
-		transition: all 0.3s ease;
-		box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-	}
-
-	.test-card.module-1 .start-button {
-		background: linear-gradient(135deg, #ffa500 0%, #ff8c00 100%);
-		color: var(--font-secondary);
-	}
-
-	.test-card.module-2 .start-button {
-		background: linear-gradient(135deg, var(--font-accent-green) 0%, #45a049 100%);
-		color: var(--font-secondary);
-	}
-
-	.test-card.module-3 .start-button {
-		background: linear-gradient(135deg, #2196f3 0%, #1976d2 100%);
-		color: var(--font-secondary);
-	}
-
-	.start-button:hover {
-		transform: scale(1.05);
-		box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
-	}
-
-	.start-button:active {
-		transform: scale(0.98);
-	}
-
-	.subtitle {
-		font-family: 'Roboto', sans-serif;
-		color: #666;
-		margin-bottom: 2rem;
-		font-size: 1.1rem;
-	}
-
-	.test-info {
-		display: flex;
-		justify-content: center;
-		gap: 1rem;
-		font-family: 'Roboto', sans-serif;
-		font-size: 0.9rem;
-		color: #666;
-		margin-bottom: 1.5rem;
-	}
-
-	.test-button {
-		background: #38c172;
-		color: white;
-		border: none;
-		padding: 0.75rem 2rem;
-		border-radius: 0.5rem;
-		font-family: 'Roboto', sans-serif;
-		font-size: 1rem;
-		font-weight: 600;
-		cursor: none;
-		transition: all 0.3s ease;
-		width: 100%;
-		margin-top: auto;
-	}
-
-	.test-button:hover {
-		background: #2da85f;
-		transform: scale(1.05);
-	}
-
-	/* Quiz Styles */
-	.quiz-container {
-		max-width: 900px;
-		margin: 0 auto;
-		background: #ffffff;
-		border-radius: 25px;
-		padding: var(--card-padding);
-		box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
-		border: 2px solid rgba(255, 255, 255, 0.5);
-	}
-
-	.quiz-header {
-		margin-bottom: 2rem;
-	}
-
-	.back-button {
-		background: rgba(118, 102, 127, 0.15);
-		border: 2px solid rgba(118, 102, 127, 0.3);
-		border-radius: 12px;
-		color: var(--font-primary);
-		font-family: var(--font-body), 'Inter', sans-serif;
-		font-size: 0.95rem;
-		font-weight: 600;
-		display: flex;
-		align-items: center;
-		gap: 0.5rem;
-		cursor: pointer;
-		padding: 0.75rem 1.25rem;
-		margin-bottom: 1.5rem;
-		transition: all 0.3s ease;
-	}
-
-	.back-button:hover {
-		background: rgba(118, 102, 127, 0.25);
-		border-color: var(--testbay-accent);
-		transform: translateX(-5px);
-	}
-
-	.module-title {
-		display: flex;
-		align-items: center;
-		gap: 1rem;
-	}
-
-	.module-icon {
-		font-size: 2.5rem;
-	}
-
-	.module-title h2 {
-		font-family: var(--font-heading), 'Poppins', sans-serif;
-		color: var(--font-primary);
-		font-size: 1.8rem;
-		font-weight: 900;
-		margin: 0;
-		/* Apply moving gradient to quiz module header titles too */
-		background: linear-gradient(
-			90deg,
-			var(--navbar-accent, var(--ui-yellow)) 0%,
-			var(--font-accent-cyan) 50%,
-			var(--navbar-accent, var(--ui-yellow)) 100%
-		);
-		background-size: 200% 100%;
-		-webkit-background-clip: text;
-		-webkit-text-fill-color: transparent;
-		background-clip: text;
-		animation: gradient-flash var(--gradient-duration) ease-in-out infinite;
-	}
-
-	.progress-bar {
-		height: 10px;
-		background: rgba(224, 224, 224, 0.5);
-		border-radius: 8px;
-		overflow: hidden;
-		margin-bottom: 0.75rem;
-		box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
-	}
-
-	.progress-fill {
-		height: 100%;
-		background: linear-gradient(90deg, #2196f3 0%, #1976d2 100%);
-		transition: width 0.4s ease;
-		box-shadow: 0 2px 4px rgba(33, 150, 243, 0.3);
-	}
-
-	.progress-text {
-		font-family: var(--font-body), 'Inter', sans-serif;
-		color: var(--font-primary);
-		font-size: 0.95rem;
-		font-weight: 600;
-		text-align: right;
-		margin-bottom: 2rem;
-	}
-
-	.question-card {
-		background: #ffffff;
-		border-radius: 20px;
-		padding: var(--card-padding);
-		margin-bottom: 2rem;
-		border: 1px solid rgba(255, 255, 255, 0.6);
-		box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
-	}
-
-	.question-text {
-		font-family: var(--font-body), 'Inter', sans-serif;
-		color: var(--font-primary);
-		font-size: 1.25rem;
-		line-height: 1.7;
-		margin: 0 0 2rem 0;
-		font-weight: 600;
-		text-align: justify;
-	}
-
-	.options-list {
-		display: flex;
-		flex-direction: column;
-		gap: 1rem;
-	}
-
-	.option-item {
-		display: flex;
-		align-items: center;
-		gap: 1rem;
-		padding: 1.25rem 1.5rem;
-		background: #ffffff;
-		border: 2px solid rgba(224, 224, 224, 0.5);
-		border-radius: 15px;
-		cursor: pointer;
-		transition: all 0.3s ease;
-	}
-
-	.option-item:hover {
-		border-color: var(--testbay-accent);
-		background: rgba(118, 102, 127, 0.1);
-		transform: translateX(5px);
-		box-shadow: 0 4px 12px rgba(118, 102, 127, 0.15);
-	}
-
-	.option-item.selected {
-		border-color: #2196f3;
-		background: rgba(33, 150, 243, 0.15);
-		box-shadow: 0 4px 12px rgba(33, 150, 243, 0.2);
-	}
-
-	.option-item input[type='radio'] {
-		display: none;
-	}
-
-	.option-label {
-		font-family: var(--font-heading), 'Poppins', sans-serif;
-		font-weight: 900;
-		color: var(--font-primary);
-		font-size: 1.15rem;
-		min-width: 35px;
-		text-align: center;
-	}
-
-	.option-text {
-		font-family: var(--font-body), 'Inter', sans-serif;
-		color: var(--font-primary);
-		flex: 1;
-		line-height: 1.6;
-		font-size: 1rem;
-		text-align: justify;
-	}
-
-	.navigation-buttons {
-		display: flex;
-		justify-content: space-between;
-		gap: 1rem;
-		margin-bottom: 2rem;
-	}
-
-	.nav-button {
-		display: flex;
-		align-items: center;
-		gap: 0.75rem;
-		padding: var(--spacing-sm) var(--spacing-lg);
-		border: none;
-		border-radius: 12px;
-		font-family: var(--font-heading), 'Poppins', sans-serif;
-		font-size: 1rem;
-		font-weight: 700;
-		text-transform: uppercase;
-		letter-spacing: 0.5px;
-		cursor: pointer;
-		transition: all 0.3s ease;
-		box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-	}
-
-	.nav-button.primary {
-		background: linear-gradient(135deg, #2196f3 0%, #1976d2 100%);
-		color: var(--font-secondary);
-	}
-
-	.nav-button.primary:hover:not(:disabled) {
-		background: linear-gradient(135deg, #1976d2 0%, #1565c0 100%);
-		transform: translateY(-2px);
-		box-shadow: 0 6px 16px rgba(33, 150, 243, 0.3);
-	}
-
-	.nav-button.secondary {
-		background: #f5f5f5;
-		color: var(--font-primary);
-		border: 2px solid rgba(118, 102, 127, 0.3);
-	}
-
-	.nav-button.secondary:hover:not(:disabled) {
-		background: rgba(118, 102, 127, 0.2);
-		border-color: var(--testbay-accent);
-		transform: translateY(-2px);
-	}
-
-	.nav-button:disabled {
-		opacity: 0.4;
-		cursor: not-allowed;
-		transform: none !important;
-	}
-
-	.submit-button {
-		background: linear-gradient(135deg, #ff3c7e 0%, #e91e63 100%);
-	}
-
-	.submit-button:hover:not(:disabled) {
-		background: linear-gradient(135deg, #e91e63 0%, #d81b60 100%);
-		box-shadow: 0 6px 20px rgba(255, 60, 126, 0.4);
-	}
-
-	.question-nav {
-		background: #ffffff;
-		padding: var(--spacing-md);
-		border-radius: 20px;
-		border: 1px solid rgba(255, 255, 255, 0.6);
-		box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
-	}
-
-	.question-nav p {
-		display: none;
-	}
-
-	.question-dots {
-		display: flex;
-		flex-wrap: wrap;
-		gap: 0.75rem;
-		justify-content: center;
-	}
-
-	.dot {
-		width: 42px;
-		height: 42px;
-		border-radius: 10px;
-		background: #ffffff;
-		border: 2px solid rgba(224, 224, 224, 0.5);
-		font-family: var(--font-heading), 'Poppins', sans-serif;
-		font-size: 0.9rem;
-		font-weight: 700;
-		color: var(--font-primary);
-		cursor: pointer;
-		transition: all 0.3s ease;
-		display: flex;
-		align-items: center;
-		justify-content: center;
-	}
-
-	.dot:hover {
-		border-color: var(--testbay-accent);
-		background: rgba(118, 102, 127, 0.15);
-		transform: scale(1.1);
-	}
-
-	.dot.answered {
-		background: linear-gradient(135deg, #2196f3 0%, #1976d2 100%);
-		border-color: #2196f3;
-		color: var(--font-secondary);
-		box-shadow: 0 4px 12px rgba(33, 150, 243, 0.3);
-	}
-
-	.dot.current {
-		border-color: var(--testbay-accent);
-		border-width: 3px;
-		box-shadow: 0 0 0 3px rgba(118, 102, 127, 0.2);
-	}
-
-	/* Results Styles */
-	.results-container {
-		max-width: 900px;
-		margin: 0 auto;
-		background: #ffffff;
-		border-radius: 25px;
-		padding: var(--card-padding);
-		box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
-		border: 2px solid rgba(255, 255, 255, 0.5);
-	}
-
-	.results-header {
-		text-align: center;
-		margin-bottom: 3rem;
-	}
-
-	.results-icon {
-		font-size: 5rem;
-		margin-bottom: 1.5rem;
-		filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.1));
-	}
-
-	.results-header h1 {
-		font-family: var(--font-heading), 'Poppins', sans-serif;
-		color: var(--font-primary);
-		font-size: 2.8rem;
-		font-weight: 900;
-		margin: 0 0 1rem 0;
-		background: linear-gradient(90deg, var(--testbay-accent) 0%, #a896b3 100%);
-		background-size: 200% 100%;
-		-webkit-background-clip: text;
-		-webkit-text-fill-color: transparent;
-		background-clip: text;
-	}
-
-	.results-subtitle {
-		font-family: var(--font-body), 'Inter', sans-serif;
-		color: var(--font-primary);
-		font-size: 1.15rem;
-		opacity: 0.8;
-	}
-
-	.score-card {
-		display: flex;
-		gap: 3rem;
-		align-items: center;
-		justify-content: center;
-		padding: 2.5rem;
-		background: #ffffff;
-		border-radius: 20px;
-		margin-bottom: 2.5rem;
-		border: 1px solid rgba(255, 255, 255, 0.6);
-		box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
-	}
-
-	.score-display {
-		flex-shrink: 0;
-	}
-
-	.score-circle {
-		position: relative;
-		width: 160px;
-		height: 160px;
-	}
-
-	.score-circle svg {
-		transform: rotate(-90deg);
-		width: 100%;
-		height: 100%;
-	}
-
-	.score-bg {
-		fill: none;
-		stroke: #e0e0e0;
-		stroke-width: 8;
-	}
-
-	.score-progress {
-		fill: none;
-		stroke: var(--font-accent-green);
-		stroke-width: 10;
-		stroke-linecap: round;
-		stroke-dasharray: 283;
-		transition: stroke-dashoffset 1s ease;
-		filter: drop-shadow(0 2px 4px rgba(56, 193, 114, 0.3));
-	}
-
-	.score-number {
-		position: absolute;
-		top: 50%;
-		left: 50%;
-		transform: translate(-50%, -50%);
-		font-family: var(--font-heading), 'Poppins', sans-serif;
-		font-size: 2.8rem;
-		font-weight: 900;
-		color: var(--font-primary);
-	}
-
-	.score-details {
-		display: flex;
-		flex-direction: column;
-		gap: 1.75rem;
-	}
-
-	.stat {
-		display: flex;
-		flex-direction: column;
-		gap: 0.5rem;
-	}
-
-	.stat-label {
-		font-family: var(--font-body), 'Inter', sans-serif;
-		color: var(--font-primary);
-		font-size: 0.95rem;
-		font-weight: 600;
-		opacity: 0.8;
-		text-transform: uppercase;
-		letter-spacing: 0.5px;
-	}
-
-	.stat-value {
-		font-family: var(--font-heading), 'Poppins', sans-serif;
-		color: var(--font-primary);
-		font-size: 1.5rem;
-		font-weight: 700;
-	}
-
-	.stat-value.excellent {
-		color: #38c172;
-	}
-
-	.stat-value.good {
-		color: #ffa726;
-	}
-
-	.stat-value.needs-improvement {
-		color: #ff3c7e;
-	}
-
-	.ai-feedback-section {
-		background: #ffffff;
-		border-radius: 20px;
-		padding: var(--spacing-lg);
-		margin-bottom: 2.5rem;
-		border: 2px solid var(--testbay-accent);
-		box-shadow: 0 4px 16px rgba(118, 102, 127, 0.15);
-	}
-
-	.ai-feedback-section h3 {
-		font-family: var(--font-heading), 'Poppins', sans-serif;
-		color: var(--font-primary);
-		font-size: 1.5rem;
-		font-weight: 900;
-		margin: 0 0 1.5rem 0;
-		display: flex;
-		align-items: center;
-		gap: 0.75rem;
-	}
-
-	.feedback-grid {
-		display: grid;
-		gap: 1.5rem;
-	}
-
-	.feedback-card {
-		background: #ffffff;
-		border-radius: 15px;
-		padding: 1.5rem;
-		border-left: 4px solid var(--testbay-accent);
-		box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-	}
-
-	.feedback-card h4 {
-		font-family: var(--font-body), 'Inter', sans-serif;
-		font-weight: 700;
-		color: var(--font-primary);
-		margin: 0 0 0.75rem 0;
-		font-size: 1.1rem;
-	}
-
-	.explanation {
-		font-family: var(--font-body), 'Inter', sans-serif;
-		color: var(--font-primary);
-		line-height: 1.6;
-		margin: 0 0 1rem 0;
-		font-size: 1rem;
-		opacity: 0.9;
-		text-align: justify;
-	}
-
-	.explanation p {
-		margin: 0 0 0.75rem 0;
-	}
-
-	.review-topic {
-		background: rgba(118, 102, 127, 0.15);
-		padding: 0.75rem 1rem;
-		border-radius: 10px;
-		font-family: var(--font-body), 'Inter', sans-serif;
-		font-size: 0.95rem;
-		color: #223a5e;
-		display: inline-block;
-	}
-
-	.topic-label {
-		font-weight: 700;
-		color: var(--testbay-accent);
-		margin-right: 0.5rem;
-	}
-
-	.loading-feedback {
-		display: flex;
-		flex-direction: column;
-		align-items: center;
-		gap: 1rem;
-		padding: var(--spacing-lg);
-		color: #666;
-	}
-
-	.spinner {
-		width: 40px;
-		height: 40px;
-		border: 4px solid rgba(0, 0, 0, 0.1);
-		border-left-color: var(--testbay-accent);
-		border-radius: 50%;
-		animation: spin 1s linear infinite;
-	}
-
-	@keyframes spin {
-		to {
-			transform: rotate(360deg);
-		}
-	}
-
-	.results-actions {
-		display: flex;
-		gap: 1.5rem;
-		justify-content: center;
-		flex-wrap: wrap;
-		margin-bottom: 2.5rem;
-	}
-
-	.action-button {
-		display: flex;
-		align-items: center;
-		gap: 0.75rem;
-		padding: var(--spacing-sm) var(--spacing-lg);
-		border: 2px solid;
-		border-radius: 12px;
-		font-family: var(--font-heading), 'Poppins', sans-serif;
-		font-size: 1rem;
-		font-weight: 700;
-		text-transform: uppercase;
-		letter-spacing: 0.5px;
-		cursor: pointer;
-		transition: all 0.3s ease;
-		box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-	}
-
-	.action-button:hover {
-		transform: translateY(-4px);
-		box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
-	}
-
-	.action-button.primary {
-		background: linear-gradient(135deg, var(--font-accent-green) 0%, #45a049 100%);
-		color: var(--font-secondary);
-		border-color: var(--font-accent-green);
-	}
-
-	.action-button.primary:hover {
-		background: linear-gradient(135deg, #45a049 0%, #388e3c 100%);
-		border-color: #45a049;
-	}
-
-	.action-button.secondary {
-		background: linear-gradient(135deg, #ffa726 0%, #fb8c00 100%);
-		color: var(--font-secondary);
-		border-color: #ffa726;
-	}
-
-	.action-button.secondary:hover {
-		background: linear-gradient(135deg, #fb8c00 0%, #f57c00 100%);
-		border-color: #fb8c00;
-	}
-
-	/* Review Section */
-	.review-section {
-		margin-top: 2.5rem;
-		padding-top: 2.5rem;
-		border-top: 2px solid rgba(224, 224, 224, 0.5);
-	}
-
-	.review-section h3 {
-		font-family: var(--font-heading), 'Poppins', sans-serif;
-		color: var(--font-primary);
-		font-size: 1.8rem;
-		font-weight: 900;
-		margin: 0 0 2rem 0;
-	}
-
-	.review-question {
-		background: #ffffff;
-		border-radius: 20px;
-		padding: var(--spacing-lg);
-		margin-bottom: 1.5rem;
-		border-left: 5px solid;
-		border-color: rgba(224, 224, 224, 0.5);
-		box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-		transition: all 0.3s ease;
-	}
-
-	.review-question:hover {
-		transform: translateX(5px);
-	}
-
-	.review-question.correct {
-		border-left-color: var(--font-accent-green);
-		background: rgba(56, 193, 114, 0.05);
-	}
-
-	.review-question.incorrect {
-		border-left-color: #ff3c7e;
-		background: rgba(255, 60, 126, 0.05);
-	}
-
-	.review-header {
-		display: flex;
-		justify-content: space-between;
-		align-items: center;
-		margin-bottom: 1.25rem;
-	}
-
-	.review-number {
-		font-family: var(--font-heading), 'Poppins', sans-serif;
-		font-weight: 900;
-		color: var(--font-primary);
-		font-size: 1.15rem;
-	}
-
-	.review-status {
-		font-family: var(--font-body), 'Inter', sans-serif;
-		font-weight: 700;
-		font-size: 0.95rem;
-		text-transform: uppercase;
-		letter-spacing: 0.5px;
-	}
-
-	.review-question.correct .review-status {
-		color: var(--font-accent-green);
-	}
-
-	.review-question.incorrect .review-status {
-		color: #ff3c7e;
-	}
-
-	.review-text {
-		font-family: var(--font-body), 'Inter', sans-serif;
-		color: var(--font-primary);
-		line-height: 1.7;
-		margin: 0 0 1.5rem 0;
-		font-size: 1.05rem;
-		text-align: justify;
-	}
-
-	.review-options {
-		display: flex;
-		flex-direction: column;
-		gap: 1rem;
-	}
-
-	.review-option {
-		display: flex;
-		align-items: center;
-		gap: 1rem;
-		padding: var(--spacing-sm) var(--spacing-sm);
-		background: #ffffff;
-		border: 2px solid rgba(224, 224, 224, 0.5);
-		border-radius: 15px;
-		position: relative;
-		transition: all 0.3s ease;
-	}
-
-	.review-option.correct-answer {
-		border-color: var(--font-accent-green);
-		background: rgba(56, 193, 114, 0.1);
-		box-shadow: 0 2px 8px rgba(56, 193, 114, 0.15);
-	}
-
-	.review-option.user-answer:not(.correct-answer) {
-		border-color: #ff3c7e;
-		background: rgba(255, 60, 126, 0.08);
-		box-shadow: 0 2px 8px rgba(255, 60, 126, 0.15);
-	}
-
-	.badge {
-		margin-left: auto;
-		padding: 0.4rem 1rem;
-		border-radius: 12px;
-		font-family: var(--font-body), 'Inter', sans-serif;
-		font-size: 0.8rem;
-		font-weight: 700;
-		text-transform: uppercase;
-		letter-spacing: 0.5px;
-		box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-	}
-
-	.badge.correct {
-		background: linear-gradient(135deg, var(--font-accent-green) 0%, #45a049 100%);
-		color: var(--font-secondary);
-	}
-
-	.badge.incorrect {
-		background: linear-gradient(135deg, #ff3c7e 0%, #e91e63 100%);
-		color: var(--font-secondary);
-	}
-	/* Responsive Design */
-	@media (max-width: 1024px) {
-		.test-grid {
-			grid-template-columns: 1fr;
-			gap: 2rem;
-		}
-
-		.info-card {
-			flex-direction: column;
-			padding: var(--spacing-lg);
-		}
-
-		.jaja-character {
-			width: 150px;
-			height: 150px;
-		}
-
-		.page-title {
-			font-size: clamp(2.5rem, 7vw, 4rem);
-		}
-
-		.intro-text {
-			padding: var(--spacing-md) var(--spacing-lg);
-			font-size: 1.1rem;
-		}
-	}
-
-	@media (max-width: 768px) {
-		.page-container {
-			padding: var(--spacing-sm);
-		}
-
-		.content-wrapper {
-			padding: 0;
-		}
-
-		.page-title {
-			font-size: clamp(2rem, 10vw, 3rem);
-			margin-bottom: 1.5rem;
-		}
-
-		.intro-text {
-			padding: 1.25rem 1.5rem;
-			font-size: 1rem;
-			margin-bottom: 1.5rem;
-		}
-
-		.info-card {
-			padding: var(--spacing-md);
-			margin-bottom: 2rem;
-		}
-
-		.info-content h3 {
-			font-size: 1.1rem;
-			margin-bottom: 1rem;
-		}
-
-		.info-content ul li {
-			font-size: 0.9rem;
-			padding-left: 1.75rem;
-		}
-
-		.jaja-character {
-			width: 120px;
-			height: 120px;
-		}
-
-		.test-grid {
-			gap: 1.5rem;
-		}
-
-		.test-card {
-			padding: var(--card-padding-mobile);
-		}
-
-		.module-title {
-			font-size: 1.3rem;
-		}
-
-		.module-description {
-			font-size: 1rem;
-		}
-
-		.start-button {
-			padding: 0.875rem 1.75rem;
-			font-size: 0.95rem;
-		}
-
-		.quiz-container,
-		.results-container {
-			padding: var(--spacing-md);
-		}
-
-		.page-title {
-			font-size: 2.5rem;
-		}
-
-		.intro-text {
-			font-size: 0.9rem;
-		}
-
-		.info-card {
-			padding: var(--spacing-md);
-			border-radius: 1.5rem;
-		}
-
-		.info-content h3 {
-			font-size: 1rem;
-		}
-
-		.info-content ul li {
-			font-size: 0.85rem;
-		}
-
-		.jaja-character {
-			width: 120px;
-			height: 120px;
-		}
-
-		.test-grid {
-			grid-template-columns: 1fr;
-		}
-
-		.test-card {
-			padding: 1.5rem;
-		}
-
-		.module-title {
-			font-size: 1.1rem;
-		}
-
-		.module-description {
-			font-size: 0.95rem;
-		}
-
-		.score-card {
-			flex-direction: column;
-			gap: 1.5rem;
-		}
-
-		.navigation-buttons {
-			flex-direction: column;
-		}
-
-		.results-actions {
-			flex-direction: column;
-		}
-
-		.action-button {
-			width: 100%;
-			justify-content: center;
-		}
-	}
-
-	/* Scroll Animations */
-	.animate-on-scroll {
-		opacity: 0;
-		transform: translateY(30px);
-		transition:
-			opacity 0.6s ease-out,
-			transform 0.6s ease-out;
-	}
-
-	.animate-on-scroll.visible {
-		opacity: 1;
-		transform: translateY(0);
-	}
-
-	/* Parallax Background Styles */
-	.parallax-background-system {
-		position: fixed;
-		top: 0;
-		left: 0;
-		width: 100%;
-		height: 100vh;
-		z-index: 0;
-		overflow: hidden;
-		background: #87ceeb;
-	}
-
-	.parallax-layer {
-		position: absolute;
-		top: 0;
-		left: 0;
-		width: 100%;
-		height: 100%;
-		will-change: transform;
-	}
-
-	.sky-layer {
-		z-index: 1;
-	}
-
-	.far-clouds-layer {
-		z-index: 2;
-	}
-
-	.mid-clouds-layer {
-		z-index: 3;
-	}
-
-	.near-clouds-layer {
-		z-index: 4;
-	}
-
-	/* Bottom Navigation */
-	.bottom-nav {
-		display: grid;
-		grid-auto-flow: column;
-		grid-auto-columns: max-content;
-		justify-content: center;
-		align-items: center;
-		gap: 1.5rem;
-		margin-top: 3rem;
-		padding-top: 1.5rem;
-		border-top: 2px solid rgba(118, 102, 127, 0.2);
-	}
-
-	.nav-link {
-		display: flex;
-		align-items: center;
-		gap: 0.5rem;
-		padding: 0.8rem 1.5rem;
-		background: rgba(255, 255, 255, 0.9);
-		backdrop-filter: blur(10px);
-		border: 2px solid rgba(118, 102, 127, 0.3);
-		border-radius: 10px;
-		color: var(--font-primary);
-		font-weight: 600;
-		transition: all 0.3s ease;
-		width: fit-content;
-		min-width: 160px;
-		cursor: pointer;
-		box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-		text-decoration: none;
-	}
-
-	.nav-link:not(:disabled):hover {
-		border-color: var(--testbay-accent);
-		/* Keep background unchanged; use a soft glow */
-		box-shadow:
-			0 6px 30px rgba(var(--testbay-accent-rgb, 118, 102, 127), 0.25),
-			0 0 18px rgba(var(--testbay-accent-rgb, 118, 102, 127), 0.18) inset;
-		transform: translateY(-2px);
-	}
-
-	/* Test Bay has no bottom nav markup; nav-arrow color handled globally or by pages where navigation exists */
-
-	.nav-link.prev {
-		justify-self: center;
-	}
-	.nav-link.next {
-		justify-self: center;
-	}
-	.nav-arrow {
-		font-size: 1.25rem;
-		color: var(--testbay-accent);
-	}
-</style>

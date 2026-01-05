@@ -11,360 +11,106 @@
 	});
 </script>
 
-<div class="activity-wrapper">
+<!-- Page Container -->
+<div
+	class="relative z-10 mx-auto flex min-h-screen w-full max-w-7xl flex-col px-4 pt-32 pb-24 md:px-8 md:pt-40 md:pb-16"
+>
 	{#if !data.session || !data.user}
 		<!-- Auth Required Section -->
-		<div class="auth-required-section">
-			<div class="auth-card">
-				<div class="lock-icon">🔒</div>
-				<h1 class="auth-title">Authentication Required</h1>
-				<p class="auth-message">
+		<div class="flex min-h-[60vh] items-center justify-center p-4">
+			<div
+				class="w-full max-w-[600px] rounded-[1.5rem] border border-white/10 bg-[#1e3a5f]/60 p-8 text-center shadow-[0_20px_60px_rgba(0,0,0,0.3)] backdrop-blur-md md:p-12"
+			>
+				<div class="mb-4 animate-bounce text-6xl">🔒</div>
+				<h1 class="font-heading mb-4 text-3xl font-black text-white drop-shadow-md md:text-4xl">
+					Authentication Required
+				</h1>
+				<p class="font-body mb-8 text-lg leading-relaxed text-white/80">
 					You need to be signed in to access the Assembly and Disassembly activity. Track your
 					progress, save your scores, and compete with others!
 				</p>
-				<div class="auth-buttons">
-					<a href="/login" class="auth-btn login-btn">Login</a>
-					<a href="/sign-up" class="auth-btn signup-btn">Sign Up</a>
+				<div class="mb-8 flex flex-col justify-center gap-4 sm:flex-row">
+					<a
+						href="/login"
+						class="font-body inline-block rounded-xl bg-gradient-to-br from-[var(--ui-yellow)] to-[var(--font-accent-cyan)] px-10 py-4 text-lg font-bold tracking-wide text-[#0A2F35] uppercase shadow-lg transition-all hover:-translate-y-0.5 hover:shadow-xl"
+						>Login</a
+					>
+					<a
+						href="/sign-up"
+						class="font-body inline-block rounded-xl border border-white/25 bg-white/10 px-10 py-4 text-lg font-bold tracking-wide text-white uppercase transition-all hover:-translate-y-0.5 hover:bg-white/15"
+						>Sign Up</a
+					>
 				</div>
-				<div class="auth-benefits">
-					<h3>Why Sign In?</h3>
-					<ul>
-						<li>✓ Save your assembly scores</li>
-						<li>✓ Track your learning progress</li>
-						<li>✓ Access personalized feedback</li>
-						<li>✓ Compete on leaderboards</li>
+				<div class="mt-8 rounded-2xl border border-white/10 bg-white/5 p-6 text-left">
+					<h3 class="font-heading mb-4 text-xl font-bold text-white">Why Sign In?</h3>
+					<ul class="m-0 list-none p-0">
+						<li class="font-body flex items-center gap-2 py-2 text-base text-white/80">
+							<span class="text-[var(--font-accent-cyan)]">✓</span> Save your assembly scores
+						</li>
+						<li class="font-body flex items-center gap-2 py-2 text-base text-white/80">
+							<span class="text-[var(--font-accent-cyan)]">✓</span> Track your learning progress
+						</li>
+						<li class="font-body flex items-center gap-2 py-2 text-base text-white/80">
+							<span class="text-[var(--font-accent-cyan)]">✓</span> Access personalized feedback
+						</li>
+						<li class="font-body flex items-center gap-2 py-2 text-base text-white/80">
+							<span class="text-[var(--font-accent-cyan)]">✓</span> Compete on leaderboards
+						</li>
 					</ul>
 				</div>
 			</div>
 		</div>
 	{:else}
 		<!-- Header Section -->
-		<div class="header-section">
-			<div class="jaja-group">
+		<div class="relative z-20 mb-4 flex w-full flex-col items-center">
+			<div class="relative mb-[-1.5rem] flex flex-col items-center gap-4 md:flex-row md:items-end">
 				<!-- Speech Bubble Box -->
-				<div class="speech-bubble">
-					<p class="speech-text">
-						<span class="speech-label">JAJA:</span> Yey! You've mastered the fundamentals of the turbofan
-						engine! Now it's time to put that knowledge into action.
+				<div
+					class="relative w-full max-w-[760px] overflow-hidden rounded-[1.5rem] border border-white/20 bg-gradient-to-br from-white/15 to-white/10 p-6 shadow-[0_18px_40px_rgba(0,0,0,0.22)] backdrop-blur-xl md:mr-6 md:mb-10 md:p-8"
+				>
+					<div
+						class="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_20%_20%,rgba(255,255,255,0.2),transparent_50%)]"
+					></div>
+					<p
+						class="font-body relative pr-4 text-lg leading-relaxed font-semibold text-[#1b3558] md:text-xl"
+					>
+						<span class="font-extrabold text-[var(--ui-yellow)]">JAJA:</span> Yey! You've mastered the
+						fundamentals of the turbofan engine! Now it's time to put that knowledge into action.
 					</p>
 				</div>
 
 				<!-- Character Image -->
-				<div class="character-container">
-					<img src="/images/jaja-standing.png" alt="Jaja Character" class="character-image" />
+				<div class="relative z-20 h-40 w-32 shrink-0 md:h-[9.75rem] md:w-[8rem]">
+					<img
+						src="/icons/jaja.png"
+						alt="Jaja Character"
+						class="h-full w-full object-contain drop-shadow-md"
+					/>
 				</div>
 			</div>
 
 			<!-- Title Card -->
-			<div class="title-card">
-				<h1 class="activity-title gradient-animated">Assembly and Disassembly Activity</h1>
-				<p class="instruction-text">
-					<span class="instruction-label">Instruction:</span> Drag and drop each component of the turbofan
-					engine to its correct position inside the casing. Pay attention to the order and orientation
-					— each part has its special place in the engine!
+			<div
+				class="relative z-10 w-full max-w-4xl rounded-[1.5rem] border border-white/10 bg-[#1e3a5f]/60 p-8 text-center shadow-md backdrop-blur-xl md:p-12"
+			>
+				<h1
+					class="animate-gradient-flash font-heading mb-6 bg-gradient-to-r from-blue-400 via-cyan-400 to-blue-400 bg-clip-text text-4xl leading-tight font-black text-transparent drop-shadow-sm md:text-6xl"
+				>
+					Assembly and Disassembly Activity
+				</h1>
+				<p
+					class="font-body mx-auto max-w-[1000px] text-lg leading-relaxed text-white/90 md:text-xl"
+				>
+					<span class="font-bold text-[var(--ui-yellow)]">Instruction:</span> Drag and drop each component
+					of the turbofan engine to its correct position inside the casing. Pay attention to the order
+					and orientation — each part has its special place in the engine!
 				</p>
 			</div>
 		</div>
 
 		<!-- Full Screen Activity -->
-		<AssemblyActivity />
+		<div class="mt-8 mb-12">
+			<AssemblyActivity />
+		</div>
 	{/if}
 </div>
-
-<style>
-	/* Wrapper */
-	.activity-wrapper {
-		min-height: 100vh;
-		width: 100%;
-		position: relative;
-		padding: 6rem 1rem 1rem; /* navbar-safe spacing */
-		display: flex;
-		flex-direction: column;
-	}
-
-	/* Header Section */
-	.header-section {
-		position: relative;
-		width: 100%;
-		display: flex;
-		flex-direction: column;
-		align-items: center;
-		z-index: 100;
-		margin-bottom: 1rem;
-	}
-
-	.jaja-group {
-		position: relative;
-		display: flex;
-		align-items: flex-end;
-		margin-bottom: -1.5rem; /* Overlap with title card */
-		z-index: 20;
-		transform: none;
-	}
-
-	/* Speech Bubble */
-	.speech-bubble {
-		position: relative;
-		overflow: hidden;
-		background: linear-gradient(
-			135deg,
-			rgba(255, 255, 255, 0.16) 0%,
-			rgba(255, 255, 255, 0.08) 60%,
-			rgba(255, 255, 255, 0.12) 100%
-		);
-		backdrop-filter: blur(16px) saturate(140%);
-		-webkit-backdrop-filter: blur(16px) saturate(140%);
-		border: 1px solid rgba(255, 255, 255, 0.22);
-		padding: 1.5rem 2.4rem;
-		border-radius: 1.5rem;
-		box-shadow:
-			0 18px 40px rgba(0, 0, 0, 0.22),
-			inset 0 1px 0 rgba(255, 255, 255, 0.18);
-		margin-right: 1.5rem;
-		margin-bottom: 2.5rem;
-		width: min(760px, calc(100vw - 11rem));
-		max-width: 760px;
-	}
-
-	.speech-bubble::before {
-		content: '';
-		position: absolute;
-		inset: 0;
-		background:
-			radial-gradient(circle at 22% 20%, rgba(255, 255, 255, 0.22), transparent 55%),
-			radial-gradient(circle at 78% 85%, rgba(255, 255, 255, 0.12), transparent 60%);
-		pointer-events: none;
-	}
-
-	.speech-text {
-		font-family: var(--font-body);
-		font-size: 1.25rem;
-		color: var(--font-primary);
-		font-weight: 650;
-		line-height: 1.5;
-		text-shadow: none;
-	}
-
-	.speech-label {
-		font-weight: 800;
-		color: var(--navbar-accent, var(--ui-yellow));
-	}
-
-	/* Character */
-	.character-container {
-		width: 8rem;
-		height: 9.75rem;
-		z-index: 20;
-	}
-
-	.character-image {
-		width: 100%;
-		height: 100%;
-		object-fit: contain;
-		filter: drop-shadow(0 5px 10px rgba(0, 0, 0, 0.2));
-	}
-
-	/* Title Card */
-	.title-card {
-		background: rgba(30, 58, 95, 0.6);
-		backdrop-filter: blur(12px);
-		-webkit-backdrop-filter: blur(12px);
-		border-radius: 1.5rem;
-		padding: 2.5rem 4rem;
-		text-align: center;
-		box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-		width: 100%;
-		max-width: none;
-		position: relative;
-		z-index: 10;
-		border: 1px solid rgba(255, 255, 255, 0.12);
-	}
-
-	.activity-title {
-		font-family: var(--font-heading, sans-serif);
-		font-size: 3.5rem;
-		font-weight: 900;
-		margin: 0 0 1.5rem 0;
-		line-height: 1.1;
-		text-shadow: none;
-	}
-
-	/* Keep the gradient animation but remove the heavier drop-shadow for a cleaner hero-like look */
-	.activity-title.gradient-animated {
-		filter: none;
-	}
-
-	.instruction-text {
-		font-family: var(--font-body, sans-serif);
-		color: rgba(255, 255, 255, 0.85);
-		font-size: 1.2rem;
-		line-height: 1.6;
-		max-width: 1000px;
-		margin: 0 auto;
-	}
-
-	.instruction-label {
-		color: var(--navbar-accent, var(--ui-yellow));
-		font-weight: 700;
-	}
-
-	/* Auth Required Section */
-	.auth-required-section {
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		min-height: 80vh;
-		padding: 2rem;
-	}
-
-	.auth-card {
-		background: rgba(30, 58, 95, 0.6);
-		backdrop-filter: blur(12px);
-		-webkit-backdrop-filter: blur(12px);
-		border-radius: 1.5rem;
-		padding: 3rem;
-		max-width: 600px;
-		width: 100%;
-		text-align: center;
-		box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-		border: 1px solid rgba(255, 255, 255, 0.12);
-	}
-
-	.lock-icon {
-		font-size: 4rem;
-		margin-bottom: 1rem;
-		animation: bounce 2s infinite;
-	}
-
-	@keyframes bounce {
-		0%,
-		100% {
-			transform: translateY(0);
-		}
-		50% {
-			transform: translateY(-10px);
-		}
-	}
-
-	.auth-title {
-		font-family: var(--font-heading, sans-serif);
-		font-size: 2.5rem;
-		font-weight: 900;
-		color: #ffffff;
-		margin: 0 0 1rem 0;
-		text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
-	}
-
-	.auth-message {
-		font-family: var(--font-body, sans-serif);
-		color: rgba(255, 255, 255, 0.8);
-		font-size: 1.1rem;
-		line-height: 1.6;
-		margin: 0 0 2rem 0;
-	}
-
-	.auth-buttons {
-		display: flex;
-		gap: 1rem;
-		justify-content: center;
-		margin-bottom: 2rem;
-	}
-
-	.auth-btn {
-		padding: 1rem 2.5rem;
-		border-radius: 0.75rem;
-		font-family: var(--font-body, sans-serif);
-		font-weight: 700;
-		font-size: 1.1rem;
-		text-decoration: none;
-		transition: all 0.3s ease;
-		text-transform: uppercase;
-		letter-spacing: 0.5px;
-		display: inline-block;
-	}
-
-	.login-btn {
-		background: linear-gradient(
-			135deg,
-			var(--navbar-accent, var(--ui-yellow)) 0%,
-			var(--font-accent-cyan) 100%
-		);
-		color: var(--ui-dark-teal);
-		box-shadow: 0 10px 28px rgba(0, 0, 0, 0.25);
-	}
-
-	.login-btn:hover {
-		transform: translateY(-2px);
-		box-shadow: 0 14px 36px rgba(0, 0, 0, 0.3);
-	}
-
-	.signup-btn {
-		background: rgba(255, 255, 255, 0.08);
-		color: #ffffff;
-		border: 1px solid rgba(255, 255, 255, 0.25);
-	}
-
-	.signup-btn:hover {
-		background: rgba(255, 255, 255, 0.12);
-		transform: translateY(-2px);
-	}
-
-	.auth-benefits {
-		background: rgba(255, 255, 255, 0.06);
-		border-radius: 1rem;
-		padding: 1.5rem;
-		margin-top: 2rem;
-		border: 1px solid rgba(255, 255, 255, 0.1);
-	}
-
-	.auth-benefits h3 {
-		font-family: var(--font-heading, sans-serif);
-		color: #ffffff;
-		font-size: 1.3rem;
-		margin: 0 0 1rem 0;
-	}
-
-	.auth-benefits ul {
-		list-style: none;
-		padding: 0;
-		margin: 0;
-		text-align: left;
-	}
-
-	.auth-benefits li {
-		font-family: var(--font-body, sans-serif);
-		color: rgba(255, 255, 255, 0.8);
-		font-size: 1rem;
-		padding: 0.5rem 0;
-		display: flex;
-		align-items: center;
-		gap: 0.5rem;
-	}
-
-	@media (max-width: 900px) {
-		.jaja-group {
-			flex-direction: column;
-			align-items: center;
-			margin-bottom: 1rem;
-		}
-
-		.speech-bubble {
-			margin-right: 0;
-			margin-bottom: 1rem;
-			width: min(760px, calc(100vw - 2rem));
-			max-width: 760px;
-		}
-
-		.title-card {
-			padding: 2rem 1.25rem;
-		}
-
-		.activity-title {
-			font-size: 2.4rem;
-		}
-
-		.instruction-text {
-			font-size: 1.05rem;
-		}
-	}
-</style>

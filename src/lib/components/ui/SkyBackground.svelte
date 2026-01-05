@@ -138,8 +138,13 @@
 				alpha: Math.random()
 			}));
 		};
-		window.addEventListener('resize', handleResize);
-		window.addEventListener('orientationchange', handleResize);
+		// Optimize cloud sizes for mobile
+		if (window.innerWidth < 768) {
+			const mobileScale = 0.5;
+			farClouds = farClouds.map((c) => ({ ...c, w: c.w * mobileScale, h: c.h * mobileScale }));
+			midClouds = midClouds.map((c) => ({ ...c, w: c.w * mobileScale, h: c.h * mobileScale }));
+			nearClouds = nearClouds.map((c) => ({ ...c, w: c.w * mobileScale, h: c.h * mobileScale }));
+		}
 
 		// Mouse tracking for parallax
 		const handleMouseMove = (e: MouseEvent) => {
@@ -147,6 +152,8 @@
 			mouseY = e.clientY;
 		};
 		window.addEventListener('mousemove', handleMouseMove);
+		window.addEventListener('resize', handleResize);
+		window.addEventListener('orientationchange', handleResize);
 
 		// Start continuous animation loop
 		let animationId: number;

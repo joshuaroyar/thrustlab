@@ -6,373 +6,127 @@
 	const errorMessage = page.error?.message || 'Page not found';
 </script>
 
-<SkyBackground day={true} />
+<SkyBackground useRealTime={true} />
 
-<div class="error-page">
-
-	<div class="error-content animate-scale">
-		<div class="airplane-container">
-			<div class="airplane">✈️</div>
-			<div class="contrail">
-				<div class="trail"></div>
-				<div class="trail"></div>
-				<div class="trail"></div>
-			</div>
+<div class="fixed inset-0 flex flex-col items-center justify-center px-6 pt-20 pb-24">
+	<!-- Error Content -->
+	<div class="max-w-2xl text-center">
+		<!-- Large Error Code -->
+		<div class="mb-8">
+			<h1 class="mb-4 text-9xl font-black tracking-tighter text-white drop-shadow-2xl">
+				{errorCode}
+			</h1>
+			<div
+				class="mx-auto h-1 w-32 rounded-full bg-gradient-to-r from-transparent via-sky-400 to-transparent"
+			></div>
 		</div>
 
-		<h1 class="error-code gradient-animated animate-slide-left">{errorCode}</h1>
-		<h2 class="error-title animate-slide-right">Flight Path Not Found!</h2>
-		<p class="error-description animate-fade">
+		<!-- Error Message -->
+		<h2 class="mb-4 text-3xl font-bold text-white drop-shadow-lg">
 			{#if errorCode === 404}
-				Looks like this page is off the radar. The flight path you're following doesn't exist in our navigation system.
+				Flight Path Not Found
+			{:else if errorCode === 500}
+				System Malfunction
+			{:else}
+				Unexpected Turbulence
+			{/if}
+		</h2>
+
+		<p class="mx-auto mb-12 max-w-xl text-lg leading-relaxed text-slate-300">
+			{#if errorCode === 404}
+				The page you're looking for has drifted off radar. Let's get you back on course.
+			{:else if errorCode === 500}
+				Our systems are experiencing technical difficulties. Our crew is working to fix this.
 			{:else}
 				{errorMessage}
 			{/if}
 		</p>
 
-		<div class="error-actions animate-on-scroll">
-			<a href="/" class="btn-primary">
-				<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-					<path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-					<polyline points="9 22 9 12 15 12 15 22" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-				</svg>
-				Return to Home
+		<!-- Action Buttons -->
+		<div class="mb-16 flex flex-col justify-center gap-4 sm:flex-row">
+			<a
+				href="/"
+				class="group relative overflow-hidden rounded-2xl bg-gradient-to-r from-sky-600 to-sky-500 px-8 py-4 font-bold text-white shadow-[0_4px_20px_0_rgba(2,132,199,0.4)] transition-all hover:shadow-[0_6px_30px_0_rgba(2,132,199,0.6)] active:scale-[0.98]"
+			>
+				<div class="relative flex items-center justify-center gap-2">
+					<svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+						<path
+							stroke-linecap="round"
+							stroke-linejoin="round"
+							stroke-width="2"
+							d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"
+						/>
+					</svg>
+					Return Home
+				</div>
 			</a>
-			<a href="/hangar-zone" class="btn-secondary">
-				<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-					<circle cx="12" cy="12" r="10" stroke-width="2" stroke-linecap="round"/>
-					<path d="M12 16v-4M12 8h.01" stroke-width="2" stroke-linecap="round"/>
-				</svg>
-				Explore Learning Zones
+
+			<a
+				href="/dashboard"
+				class="relative overflow-hidden rounded-2xl border border-white/10 bg-slate-900/70 px-8 py-4 font-bold text-white shadow-lg backdrop-blur-xl transition-all hover:bg-slate-900/90 active:scale-[0.98]"
+			>
+				<div class="flex items-center justify-center gap-2">
+					<svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+						<path
+							stroke-linecap="round"
+							stroke-linejoin="round"
+							stroke-width="2"
+							d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
+						/>
+					</svg>
+					Go to Dashboard
+				</div>
 			</a>
 		</div>
 
-		<div class="error-hints animate-on-scroll">
-			<div class="hint">
-				<span class="hint-icon">🧭</span>
-				<span>Try using the navigation menu above</span>
+		<!-- Help Hints -->
+		<div class="grid grid-cols-1 gap-4 text-sm md:grid-cols-3">
+			<div class="rounded-xl border border-white/10 bg-slate-900/50 p-4 backdrop-blur-md">
+				<div class="mb-2 text-2xl text-sky-400">🔍</div>
+				<div class="text-slate-300">Check the URL for typos</div>
 			</div>
-			<div class="hint">
-				<span class="hint-icon">🤖</span>
-				<span>Ask JAJA for help finding what you need</span>
+			<div class="rounded-xl border border-white/10 bg-slate-900/50 p-4 backdrop-blur-md">
+				<div class="mb-2 text-2xl text-indigo-400">🧭</div>
+				<div class="text-slate-300">Use the navigation menu</div>
 			</div>
-			<div class="hint">
-				<span class="hint-icon">🔍</span>
-				<span>Check your URL for typos</span>
+			<div class="rounded-xl border border-white/10 bg-slate-900/50 p-4 backdrop-blur-md">
+				<div class="mb-2 text-2xl text-purple-400">📱</div>
+				<div class="text-slate-300">Try refreshing the page</div>
 			</div>
 		</div>
 	</div>
 
-	<div class="flight-patterns">
-		<div class="pattern pattern-1">
-			<div class="mini-plane">✈️</div>
-		</div>
-		<div class="pattern pattern-2">
-			<div class="mini-plane">✈️</div>
-		</div>
-		<div class="pattern pattern-3">
-			<div class="mini-plane">✈️</div>
-		</div>
+	<!-- Floating Background Elements -->
+	<div class="pointer-events-none fixed inset-0 -z-10 overflow-hidden">
+		<!-- Animated circles -->
+		<div
+			class="absolute top-1/4 left-1/4 h-64 w-64 animate-pulse rounded-full bg-sky-500/5 blur-3xl"
+		></div>
+		<div
+			class="absolute right-1/4 bottom-1/4 h-96 w-96 animate-pulse rounded-full bg-indigo-500/5 blur-3xl"
+			style="animation-delay: 1s;"
+		></div>
+		<div
+			class="absolute top-1/2 left-1/2 h-[32rem] w-[32rem] -translate-x-1/2 -translate-y-1/2 animate-pulse rounded-full bg-purple-500/5 blur-3xl"
+			style="animation-delay: 2s;"
+		></div>
 	</div>
 </div>
 
 <style>
-	/* gradient-flash moved to src/app.css for global reuse */
-
-	.error-page {
-		min-height: calc(100vh - 64px);
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		padding: var(--container-side-padding);
-		position: relative;
-		overflow: hidden;
-	}
-
-	.error-content {
-		position: relative;
-		z-index: 2;
-		text-align: center;
-		max-width: 800px;
-		color: var(--font-primary);
-	}
-
-	.airplane-container {
-		position: relative;
-		display: inline-block;
-		margin-bottom: var(--card-padding-mobile);
-		animation: fly 4s ease-in-out infinite;
-	}
-
-	@keyframes fly {
-		0%, 100% { transform: translateY(0) translateX(0) rotate(-5deg); }
-		25% { transform: translateY(-15px) translateX(10px) rotate(0deg); }
-		50% { transform: translateY(-30px) translateX(0) rotate(-5deg); }
-		75% { transform: translateY(-15px) translateX(-10px) rotate(-10deg); }
-	}
-
-	.airplane {
-		font-size: 8rem;
-		filter: drop-shadow(0 4px 12px rgba(0, 206, 209, 0.5));
-		animation: tilt 2s ease-in-out infinite;
-	}
-
-	@keyframes tilt {
-		0%, 100% { transform: rotate(-5deg); }
-		50% { transform: rotate(5deg); }
-	}
-
-	.contrail {
-		position: absolute;
-		bottom: 25%;
-		right: 70%;
-		display: flex;
-		flex-direction: column;
-		gap: 8px;
-		transform: rotate(-20deg);
-	}
-
-	.trail {
-		width: 80px;
-		height: 4px;
-		background: linear-gradient(
-			90deg,
-			rgba(var(--navbar-accent-rgb), 0.6) 0%,
-			rgba(0, 206, 209, 0.4) 50%,
-			transparent 100%
-		);
-		border-radius: 2px;
-		animation: fade-trail 1.5s ease-in-out infinite;
-	}
-
-	.trail:nth-child(2) {
-		animation-delay: 0.3s;
-		width: 60px;
-		opacity: 0.7;
-	}
-
-	.trail:nth-child(3) {
-		animation-delay: 0.6s;
-		width: 40px;
-		opacity: 0.5;
-	}
-
-	@keyframes fade-trail {
-		0%, 100% { opacity: 0.3; transform: scaleX(1); }
-		50% { opacity: 0.8; transform: scaleX(1.2); }
-	}
-
-	.error-code {
-		font-family: 'Montserrat', sans-serif;
-		font-size: 8rem;
-		font-weight: 900;
-		margin: 0;
-		color: var(--font-primary);
-		/* Gradient is opt-in via `.gradient-animated` utility */
-		filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.3));
-		line-height: 1;
-	}
-
-	.error-title {
-		font-family: 'Montserrat', sans-serif;
-		font-size: 2.5rem;
-		font-weight: 700;
-		margin: 1rem 0;
-		color: var(--font-primary);
-		text-shadow: 0 2px 4px rgba(255, 255, 255, 0.5);
-	}
-
-	.error-description {
-		font-family: 'Roboto', sans-serif;
-		font-size: 1.2rem;
-		color: var(--font-primary);
-		margin: 1.5rem 0 3rem;
-		line-height: 1.6;
-		text-shadow: 0 1px 2px rgba(255, 255, 255, 0.3);
-	}
-
-	.error-actions {
-		display: flex;
-		gap: var(--spacing-md);
-		justify-content: center;
-		flex-wrap: wrap;
-		margin-bottom: var(--spacing-xxl);
-	}
-
-	.btn-primary,
-	.btn-secondary {
-		display: inline-flex;
-		align-items: center;
-		gap: 0.75rem;
-		padding: var(--spacing-sm) var(--spacing-xxl);
-		border-radius: 50px;
-		font-family: 'Roboto', sans-serif;
-		font-size: 1rem;
-		font-weight: 700;
-		text-decoration: none;
-		transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-		cursor: none;
-	}
-
-	.btn-primary {
-		background: linear-gradient(
-			135deg,
-			var(--navbar-accent, var(--ui-yellow)) 0%,
-			var(--font-accent-cyan) 100%
-		);
-		color: var(--font-primary);
-		box-shadow: 0 4px 20px rgba(0, 206, 209, 0.4);
-		border: 2px solid rgba(var(--navbar-accent-rgb), 0.3);
-	}
-
-	.btn-primary:hover {
-		transform: translateY(-3px);
-		box-shadow: 0 8px 30px rgba(0, 206, 209, 0.6);
-		border-color: var(--font-accent-cyan);
-	}
-
-	.btn-secondary {
-		background: rgba(255, 255, 255, 0.7);
-		color: var(--font-primary);
-		border: 2px solid var(--font-accent-cyan);
-		backdrop-filter: blur(10px);
-	}
-
-	.btn-secondary:hover {
-		transform: translateY(-3px);
-		background: rgba(255, 255, 255, 0.9);
-		border-color: var(--navbar-accent, var(--ui-yellow));
-		box-shadow: 0 4px 20px rgba(var(--navbar-accent-rgb), 0.4);
-	}
-
-	.error-hints {
-		display: flex;
-		gap: 2rem;
-		justify-content: center;
-		flex-wrap: wrap;
-		margin-top: 2rem;
-	}
-
-	.hint {
-		display: flex;
-		align-items: center;
-		gap: 0.75rem;
-		padding: var(--spacing-sm) var(--spacing-md);
-		background: rgba(255, 255, 255, 0.7);
-		border: 2px solid rgba(0, 206, 209, 0.3);
-		border-radius: 50px;
-		color: var(--font-primary);
-		font-family: 'Roboto', sans-serif;
-		font-size: 0.95rem;
-		backdrop-filter: blur(10px);
-		transition: all 0.3s ease;
-	}
-
-	.hint:hover {
-		background: rgba(255, 255, 255, 0.9);
-		border-color: var(--navbar-accent, var(--ui-yellow));
-		transform: translateY(-2px);
-		box-shadow: 0 4px 12px rgba(var(--navbar-accent-rgb), 0.3);
-	}
-
-	.hint-icon {
-		font-size: 1.5rem;
-	}
-
-	.flight-patterns {
-		position: absolute;
-		inset: 0;
-		pointer-events: none;
-	}
-
-	.pattern {
-		position: absolute;
-		top: 50%;
-		left: 50%;
-		width: 300px;
-		height: 300px;
-		border: 2px dashed rgba(var(--navbar-accent-rgb), 0.3);
-		border-radius: 50%;
-		animation: circle-flight 25s linear infinite;
-	}
-
-	.pattern-1 {
-		width: 250px;
-		height: 250px;
-		margin: -125px 0 0 -125px;
-		animation-duration: 20s;
-	}
-
-	.pattern-2 {
-		width: 400px;
-		height: 400px;
-		margin: -200px 0 0 -200px;
-		animation-duration: 30s;
-		animation-direction: reverse;
-		border-color: rgba(0, 206, 209, 0.3);
-	}
-
-	.pattern-3 {
-		width: 550px;
-		height: 550px;
-		margin: -275px 0 0 -275px;
-		animation-duration: 40s;
-		border-color: rgba(135, 206, 235, 0.3);
-	}
-
-	@keyframes circle-flight {
-		from { transform: rotate(0deg); }
-		to { transform: rotate(360deg); }
-	}
-
-	.mini-plane {
-		position: absolute;
-		top: 0;
-		left: 50%;
-		transform: translateX(-50%) rotate(90deg);
-		font-size: 1.5rem;
-		filter: drop-shadow(0 2px 6px rgba(0, 206, 209, 0.4));
-		animation: plane-wobble 2s ease-in-out infinite;
-	}
-
-	@keyframes plane-wobble {
-		0%, 100% { transform: translateX(-50%) rotate(85deg); }
-		50% { transform: translateX(-50%) rotate(95deg); }
-	}
-
-	@media (max-width: 768px) {
-		.error-code {
-			font-size: 5rem;
+	@keyframes pulse {
+		0%,
+		100% {
+			opacity: 0.3;
+			transform: scale(1);
 		}
-
-		.error-title {
-			font-size: 1.8rem;
+		50% {
+			opacity: 0.6;
+			transform: scale(1.1);
 		}
+	}
 
-		.error-description {
-			font-size: 1rem;
-		}
-
-		.airplane {
-			font-size: 5rem;
-		}
-
-		.contrail {
-			display: none;
-		}
-
-		.error-actions {
-			flex-direction: column;
-			align-items: stretch;
-		}
-
-		.error-hints {
-			flex-direction: column;
-			align-items: stretch;
-		}
-
-		.flight-patterns {
-			display: none;
-		}
+	.animate-pulse {
+		animation: pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 	}
 </style>

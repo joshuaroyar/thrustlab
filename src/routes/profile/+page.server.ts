@@ -40,6 +40,7 @@ export const actions: Actions = {
         const formData = await request.formData();
         const username = formData.get('username') as string;
         const fullName = formData.get('fullName') as string;
+        const avatarUrl = formData.get('avatarUrl') as string; // Capture avatar URL
 
         try {
             // Check if profile exists
@@ -51,13 +52,14 @@ export const actions: Actions = {
             if (existingProfile) {
                 await db
                     .update(table.user)
-                    .set({ username, fullName })
+                    .set({ username, fullName, avatarUrl })
                     .where(eq(table.user.id, user.id));
             } else {
                 await db.insert(table.user).values({
                     id: user.id,
                     username,
-                    fullName
+                    fullName,
+                    avatarUrl
                 });
             }
 
