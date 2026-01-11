@@ -51,10 +51,25 @@
 				headers: { 'Content-Type': 'application/json' },
 				body: JSON.stringify({ questions: incorrectQuestions })
 			});
+
 			const data = await res.json();
-			aiFeedback = data.feedback;
+
+			if (data.feedback) {
+				aiFeedback = data.feedback;
+			} else {
+				throw new Error('Invalid response format');
+			}
 		} catch (e) {
 			console.error('Error getting AI feedback:', e);
+			// Fallback for network errors
+			aiFeedback = [
+				{
+					questionText: 'Network Error',
+					explanation:
+						'Could not connect to the analysis service. Please check your internet connection and try again.',
+					topicToReview: 'Connectivity'
+				}
+			];
 		} finally {
 			isLoadingFeedback = false;
 		}
@@ -212,7 +227,11 @@
 							<div
 								class="flex h-12 w-12 items-center justify-center rounded-xl bg-blue-500/20 text-blue-400 transition-all group-active:scale-110 group-active:bg-blue-500 group-active:text-white"
 							>
-								<img src="/icons/hangar-zone.png" alt="Hangar Zone" class="h-8 w-8 object-contain" />
+								<img
+									src="/icons/hangar-zone.png"
+									alt="Hangar Zone"
+									class="h-8 w-8 object-contain"
+								/>
 							</div>
 							<div class="flex-1">
 								<div class="text-lg font-bold text-white">Hangar Zone</div>
@@ -381,7 +400,7 @@
 		<!-- Scrollable Content Wrapper -->
 		<div class="dashboard-scroll-content">
 			<!-- Header Section -->
-			<header class="header-section" in:fly={{ y: -20, duration: 800 }}>
+			<header class="header-section animate-on-scroll" in:fly={{ y: -20, duration: 800 }}>
 				<div class="pilot-info">
 					<div class="avatar-ring">
 						<div class="avatar">
@@ -412,7 +431,8 @@
 			</header>
 
 			<!-- 1. Stats Row (Top) -->
-			<section class="stats-row">
+			<!-- 1. Stats Row (Top) -->
+			<section class="stats-row animate-on-scroll animate-delay-100">
 				<!-- Progress Card (Full Width) -->
 				<div class="stat-card progress-card" in:scale={{ duration: 500, delay: 200, start: 0.9 }}>
 					<div class="stat-icon-wrapper blue">
@@ -490,7 +510,8 @@
 			</section>
 
 			<!-- 2. Main Content Stack (Middle: Activity) -->
-			<section class="panel activity-panel">
+			<!-- 2. Main Content Stack (Middle: Activity) -->
+			<section class="panel activity-panel animate-on-scroll animate-delay-200">
 				<div class="panel-header">
 					<h2>Mission Log</h2>
 					<a href="/dashboard/history" class="view-all">View History →</a>
@@ -553,7 +574,8 @@
 			</section>
 
 			<!-- 3. Actions Row (Bottom) -->
-			<section class="panel actions-panel">
+			<!-- 3. Actions Row (Bottom) -->
+			<section class="panel actions-panel animate-on-scroll animate-delay-300">
 				<div class="panel-header">
 					<h2>Quick Access</h2>
 				</div>
@@ -606,11 +628,27 @@
 		>
 			<div class="modal-header">
 				<div>
-					<h2 class="modal-title">Mission Debrief</h2>
-					<p class="modal-subtitle">{selectedTest.moduleName}</p>
+					<h2
+						class="modal-title font-heading text-2xl font-black tracking-wide text-slate-800 uppercase"
+					>
+						Mission Debrief
+					</h2>
+					<p class="modal-subtitle mt-1 text-sm font-bold tracking-widest text-slate-500 uppercase">
+						{selectedTest.moduleName}
+					</p>
 				</div>
-				<button class="btn-close" onclick={closeFeedback} aria-label="Close feedback">
-					<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+				<button
+					class="btn-close flex h-10 w-10 items-center justify-center rounded-full bg-slate-100 text-slate-500 transition-all hover:bg-slate-200 hover:text-slate-800"
+					onclick={closeFeedback}
+					aria-label="Close feedback"
+				>
+					<svg
+						viewBox="0 0 24 24"
+						fill="none"
+						stroke="currentColor"
+						stroke-width="2.5"
+						class="h-5 w-5"
+					>
 						<line x1="18" y1="6" x2="6" y2="18"></line>
 						<line x1="6" y1="6" x2="18" y2="18"></line>
 					</svg>
@@ -647,15 +685,47 @@
 				{/if}
 
 				{#if aiFeedback}
-					<div class="ai-results" in:slide>
-						<h3>AI Tactical Analysis</h3>
-						{#each aiFeedback as item}
-							<div class="ai-item">
-								<div class="ai-q">{item.questionText}</div>
-								<div class="ai-exp">{item.explanation}</div>
-								<div class="ai-topic">Review: {item.topicToReview}</div>
-							</div>
-						{/each}
+					<div
+						class="ai-results mt-6 mb-8 rounded-2xl border border-indigo-100 bg-indigo-50/50 p-6"
+						in:slide
+					>
+						<h3
+							class="mb-4 flex items-center gap-2 text-lg font-black tracking-wide text-indigo-900 uppercase"
+						>
+							<span class="text-xl">🤖</span> AI Tactical Analysis
+						</h3>
+						<div class="flex flex-col gap-4">
+							{#each aiFeedback as item}
+								<div
+									class="ai-item rounded-xl border border-white bg-white/80 p-5 shadow-sm transition-all hover:shadow-md"
+								>
+									<div class="ai-q mb-3 text-base font-bold text-slate-800">
+										{item.questionText}
+									</div>
+									<div class="ai-exp mb-3 text-sm leading-relaxed text-slate-600">
+										{item.explanation}
+									</div>
+									<div
+										class="ai-topic inline-flex items-center gap-2 rounded-lg bg-indigo-100 px-3 py-1.5 text-xs font-bold tracking-wider text-indigo-700 uppercase"
+									>
+										<svg
+											class="h-3 w-3"
+											fill="none"
+											viewBox="0 0 24 24"
+											stroke="currentColor"
+											stroke-width="3"
+										>
+											<path
+												stroke-linecap="round"
+												stroke-linejoin="round"
+												d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+											/>
+										</svg>
+										Review: {item.topicToReview}
+									</div>
+								</div>
+							{/each}
+						</div>
 					</div>
 				{/if}
 
@@ -718,16 +788,20 @@
 			0 10px 15px -3px rgba(0, 0, 0, 0.1);
 		/* display: flex; <-- REMOVED to allow Tailwind control */
 		flex-direction: column;
-		margin: 0 auto 2rem auto;
+		flex-direction: column;
+		flex-direction: column;
+		margin: 6rem auto 2rem auto; /* Adjusted for compact layout */
 	}
 
 	.dashboard-scroll-content {
 		flex: 1;
 		overflow-y: auto;
-		padding: 3rem;
+		padding: 2rem; /* Reduced padding */
 		display: flex;
 		flex-direction: column;
-		gap: 2.5rem;
+		gap: 1.5rem; /* Reduced gap */
+		/* Ensure content doesn't get cut off at the bottom */
+		min-height: min-content;
 	}
 
 	.header-section {

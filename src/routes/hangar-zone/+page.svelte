@@ -23,7 +23,9 @@
 	});
 </script>
 
-<div class="relative z-10 mx-auto min-h-screen max-w-7xl px-4 pt-32 pb-24 md:px-8 md:pt-40">
+<div
+	class="animate-on-scroll relative z-10 mx-auto min-h-screen max-w-7xl px-4 pt-32 pb-24 md:px-8 md:pt-40"
+>
 	<div class="mb-12 text-center">
 		<h1
 			class="animate-gradient-flash font-heading mb-6 bg-gradient-to-r from-sky-300 via-cyan-200 to-sky-300 bg-clip-text pb-4 text-6xl font-black tracking-tight text-transparent drop-shadow-[0_0_25px_rgba(14,165,233,0.6)] md:text-8xl"
@@ -31,7 +33,7 @@
 			Hangar Zone
 		</h1>
 		<p
-			class="mx-auto max-w-[900px] text-center text-xl leading-relaxed font-bold text-slate-200 drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)] md:text-2xl"
+			class="mx-auto mb-8 max-w-[900px] text-center text-xl leading-relaxed font-bold text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)] md:text-2xl"
 			style="font-family: 'Gotham', 'Gotham Bold', sans-serif;"
 		>
 			Welcome to the Hangar Zone, a <span class="text-sky-400"
@@ -46,23 +48,23 @@
 	<div class="mx-auto mt-12 grid max-w-6xl grid-cols-1 gap-6 md:grid-cols-2">
 		<a
 			href="/hangar-zone/module/history"
-			class="group relative flex min-h-[300px] flex-col items-center justify-center overflow-hidden rounded-[30px] border-2 border-white/10 bg-slate-900/80 p-8 text-center shadow-xl backdrop-blur-md transition-all duration-300 hover:-translate-y-2 hover:border-[#FFD966] hover:bg-slate-800/90 hover:shadow-[0_0_20px_rgba(255,217,102,0.4)]"
+			class="group relative flex min-h-[300px] flex-col items-center justify-center overflow-hidden rounded-[25px] border-2 border-white/50 bg-white p-8 text-center shadow-lg transition-all duration-300 hover:-translate-y-2 hover:border-[#FFD966] hover:bg-white hover:shadow-[0_0_20px_rgba(255,217,102,0.4)]"
 		>
 			<div class="relative z-10 flex flex-col items-center gap-2">
-				<span class="font-heading text-xl font-extrabold tracking-widest text-sky-400/80 uppercase"
+				<span class="font-heading text-xl font-extrabold tracking-widest text-[#1b3558] uppercase"
 					>LEARNING</span
 				>
-				<span class="font-heading mb-1 text-2xl font-black tracking-wider text-white uppercase"
+				<span class="font-heading mb-1 text-2xl font-black tracking-wider text-[#222831] uppercase"
 					>MODULE 01:</span
 				>
 				<h3
-					class="font-heading animate-gradient-flash bg-gradient-to-r from-sky-300 via-cyan-200 to-sky-300 bg-clip-text text-2xl leading-tight font-black tracking-wide text-transparent uppercase drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)] md:text-3xl"
+					class="font-heading animate-gradient-flash bg-gradient-to-r from-sky-500 via-cyan-400 to-sky-500 bg-clip-text text-2xl leading-tight font-black tracking-wide text-transparent uppercase drop-shadow-[0_2px_4px_rgba(0,0,0,0.1)] md:text-3xl"
 				>
 					HISTORY OF<br />GAS TURBINE<br />ENGINES
 				</h3>
 			</div>
 			<div
-				class="absolute right-6 bottom-6 text-yellow-400 opacity-60 transition-all duration-300 group-hover:translate-x-2 group-hover:opacity-100"
+				class="absolute right-6 bottom-6 text-[#FFD966] opacity-80 transition-all duration-300 group-hover:translate-x-2 group-hover:opacity-100"
 			>
 				<svg
 					width="40"
@@ -82,23 +84,23 @@
 
 		<a
 			href="/hangar-zone/module/types"
-			class="group relative flex min-h-[300px] flex-col items-center justify-center overflow-hidden rounded-[30px] border-2 border-white/10 bg-slate-900/80 p-8 text-center shadow-xl backdrop-blur-md transition-all duration-300 hover:-translate-y-2 hover:border-[#FFD966] hover:bg-slate-800/90 hover:shadow-[0_0_20px_rgba(255,217,102,0.4)]"
+			class="group relative flex min-h-[300px] flex-col items-center justify-center overflow-hidden rounded-[25px] border-2 border-white/50 bg-white p-8 text-center shadow-lg transition-all duration-300 hover:-translate-y-2 hover:border-[#FFD966] hover:bg-white hover:shadow-[0_0_20px_rgba(255,217,102,0.4)]"
 		>
 			<div class="relative z-10 flex flex-col items-center gap-2">
-				<span class="font-heading text-xl font-extrabold tracking-widest text-sky-400/80 uppercase"
+				<span class="font-heading text-xl font-extrabold tracking-widest text-[#1b3558] uppercase"
 					>LEARNING</span
 				>
-				<span class="font-heading mb-1 text-2xl font-black tracking-wider text-white uppercase"
+				<span class="font-heading mb-1 text-2xl font-black tracking-wider text-[#222831] uppercase"
 					>MODULE 02:</span
 				>
 				<h3
-					class="font-heading animate-gradient-flash bg-gradient-to-r from-sky-300 via-cyan-200 to-sky-300 bg-clip-text text-2xl leading-tight font-black tracking-wide text-transparent uppercase drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)] md:text-3xl"
+					class="font-heading animate-gradient-flash bg-gradient-to-r from-sky-500 via-cyan-400 to-sky-500 bg-clip-text text-2xl leading-tight font-black tracking-wide text-transparent uppercase drop-shadow-[0_2px_4px_rgba(0,0,0,0.1)] md:text-3xl"
 				>
 					TYPES OF GAS<br />TURBINE<br />ENGINES
 				</h3>
 			</div>
 			<div
-				class="absolute right-6 bottom-6 text-yellow-400 opacity-60 transition-all duration-300 group-hover:translate-x-2 group-hover:opacity-100"
+				class="absolute right-6 bottom-6 text-[#FFD966] opacity-80 transition-all duration-300 group-hover:translate-x-2 group-hover:opacity-100"
 			>
 				<svg
 					width="40"

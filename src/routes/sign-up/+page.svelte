@@ -24,7 +24,7 @@
 	class="relative z-[5] flex min-h-[calc(100vh-64px)] flex-col items-center justify-center px-4 py-8 md:py-32"
 >
 	<div
-		class="animate-scale w-full max-w-[500px] rounded-3xl border border-sky-300/30 bg-[#0a2f35]/60 p-6 shadow-[0_15px_35px_rgba(0,0,0,0.5)] backdrop-blur-xl transition-all hover:-translate-y-1 hover:border-[#00CED1] hover:shadow-[0_20px_40px_rgba(0,0,0,0.6)] md:p-12"
+		class="animate-on-scroll w-full max-w-[500px] rounded-3xl border border-sky-300/30 bg-[#0a2f35]/60 p-6 shadow-[0_15px_35px_rgba(0,0,0,0.5)] backdrop-blur-xl transition-all hover:-translate-y-1 hover:border-[#00CED1] hover:shadow-[0_20px_40px_rgba(0,0,0,0.6)] md:p-12"
 	>
 		<h1
 			class="font-heading mb-6 text-center text-2xl font-black text-white drop-shadow-md text-shadow-sm md:text-4xl"

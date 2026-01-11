@@ -208,7 +208,10 @@
 						</div>
 					</div>
 					<h1 class="mb-1 text-3xl font-black tracking-tight text-white drop-shadow-lg">
-						{data.profile?.fullName || 'Pilot'}
+						{data.profile?.fullName ||
+							data.user?.user_metadata?.full_name ||
+							data.user?.email ||
+							'Pilot'}
 					</h1>
 					<p class="mb-3 text-sm font-medium text-sky-300">{user.email}</p>
 				</div>
@@ -574,7 +577,7 @@
 <!-- ==================== DESKTOP LAYOUT ONLY ==================== -->
 <!-- Desktop Layout -->
 <div class="page-overlay hidden md:flex">
-	<div class="profile-card">
+	<div class="profile-card animate-on-scroll">
 		<!-- Left Sidebar -->
 		<aside class="sidebar">
 			<div class="user-summary">
@@ -594,7 +597,12 @@
 					</button>
 				</div>
 				<div class="user-details">
-					<h2>{data.profile?.fullName || 'Pilot'}</h2>
+					<h2>
+						{data.profile?.fullName ||
+							data.user?.user_metadata?.full_name ||
+							data.user?.email ||
+							'Pilot'}
+					</h2>
 					<p>@{data.profile?.username || 'username'}</p>
 				</div>
 			</div>

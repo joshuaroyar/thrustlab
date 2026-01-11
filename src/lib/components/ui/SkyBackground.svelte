@@ -249,20 +249,21 @@
 		let topColor: number[], bottomColor: number[];
 
 		if (time >= 5 && time < 8) {
-			// Sunrise (5-8) - Dawn (Purple)
+			// Sunrise (5-8) - Dawn (Purple) - Darkened for readability
 			const t = (time - 5) / 3;
-			// Transition from Purple (at time=5) to Day Blue (at time=8)
-			topColor = interpolateColor([45, 27, 78], [135, 206, 235], t); // Deep Purple to Day Blue
-			bottomColor = interpolateColor([255, 168, 213], [255, 223, 186], t); // Pink to Peach
+			// Transition from Dark Purple to Darker Day Blue
+			topColor = interpolateColor([35, 20, 60], [80, 140, 190], t);
+			// Pink/Peach to Muted Peach
+			bottomColor = interpolateColor([180, 120, 160], [180, 160, 140], t);
 		} else if (time >= 8 && time < 16) {
-			// Day (8-16)
-			topColor = [135, 206, 235]; // Sky Blue
-			bottomColor = [255, 255, 255]; // White/Light Blue
+			// Day (8-16) - Darkened
+			topColor = [80, 140, 190]; // Darker Muted Blue
+			bottomColor = [200, 220, 240]; // Light Blue-Grey (not white)
 		} else if (time >= 16 && time < 19) {
 			// Sunset (16-19)
 			const t = (time - 16) / 3;
-			topColor = interpolateColor([135, 206, 235], [25, 25, 112], t); // Day Blue to Midnight Blue
-			bottomColor = interpolateColor([255, 255, 255], [255, 140, 0], t); // White to Orange
+			topColor = interpolateColor([80, 140, 190], [25, 25, 112], t); // Day Blue to Midnight Blue
+			bottomColor = interpolateColor([200, 220, 240], [255, 140, 0], t); // Blue-Grey to Orange
 		} else {
 			// Night (19-5)
 			topColor = [10, 10, 30];

@@ -9,6 +9,7 @@
 	import ChatbotPopup from '$lib/components/chatbot/ChatbotPopup.svelte';
 	import ImageModal from '$lib/components/ui/ImageModal.svelte';
 	import TransitionOverlay from '$lib/components/ui/TransitionOverlay.svelte';
+	import PageTransition from '$lib/components/ui/PageTransition.svelte';
 	import type { LayoutData } from './$types';
 	import type { AuthChangeEvent, Session } from '@supabase/supabase-js';
 	import { dev } from '$app/environment';
@@ -196,7 +197,7 @@
 
 <!-- Hide Desktop Navbar on mobile -->
 <div class="hidden md:block">
-	<Navbar user={data.user} isTransparent />
+	<Navbar user={data.user} isTransparent={isHomePage} />
 </div>
 
 <!-- Mobile Bottom Navbar -->

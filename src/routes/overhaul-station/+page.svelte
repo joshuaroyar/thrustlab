@@ -28,7 +28,7 @@
 
 <!-- Page Content -->
 <div
-	class="relative z-10 mx-auto min-h-screen max-w-[1400px] px-4 pt-32 pb-24 md:px-8 md:pt-40 md:pb-16"
+	class="animate-on-scroll relative z-10 mx-auto min-h-screen max-w-[1400px] px-4 pt-32 pb-24 md:px-8 md:pt-40 md:pb-16"
 >
 	<div class="mb-12 text-center md:px-4">
 		<h1
@@ -37,34 +37,31 @@
 			Overhaul Station
 		</h1>
 		<p
-			class="mx-auto max-w-[900px] text-center text-xl leading-relaxed font-bold text-[#1b3558] drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)] md:text-2xl"
+			class="mx-auto mb-8 max-w-[900px] text-center text-xl leading-relaxed font-bold text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)] md:text-2xl"
 			style="font-family: 'Gotham', 'Gotham Bold', sans-serif;"
 		>
-			Step into the Overhaul Station, where hands-on learning takes flight. In this interactive
-			zone, students <span class="text-[#5da8cb]"
-				>dive into the intricate process of assembling and disassembling turbofan engine components</span
-			>—gaining a deeper understanding of each part's role and the essential principles of gas
-			turbine engine overhaul. It's where theory meets practice, transforming knowledge into
-			real-world technical skill.
+			Welcome to the Test Bay, where learning turns into a challenge. Here, students face
+			<span class="text-cyan-400"
+				>interactive assessments designed to gauge their understanding</span
+			> of the Hangar Zone, Turbofan Engine Zone, and Overhaul Bay. It's not just an activity—it's a test
+			of mastery, confidence, and readiness to take flight.
 		</p>
 	</div>
 
 	<div class="mx-auto mt-12 grid max-w-6xl grid-cols-1 gap-6 md:grid-cols-2">
 		<a
 			href="/overhaul-station/preliminary-module"
-			class="group relative flex min-h-[300px] flex-col items-center justify-center overflow-hidden rounded-[30px] bg-[#1a2b47] p-8 text-center text-[#E8F4FA] shadow-[0_8px_32px_rgba(0,0,0,0.2)] transition-all duration-400 hover:-translate-y-2 hover:bg-[#16213e] hover:shadow-[0_16px_48px_rgba(0,0,0,0.3)]"
+			class="group relative flex min-h-[300px] flex-col items-center justify-center overflow-hidden rounded-[25px] border-2 border-white/50 bg-white p-8 text-center shadow-lg transition-all duration-300 hover:-translate-y-2 hover:border-[#FFD966] hover:bg-white hover:shadow-[0_0_20px_rgba(255,217,102,0.4)]"
 		>
 			<div class="relative z-[2] flex flex-col items-center gap-2">
-				<span
-					class="font-heading text-2xl leading-tight font-extrabold tracking-widest uppercase md:text-3xl"
+				<span class="font-heading text-xl font-extrabold tracking-widest text-[#1b3558] uppercase"
 					>LABORATORY</span
 				>
-				<span
-					class="font-heading text-4xl leading-tight font-extrabold tracking-widest uppercase md:text-5xl"
+				<span class="font-heading mb-1 text-2xl font-black tracking-wider text-[#222831] uppercase"
 					>MODULE:</span
 				>
 				<h3
-					class="font-heading animate-gradient-flash mt-0 bg-gradient-to-r from-blue-400 via-cyan-400 to-blue-400 bg-clip-text text-4xl leading-tight font-extrabold tracking-widest text-transparent uppercase md:text-4xl"
+					class="font-heading animate-gradient-flash mt-0 bg-gradient-to-r from-yellow-500 via-orange-500 to-yellow-500 bg-clip-text text-3xl leading-tight font-black tracking-wide text-transparent uppercase drop-shadow-[0_2px_8px_rgba(0,0,0,0.1)] md:text-4xl"
 				>
 					PRELIMINARY<br />LABORATORY<br />MODULE
 				</h3>
@@ -90,19 +87,17 @@
 
 		<a
 			href="/overhaul-station/assembly-disassembly"
-			class="group relative flex min-h-[300px] flex-col items-center justify-center overflow-hidden rounded-[30px] bg-[#1a2b47] p-8 text-center text-[#E8F4FA] shadow-[0_8px_32px_rgba(0,0,0,0.2)] transition-all duration-400 hover:-translate-y-2 hover:bg-[#16213e] hover:shadow-[0_16px_48px_rgba(0,0,0,0.3)]"
+			class="group relative flex min-h-[300px] flex-col items-center justify-center overflow-hidden rounded-[25px] border-2 border-white/50 bg-white p-8 text-center shadow-lg transition-all duration-300 hover:-translate-y-2 hover:border-[#FFD966] hover:bg-white hover:shadow-[0_0_20px_rgba(255,217,102,0.4)]"
 		>
 			<div class="relative z-[2] flex flex-col items-center gap-2">
-				<span
-					class="font-heading text-2xl leading-tight font-extrabold tracking-widest uppercase md:text-3xl"
+				<span class="font-heading text-xl font-extrabold tracking-widest text-[#1b3558] uppercase"
 					>ACTIVITY</span
 				>
-				<span
-					class="font-heading text-4xl leading-tight font-extrabold tracking-widest uppercase md:text-5xl"
+				<span class="font-heading mb-1 text-2xl font-black tracking-wider text-[#222831] uppercase"
 					>MODULE:</span
 				>
 				<h3
-					class="font-heading animate-gradient-flash mt-0 bg-gradient-to-r from-blue-400 via-cyan-400 to-blue-400 bg-clip-text text-4xl leading-tight font-extrabold tracking-widest text-transparent uppercase md:text-4xl"
+					class="font-heading animate-gradient-flash mt-0 bg-gradient-to-r from-yellow-500 via-orange-500 to-yellow-500 bg-clip-text text-3xl leading-tight font-black tracking-wide text-transparent uppercase drop-shadow-[0_2px_8px_rgba(0,0,0,0.1)] md:text-3xl"
 				>
 					ASSEMBLY &<br />DISASSEMBLY ACTIVITY
 				</h3>
@@ -127,7 +122,3 @@
 		</a>
 	</div>
 </div>
-
-<style>
-	/* Removed custom CSS in favor of Tailwind */
-</style>

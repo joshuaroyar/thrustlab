@@ -130,7 +130,7 @@
 
 <!-- Main Content -->
 <div
-	class="relative z-10 mx-auto min-h-screen w-full max-w-[1200px] px-4 pt-32 pb-8 md:px-8 md:pt-40 md:pb-16"
+	class="animate-on-scroll relative z-10 mx-auto min-h-screen w-full max-w-[1200px] px-4 pt-32 pb-8 md:px-8 md:pt-40 md:pb-16"
 >
 	<SearchModal />
 	<ImageModal />
@@ -143,7 +143,7 @@
 			Turbofan Engine
 		</h1>
 		<p
-			class="mx-auto max-w-[900px] text-center text-xl leading-relaxed font-bold text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)] md:text-2xl"
+			class="mx-auto mb-8 max-w-[900px] text-center text-xl leading-relaxed font-bold text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)] md:text-2xl"
 			style="font-family: 'Gotham', 'Gotham Bold', sans-serif;"
 		>
 			Enter the Turbofan Engine Zone, an immersive hub where students can <span
@@ -590,7 +590,7 @@
 					<section class="opacity-100">
 						<SectionHeader title="ENGINE COMPONENTS" color="#B34700" />
 						<div
-							class="relative z-[1] rounded-tr-3xl rounded-b-3xl border-[3px] border-[#B34700] bg-white p-6 text-[#1a2b47] md:p-8"
+							class="relative z-[1] rounded-b-3xl border-[3px] border-[#B34700] bg-white p-6 text-[#1a2b47] md:p-8"
 						>
 							<div class="mb-6 leading-loose">
 								<p class="mb-6 text-justify text-lg leading-loose text-[#2c3e50]">
@@ -627,7 +627,7 @@
 					<section class="opacity-100">
 						<SectionHeader title="COLD SECTION: AIR INLET" color="#B34700" />
 						<div
-							class="relative z-[1] rounded-tr-3xl rounded-b-3xl border-[3px] border-[#B34700] bg-white p-6 text-[#1a2b47] md:p-8"
+							class="relative z-[1] rounded-b-3xl border-[3px] border-[#B34700] bg-white p-6 text-[#1a2b47] md:p-8"
 						>
 							<div class="mb-6 leading-loose">
 								<div
@@ -691,7 +691,7 @@
 					<section class="opacity-100">
 						<SectionHeader title="Types of Air Inlet Ducts" color="#B34700" />
 						<div
-							class="relative z-[1] rounded-tr-3xl rounded-b-3xl border-[3px] border-[#B34700] bg-white p-6 text-[#1a2b47] md:p-8"
+							class="relative z-[1] rounded-b-3xl border-[3px] border-[#B34700] bg-white p-6 text-[#1a2b47] md:p-8"
 						>
 							<h5
 								class="font-heading mb-4 text-lg font-bold text-[#B34700] underline decoration-2 underline-offset-4"
@@ -731,7 +731,7 @@
 					<section class="opacity-100">
 						<SectionHeader title="Subsonic Inlets" color="#B34700" />
 						<div
-							class="relative z-[1] rounded-tr-3xl rounded-b-3xl border-[3px] border-[#B34700] bg-white p-6 text-[#1a2b47] md:p-8"
+							class="relative z-[1] rounded-b-3xl border-[3px] border-[#B34700] bg-white p-6 text-[#1a2b47] md:p-8"
 						>
 							<p class="mb-6 text-justify text-lg leading-loose text-[#2c3e50]">
 								A typical subsonic air inlet consists of a fixed geometry duct whose diameter
@@ -746,7 +746,7 @@
 					<section class="opacity-100">
 						<SectionHeader title="Supersonic Inlets" color="#B34700" />
 						<div
-							class="relative z-[1] rounded-tr-3xl rounded-b-3xl border-[3px] border-[#B34700] bg-white p-6 text-[#1a2b47] md:p-8"
+							class="relative z-[1] rounded-b-3xl border-[3px] border-[#B34700] bg-white p-6 text-[#1a2b47] md:p-8"
 						>
 							<p class="mb-6 text-justify text-lg leading-loose text-[#2c3e50]">
 								On supersonic aircraft a typical air inlet duct has either a fixed or variable
@@ -767,7 +767,7 @@
 					<section class="opacity-100">
 						<SectionHeader title="Bellmouth Inlets" color="#B34700" />
 						<div
-							class="relative z-[1] rounded-tr-3xl rounded-b-3xl border-[3px] border-[#B34700] bg-white p-6 text-[#1a2b47] md:p-8"
+							class="relative z-[1] rounded-b-3xl border-[3px] border-[#B34700] bg-white p-6 text-[#1a2b47] md:p-8"
 						>
 							<p class="mb-6 text-justify text-lg leading-loose text-[#2c3e50]">
 								Bellmouth inlets have a convergent profile that is designed specifically for
@@ -787,7 +787,7 @@
 					<section class="opacity-100">
 						<SectionHeader title="COMPRESSOR SECTION" color="#B34700" />
 						<div
-							class="relative z-[1] rounded-tr-3xl rounded-b-3xl border-[3px] border-[#B34700] bg-white p-6 text-[#1a2b47] md:p-8"
+							class="relative z-[1] rounded-b-3xl border-[3px] border-[#B34700] bg-white p-6 text-[#1a2b47] md:p-8"
 						>
 							<div
 								class="relative mb-6 h-[400px] w-full rounded-xl border border-gray-200 bg-gray-50 shadow-inner"
@@ -890,7 +890,7 @@
 					<section class="opacity-100">
 						<SectionHeader title="Types of Compressor" color="#B34700" />
 						<div
-							class="relative z-[1] rounded-tr-3xl rounded-b-3xl border-[3px] border-[#B34700] bg-white p-6 text-[#1a2b47] md:p-8"
+							class="relative z-[1] rounded-b-3xl border-[3px] border-[#B34700] bg-white p-6 text-[#1a2b47] md:p-8"
 						>
 							<h5
 								class="font-heading mb-4 text-lg font-bold text-[#B34700] underline decoration-2 underline-offset-4"
@@ -1053,7 +1053,7 @@
 					<section class="opacity-100">
 						<SectionHeader title="Axial Flow Compressor" color="#B34700" />
 						<div
-							class="relative z-[1] rounded-tr-3xl rounded-b-3xl border-[3px] border-[#B34700] bg-white p-6 text-[#1a2b47] md:p-8"
+							class="relative z-[1] rounded-b-3xl border-[3px] border-[#B34700] bg-white p-6 text-[#1a2b47] md:p-8"
 						>
 							<p class="mb-6 text-justify text-lg leading-loose text-[#2c3e50]">
 								In an axial flow compressor, the airflow is along the horizontal axis of the

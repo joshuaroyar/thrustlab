@@ -5,6 +5,7 @@
 	import { fade, fly } from 'svelte/transition';
 	import ImageModal from '$lib/components/ui/ImageModal.svelte';
 	import ImageGrid from '$lib/components/ui/ImageGrid.svelte';
+	import SectionHeader from '$lib/components/ui/SectionHeader.svelte';
 
 	let totalPages = 3;
 	$: currentPage = parseInt($page.url.searchParams.get('page') || '1');
@@ -61,7 +62,7 @@
 	<!-- Header Section -->
 	<div class="mb-12 flex flex-col items-center gap-6">
 		<h1
-			class="animate-gradient-flash font-heading bg-gradient-to-r from-blue-400 via-cyan-400 to-blue-400 bg-clip-text text-center text-4xl font-black tracking-tight text-transparent drop-shadow-lg md:text-5xl lg:text-7xl"
+			class="animate-gradient-flash font-heading bg-gradient-to-r from-blue-400 via-cyan-400 to-blue-400 bg-clip-text text-center text-5xl font-black tracking-tight text-transparent drop-shadow-lg md:text-6xl"
 		>
 			PRELIMINARY LABORATORY MODULE:<br class="hidden md:block" /> GAS TURBINE ENGINE OVERHAUL
 		</h1>
@@ -73,11 +74,7 @@
 		{#if currentPage === 1}
 			<div in:fly={{ y: 20, duration: 400, delay: 200 }} out:fade={{ duration: 200 }}>
 				<section class="opacity-100">
-					<h2
-						class="font-heading relative z-[2] mx-auto mb-[-2px] flex w-full max-w-6xl items-center justify-center gap-4 rounded-t-3xl bg-[#5da8cb] px-12 py-4 text-2xl font-bold tracking-wide text-white uppercase shadow-none [clip-path:polygon(0_0,92%_0,100%_100%,0%_100%)] md:text-3xl"
-					>
-						<span class="hidden md:inline">01</span> GAS TURBINE ENGINE OVERHAUL
-					</h2>
+					<SectionHeader title="Gas Turbine Engine Overhaul" color="#5da8cb" />
 					<div
 						class="relative z-[1] min-h-[300px] rounded-tr-3xl rounded-b-3xl border-[3px] border-[#5da8cb] bg-white p-6 text-[#1a2b47] md:p-8"
 					>
@@ -145,11 +142,7 @@
 		{#if currentPage === 2}
 			<div in:fly={{ y: 20, duration: 400, delay: 200 }} out:fade={{ duration: 200 }}>
 				<section class="opacity-100">
-					<h2
-						class="font-heading relative z-[2] mx-auto mb-[-2px] flex w-full max-w-6xl items-center justify-center gap-4 rounded-t-3xl bg-[#5da8cb] px-12 py-4 text-2xl font-bold tracking-wide text-white uppercase shadow-none [clip-path:polygon(0_0,92%_0,100%_100%,0%_100%)] md:text-3xl"
-					>
-						<span class="hidden md:inline">02</span> OVERHAUL PROCEDURES
-					</h2>
+					<SectionHeader title="Overhaul Procedures" color="#5da8cb" />
 					<div
 						class="relative z-[1] min-h-[300px] rounded-tr-3xl rounded-b-3xl border-[3px] border-[#5da8cb] bg-white p-6 text-[#1a2b47] md:p-8"
 					>
@@ -312,11 +305,7 @@
 		{#if currentPage === 3}
 			<div in:fly={{ y: 20, duration: 400, delay: 200 }} out:fade={{ duration: 200 }}>
 				<section class="opacity-100">
-					<h2
-						class="font-heading relative z-[2] mx-auto mb-[-2px] flex w-full max-w-6xl items-center justify-center gap-4 rounded-t-3xl bg-[#5da8cb] px-12 py-4 text-2xl font-bold tracking-wide text-white uppercase shadow-none [clip-path:polygon(0_0,92%_0,100%_100%,0%_100%)] md:text-3xl"
-					>
-						<span class="hidden md:inline">03</span> BALANCING, ASSEMBLY & TESTING
-					</h2>
+					<SectionHeader title="Balancing, Assembly & Testing" color="#5da8cb" />
 					<div
 						class="relative z-[1] min-h-[300px] rounded-tr-3xl rounded-b-3xl border-[3px] border-[#5da8cb] bg-white p-6 text-[#1a2b47] md:p-8"
 					>

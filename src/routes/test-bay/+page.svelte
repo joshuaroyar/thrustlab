@@ -130,6 +130,11 @@
 		return newArray;
 	}
 
+	function getModuleColor(moduleId: number): string {
+		const colors = ['#00CED1', '#4CAF50', '#D35400', '#FFD966'];
+		return colors[(moduleId - 1) % colors.length];
+	}
+
 	function startModule(module: Module) {
 		// Clone the module to avoid mutating the original data
 		const moduleClone = { ...module, questions: [...module.questions] };
@@ -309,25 +314,25 @@
 		<!-- Module Selection View -->
 		<div class="content-wrapper animate-on-scroll mx-auto max-w-7xl">
 			<h1
-				class="page-title animate-gradient-flash font-heading mb-6 bg-gradient-to-r from-blue-400 via-cyan-400 to-blue-400 bg-clip-text text-center text-4xl font-black tracking-tight text-transparent drop-shadow-xl md:text-6xl"
+				class="page-title animate-on-scroll animate-gradient-flash font-heading mb-6 bg-gradient-to-r from-purple-400 via-fuchsia-500 to-purple-400 bg-clip-text text-center text-5xl font-black tracking-tight text-transparent drop-shadow-[0_4px_10px_rgba(168,85,247,0.4)] md:text-8xl"
 			>
 				Test Bay
 			</h1>
 			<p
-				class="mx-auto mb-8 max-w-[900px] text-center text-xl leading-relaxed font-bold text-[#1b3558] drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)] md:text-2xl"
+				class="animate-on-scroll animate-delay-100 mx-auto mb-8 max-w-[900px] text-center text-xl leading-relaxed font-bold text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)] md:text-2xl"
 				style="font-family: 'Gotham', 'Gotham Bold', sans-serif;"
 			>
 				Welcome to the Test Bay, where learning turns into a challenge. Here, students face
-				<span class="text-[#76667f]"
+				<span class="text-purple-400"
 					>interactive assessments designed to gauge their understanding</span
 				> of the Hangar Zone, Turbofan Engine Zone, and Overhaul Bay. It's not just an activity—it's a
 				test of mastery, confidence, and readiness to take flight.
 			</p>
 
 			<div
-				class="info-card animate-on-scroll mb-8 flex flex-col items-center gap-6 rounded-[25px] border-2 border-white/50 bg-white p-6 shadow-lg transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl md:flex-row md:p-8"
+				class="info-card animate-on-scroll mb-8 flex min-h-[220px] flex-col items-center justify-center gap-0 rounded-[25px] border-2 border-white/50 bg-white p-6 pb-0 shadow-lg transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl md:flex-row-reverse md:items-center md:gap-8 md:p-8 md:pb-8"
 			>
-				<div class="info-content flex-1">
+				<div class="info-content max-w-2xl flex-1">
 					<h3 class="font-heading mb-6 text-2xl font-black text-[#1b3558]">
 						Assessment Info – Here's What You Need to Know:
 					</h3>
@@ -355,27 +360,38 @@
 					</ul>
 				</div>
 				<div
-					class="jaja-character flex h-[150px] w-[150px] shrink-0 items-center justify-center md:h-[180px] md:w-[180px]"
+					class="jaja-character flex h-[180px] w-[180px] shrink-0 items-center justify-center md:h-[220px] md:w-[220px]"
 				>
 					<img
 						src="/images/jaja-standing.png"
 						alt="JAJA Character"
-						class="h-auto max-w-full drop-shadow-md"
+						class="h-full w-auto object-contain drop-shadow-md"
 					/>
 				</div>
 			</div>
 
-			<div class="test-grid grid grid-cols-1 gap-6 md:grid-cols-3">
+			<div
+				class="test-grid animate-on-scroll animate-delay-300 grid grid-cols-1 gap-6 md:grid-cols-3"
+			>
 				{#each modules as module, idx}
 					<div
 						class="test-card module-{module.id} group relative flex flex-col items-center justify-center overflow-hidden rounded-[25px] border-3 bg-white p-8 text-center shadow-lg transition-all duration-400 hover:-translate-y-2 hover:scale-[1.02] hover:shadow-2xl"
-						style="--delay: {idx * 0.1}s; border-color: #2196f3;"
+						style="--delay: {idx * 0.1}s; border-color: {[
+							'#00CED1',
+							'#4CAF50',
+							'#D35400',
+							'#FFD966'
+						][idx % 4]};"
 					>
-						<h3 class="font-heading mb-2 font-bold text-[#222831]">
+						<h3
+							class="font-heading mb-2 font-bold"
+							style="color: {['#00CED1', '#4CAF50', '#D35400', '#FFD966'][idx % 4]};"
+						>
 							MODULE {String(module.id).padStart(2, '0')}:
 						</h3>
 						<h4
-							class="font-heading animate-gradient-flash mb-4 bg-gradient-to-r from-blue-500 via-cyan-500 to-blue-500 bg-clip-text text-2xl font-black text-transparent md:text-3xl"
+							class="font-heading mb-4 text-2xl font-black md:text-3xl"
+							style="color: {['#00CED1', '#4CAF50', '#D35400', '#FFD966'][idx % 4]};"
 						>
 							{module.title.toUpperCase()}
 						</h4>
@@ -383,7 +399,8 @@
 							{module.description}
 						</p>
 						<button
-							class="start-button rounded-full bg-[#1b3558] px-8 py-3 font-bold text-white transition-all hover:scale-105 hover:bg-[#1b3558]/90 hover:shadow-lg"
+							class="start-button rounded-full px-8 py-3 font-bold text-white transition-all hover:scale-105 hover:shadow-lg"
+							style="background-color: {['#00CED1', '#4CAF50', '#D35400', '#FFD966'][idx % 4]};"
 							onclick={() => startModule(module)}
 						>
 							START ASSESSMENT
@@ -394,59 +411,70 @@
 		</div>
 	{:else if viewState === 'quiz' && selectedModule}
 		<!-- Quiz View -->
-		<div class="quiz-container mx-auto max-w-[800px] p-4 md:p-8">
-			<div class="quiz-header mb-8 flex items-center justify-between gap-4">
-				<button
-					type="button"
-					class="back-button font-body flex items-center gap-2 rounded-xl border-2 border-[#76667F]/30 bg-white/90 px-5 py-3 font-bold text-[#76667F] backdrop-blur-md transition-all duration-300 hover:-translate-x-1 hover:border-[#76667F] hover:shadow-lg"
-					onclick={backToSelection}
-				>
-					<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-						<path
-							d="M19 12H5M12 19l-7-7 7-7"
-							stroke-width="2"
-							stroke-linecap="round"
-							stroke-linejoin="round"
-						/>
-					</svg>
-					Back to Modules
-				</button>
-				<div class="module-title">
-					<h2 class="font-heading text-xl font-extrabold text-[#1b3558] drop-shadow-sm md:text-2xl">
-						Module {selectedModule.id}: {selectedModule.title}
-					</h2>
-				</div>
-			</div>
-
-			<div
-				class="progress-bar mb-3 h-3 w-full overflow-hidden rounded-full border border-white/30 bg-white/20"
-			>
-				<div
-					class="progress-fill h-full rounded-full bg-[#2196f3] shadow-[0_0_10px_rgba(33,150,243,0.5)] transition-all duration-300 ease-out"
-					style="width: {((currentQuestionIndex + 1) / selectedModule.questions.length) * 100}%"
-				></div>
-			</div>
-			<div class="progress-text font-body mb-8 text-right text-sm font-semibold text-[#1b3558]">
-				Question {currentQuestionIndex + 1} of {selectedModule.questions.length}
-			</div>
-
+		<div
+			class="quiz-container mx-auto flex min-h-screen max-w-[1200px] flex-col justify-center px-4 pt-32 pb-12 md:px-8 md:pt-40"
+		>
+			<!-- Main Question Card (Unified) -->
 			{#if currentQuestion}
 				<div
-					class="question-card mb-8 rounded-[25px] border border-white/50 bg-white p-6 shadow-xl md:p-8"
+					class="relative overflow-hidden rounded-[3rem] border-4 bg-white p-8 shadow-2xl md:p-12"
+					style="border-color: {getModuleColor(selectedModule.id)};"
 				>
+					<!-- Internal Header -->
+					<div
+						class="mb-8 flex flex-col justify-between gap-4 border-b border-gray-100 pb-6 md:flex-row md:items-center"
+					>
+						<button
+							class="font-heading group flex items-center gap-2 text-lg font-bold transition-all hover:-translate-x-1"
+							style="color: {getModuleColor(selectedModule.id)};"
+							onclick={backToSelection}
+						>
+							<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+								<path
+									d="M19 12H5M12 19l-7-7 7-7"
+									stroke-width="2.5"
+									stroke-linecap="round"
+									stroke-linejoin="round"
+								/>
+							</svg>
+							Back to Modules
+						</button>
+						<h2
+							class="font-heading text-xl font-extrabold uppercase md:text-2xl"
+							style="color: {getModuleColor(selectedModule.id)};"
+						>
+							Module {selectedModule.id}: {selectedModule.title}
+						</h2>
+					</div>
+					<!-- Progress Bar -->
+					<div class="mb-8">
+						<div class="mb-2 flex items-center justify-end">
+							<span class="font-heading text-sm font-bold text-[#1b3558]/70">
+								Question {currentQuestionIndex + 1} of {selectedModule.questions.length}
+							</span>
+						</div>
+						<div class="h-2 w-full overflow-hidden rounded-full bg-gray-100">
+							<div
+								class="h-full rounded-full bg-[#2196f3] transition-all duration-300 ease-out"
+								style="width: {((currentQuestionIndex + 1) / selectedModule.questions.length) *
+									100}%;"
+							></div>
+						</div>
+					</div>
+
 					<h3
-						class="question-text font-heading mb-8 text-xl leading-relaxed font-bold text-[#222831] md:text-2xl"
+						class="font-heading mb-10 text-2xl leading-tight font-black text-[#1b3558] md:text-3xl"
 					>
 						{currentQuestionIndex + 1}. {currentQuestion.text}
 					</h3>
 
-					<div class="options-list flex flex-col gap-4">
+					<div class="options-list mb-12 flex flex-col gap-4">
 						{#each currentQuestion.options as option, idx}
 							<label
-								class="option-item relative flex cursor-pointer items-center rounded-2xl border-2 border-[#E9ECEF] bg-[#F8F9FA] px-6 py-5 transition-all duration-200 hover:translate-x-1 hover:border-[#B0BEC5] hover:bg-[#E9ECEF] {userAnswers[
+								class="group flex cursor-pointer items-center gap-4 rounded-2xl border-2 border-transparent bg-gray-50 p-4 transition-all hover:bg-gray-100 {userAnswers[
 									currentQuestionIndex
 								] === idx
-									? '!border-[#76667F] !bg-[#76667F]/10 shadow-[0_4px_12px_rgba(118,102,127,0.15)]'
+									? '!border-[#2196f3] !bg-white shadow-lg'
 									: ''}"
 							>
 								<input
@@ -458,98 +486,99 @@
 									class="absolute opacity-0"
 								/>
 								<span
-									class="option-label font-heading mr-5 flex h-9 w-9 items-center justify-center rounded-[10px] bg-[#E9ECEF] text-lg font-extrabold text-[#222831] transition-all duration-200 {userAnswers[
+									class="font-heading flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-gray-200 text-lg font-bold text-gray-500 transition-all group-hover:bg-gray-300 {userAnswers[
 										currentQuestionIndex
 									] === idx
-										? '!bg-[#76667F] text-white'
-										: ''}">{String.fromCharCode(65 + idx)}</span
+										? '!bg-[#2196f3] !text-white'
+										: ''}"
 								>
-								<span class="option-text font-body flex-1 text-lg font-medium text-[#222831]"
-									>{option}</span
-								>
+									{String.fromCharCode(65 + idx)}
+								</span>
+								<span class="font-body text-lg font-medium text-gray-700">
+									{option}
+								</span>
 							</label>
 						{/each}
 					</div>
+
+					<!-- Navigation Buttons -->
+					<div class="flex items-center justify-between border-t border-gray-100 pt-8">
+						<button
+							class="font-heading flex items-center gap-2 rounded-xl border-2 border-gray-200 px-8 py-3 font-bold text-gray-600 transition-all hover:border-gray-300 hover:bg-gray-50 disabled:opacity-50"
+							onclick={previousQuestion}
+							disabled={currentQuestionIndex === 0}
+						>
+							<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+								<path
+									d="M15 18l-6-6 6-6"
+									stroke-width="2"
+									stroke-linecap="round"
+									stroke-linejoin="round"
+								/>
+							</svg>
+							Previous
+						</button>
+
+						{#if currentQuestionIndex === selectedModule.questions.length - 1}
+							<button
+								class="font-heading flex items-center gap-2 rounded-xl px-10 py-3 font-bold text-white shadow-lg transition-all hover:-translate-y-0.5 hover:shadow-xl disabled:opacity-50"
+								style="background-color: #1b3558;"
+								onclick={submitTest}
+								disabled={userAnswers.some((a) => a === null)}
+							>
+								Submit Test
+								<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+									<path
+										d="M5 13l4 4L19 7"
+										stroke-width="2"
+										stroke-linecap="round"
+										stroke-linejoin="round"
+									/>
+								</svg>
+							</button>
+						{:else}
+							<button
+								class="font-heading flex items-center gap-2 rounded-xl px-10 py-3 font-bold text-white shadow-lg transition-all hover:-translate-y-0.5 hover:shadow-xl"
+								style="background-color: #1b3558;"
+								onclick={nextQuestion}
+							>
+								Next
+								<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+									<path
+										d="M9 18l6-6-6-6"
+										stroke-width="2"
+										stroke-linecap="round"
+										stroke-linejoin="round"
+									/>
+								</svg>
+							</button>
+						{/if}
+					</div>
+
+					<!-- Quick Navigation (Inside Card) -->
+					<div class="mt-8 border-t border-gray-100 pt-8 text-center">
+						<p class="font-heading mb-4 text-sm tracking-widest text-[#1b3558]/70 uppercase">
+							Quick Navigation:
+						</p>
+						<div class="inline-flex flex-wrap justify-center gap-2">
+							{#each selectedModule.questions as _, idx}
+								<button
+									class="font-heading flex h-10 w-10 items-center justify-center rounded-lg text-sm font-bold transition-all hover:scale-110 {userAnswers[
+										idx
+									] !== null
+										? 'bg-gray-100 text-[#1b3558]'
+										: 'bg-gray-50 text-gray-400 hover:bg-gray-100'} {idx === currentQuestionIndex
+										? '!bg-[#1b3558] !text-white shadow-lg'
+										: ''}"
+									onclick={() => (currentQuestionIndex = idx)}
+								>
+									{idx + 1}
+								</button>
+							{/each}
+						</div>
+					</div>
 				</div>
 			{/if}
-
-			<div
-				class="navigation-buttons fixed right-0 bottom-20 left-0 z-50 flex items-center justify-between border-t border-gray-200 bg-white p-4 shadow-lg md:static md:mt-8 md:border-none md:bg-transparent md:p-0 md:shadow-none"
-			>
-				<button
-					class="nav-button secondary flex items-center gap-2 rounded-xl bg-gray-100 px-6 py-3 font-bold text-gray-700 hover:bg-gray-200 disabled:opacity-50"
-					onclick={previousQuestion}
-					disabled={currentQuestionIndex === 0}
-				>
-					<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-						<path
-							d="M15 18l-6-6 6-6"
-							stroke-width="2"
-							stroke-linecap="round"
-							stroke-linejoin="round"
-						/>
-					</svg>
-					Previous
-				</button>
-
-				{#if currentQuestionIndex === selectedModule.questions.length - 1}
-					<button
-						class="nav-button primary submit-button flex items-center gap-2 rounded-xl bg-green-500 px-8 py-3 font-bold text-white hover:bg-green-600 disabled:opacity-50"
-						onclick={submitTest}
-						disabled={userAnswers.some((a) => a === null)}
-					>
-						Submit Test
-						<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-							<path
-								d="M5 13l4 4L19 7"
-								stroke-width="2"
-								stroke-linecap="round"
-								stroke-linejoin="round"
-							/>
-						</svg>
-					</button>
-				{:else}
-					<button
-						class="nav-button primary flex items-center gap-2 rounded-xl bg-[#1b3558] px-8 py-3 font-bold text-white hover:bg-[#1b3558]/90"
-						onclick={nextQuestion}
-					>
-						Next
-						<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-							<path
-								d="M9 18l6-6-6-6"
-								stroke-width="2"
-								stroke-linecap="round"
-								stroke-linejoin="round"
-							/>
-						</svg>
-					</button>
-				{/if}
-			</div>
-
-			<div
-				class="question-nav mb-24 rounded-[20px] border border-white/20 bg-white/10 p-6 backdrop-blur-md md:mb-0"
-			>
-				<p class="font-heading mb-4 text-center font-semibold tracking-wide text-[#1b3558]">
-					Quick Navigation:
-				</p>
-				<div class="question-dots flex flex-wrap justify-center gap-3">
-					{#each selectedModule.questions as _, idx}
-						<button
-							class="dot font-body flex h-10 w-10 items-center justify-center rounded-xl border-2 border-transparent bg-white/20 font-bold text-[#1b3558] transition-all duration-300 hover:scale-110 hover:bg-white/30 {userAnswers[
-								idx
-							] !== null
-								? '!bg-white/80 !text-[#222831]'
-								: ''} {idx === currentQuestionIndex
-								? '!scale-115 !border-white !bg-[#2196f3] !text-white shadow-[0_0_15px_rgba(33,150,243,0.6)]'
-								: ''}"
-							onclick={() => (currentQuestionIndex = idx)}
-							title="Question {idx + 1}"
-						>
-							{idx + 1}
-						</button>
-					{/each}
-				</div>
-			</div>
 		</div>
 	{:else if viewState === 'results' && selectedModule}
 		<!-- Results View -->
@@ -557,7 +586,7 @@
 		<div class="results-container mx-auto max-w-[900px] p-4 text-center md:p-8">
 			<div class="results-header">
 				<h1
-					class="font-heading mb-2 bg-gradient-to-br from-white to-gray-300 bg-clip-text text-4xl font-black text-transparent drop-shadow-sm md:text-6xl"
+					class="font-heading mb-2 bg-gradient-to-r from-purple-400 via-fuchsia-500 to-purple-400 bg-clip-text text-4xl font-black text-transparent drop-shadow-[0_2px_4px_rgba(0,0,0,0.3)] md:text-6xl"
 				>
 					{score >= 70 ? 'Congratulations!' : 'Assessment Complete'}
 				</h1>

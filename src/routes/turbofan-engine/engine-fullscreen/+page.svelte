@@ -187,23 +187,23 @@
 			onkeydown={(e) => e.key === 'Enter' && (showInstructions = false)}
 		>
 			<div
-				class="m-auto w-[90%] max-w-[700px] rounded-2xl border-2 border-white/10 bg-gradient-to-br from-[#2d3561] to-[#1f2544] p-8 shadow-[0_20px_60px_rgba(0,0,0,0.5)]"
+				class="m-auto w-[90%] max-w-[420px] rounded-2xl border-2 border-white/10 bg-gradient-to-br from-[#2d3561] to-[#1f2544] p-5 shadow-[0_20px_60px_rgba(0,0,0,0.5)]"
 				role="button"
 				tabindex="0"
 				onclick={(e) => e.stopPropagation()}
 				onkeydown={(e) => e.stopPropagation()}
 			>
-				<div class="flex flex-col gap-8">
+				<div class="flex flex-col gap-3">
 					<h1
-						class="animate-gradient-flash font-heading m-0 bg-gradient-to-r from-[#FFD966] via-[#00CED1] to-[#FFD966] bg-[length:200%_100%] bg-clip-text text-center text-3xl font-black text-transparent drop-shadow-md md:text-5xl"
+						class="animate-gradient-flash font-heading m-0 bg-gradient-to-r from-[#FFD966] via-[#00CED1] to-[#FFD966] bg-[length:200%_100%] bg-clip-text text-center text-2xl font-black text-transparent drop-shadow-md md:text-3xl"
 					>
 						Welcome aboard!
 					</h1>
-					<p class="font-body mb-8 text-center text-xl text-[#00CED1] drop-shadow-md">
-						Explore your 3D Turbofan Engine like a pro:
+					<p class="font-body mb-2 text-center text-sm text-[#00CED1] drop-shadow-md">
+						Explore your 3D Turbofan Engine:
 					</p>
 
-					<div class="mb-8 flex flex-col gap-4">
+					<div class="mb-4 flex flex-col gap-3">
 						{#each [{ icon: 'zoom', title: 'Zoom In & Out', desc: 'Use your mouss scroll to get closer or step back for the full view.' }, { icon: 'rotate', title: 'Rotate the Engine', desc: 'Hold the left mouse button and move around to inspect every angle.' }, { icon: 'explore', title: 'Explore Components', desc: 'Click any part to see its definition and hear a voice explanation.' }, { icon: 'labels', title: 'Toggle Labels', desc: 'Turn component labels on or off to reduce clutter or check details.' }] as item}
 							<div
 								class="flex items-start gap-4 rounded-2xl border border-white/10 bg-white/5 p-4 transition-all hover:translate-x-1 hover:border-sky-300/40 hover:bg-white/10"
