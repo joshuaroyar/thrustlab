@@ -14,6 +14,7 @@
 	let cameraResetTrigger = $state(0);
 	let showInstructions = $state(true);
 	let showLabels = $state(false);
+	let isMuted = $state(false);
 
 	onMount(() => {
 		// Handle escape key to go back to turbofan engine
@@ -104,28 +105,51 @@
 			</button>
 
 			<button
-				class="font-heading flex items-center gap-2 rounded-lg border px-5 py-2.5 text-sm font-medium tracking-wide uppercase shadow-md backdrop-blur-md transition-all hover:-translate-y-0.5 hover:shadow-lg md:text-base {showLabels
+				class="font-heading flex items-center gap-2 rounded-lg border px-5 py-2.5 text-sm font-medium tracking-wide uppercase shadow-md backdrop-blur-md transition-all hover:-translate-y-0.5 hover:shadow-lg md:text-base {isMuted
 					? 'border-[#FFD966] bg-[#FFD966]/20 text-[#FFD966] shadow-[0_0_15px_rgba(255,217,102,0.3)]'
 					: 'border-white/20 bg-white/10 text-gray-200 hover:border-[#5da8cb] hover:bg-[#5da8cb]/30 hover:text-white'}"
-				title="Toggle Labels"
-				onclick={() => (showLabels = !showLabels)}
+				title={isMuted ? 'Unmute Audio' : 'Mute Audio'}
+				onclick={() => {
+					isMuted = !isMuted;
+					ttsService.setMuted(isMuted);
+				}}
 			>
-				<svg
-					xmlns="http://www.w3.org/2000/svg"
-					width="20"
-					height="20"
-					viewBox="0 0 24 24"
-					fill="none"
-					stroke="currentColor"
-					stroke-width="2"
-					stroke-linecap="round"
-					stroke-linejoin="round"
-				>
-					<path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"
-					></path>
-					<line x1="7" y1="7" x2="7.01" y2="7"></line>
-				</svg>
-				{showLabels ? 'Labels On' : 'Labels Off'}
+				{#if isMuted}
+					<!-- Muted Icon -->
+					<svg
+						xmlns="http://www.w3.org/2000/svg"
+						width="20"
+						height="20"
+						viewBox="0 0 24 24"
+						fill="none"
+						stroke="currentColor"
+						stroke-width="2"
+						stroke-linecap="round"
+						stroke-linejoin="round"
+					>
+						<path d="M11 5L6 9H2v6h4l5 4V5z"></path>
+						<line x1="23" y1="9" x2="17" y2="15"></line>
+						<line x1="17" y1="9" x2="23" y2="15"></line>
+					</svg>
+					Unmute
+				{:else}
+					<!-- Volume Icon -->
+					<svg
+						xmlns="http://www.w3.org/2000/svg"
+						width="20"
+						height="20"
+						viewBox="0 0 24 24"
+						fill="none"
+						stroke="currentColor"
+						stroke-width="2"
+						stroke-linecap="round"
+						stroke-linejoin="round"
+					>
+						<polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+						<path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path>
+					</svg>
+					Mute Audio
+				{/if}
 			</button>
 
 			<button

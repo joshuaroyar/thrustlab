@@ -181,10 +181,7 @@
 						<div class="card-front">
 							<div class="photo-wrapper">
 								<div class="photo-glow"></div>
-								<img
-									src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 200'%3E%3Crect fill='%23e0e0e0' width='200' height='200'/%3E%3Cpath fill='%23b0b0b0' d='M100 95c13.8 0 25-11.2 25-25s-11.2-25-25-25-25 11.2-25 25 11.2 25 25 25zm0 12.5c-16.7 0-50 8.4-50 25v18.8c0 3.4 2.8 6.2 6.2 6.2h87.5c3.4 0 6.2-2.8 6.2-6.2v-18.8c0-16.6-33.2-25-49.9-25z'/%3E%3C/svg%3E"
-									alt="Jannah Michellaine C. Cristobal"
-								/>
+								<img src="/images/researchers/jannah.jpeg" alt="Jannah Michellaine C. Cristobal" />
 							</div>
 							<div class="card-info">
 								<h3>Jannah Michellaine C. Cristobal</h3>
@@ -199,10 +196,7 @@
 						<div class="card-front">
 							<div class="photo-wrapper">
 								<div class="photo-glow"></div>
-								<img
-									src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 200'%3E%3Crect fill='%23e0e0e0' width='200' height='200'/%3E%3Cpath fill='%23b0b0b0' d='M100 95c13.8 0 25-11.2 25-25s-11.2-25-25-25-25 11.2-25 25 11.2 25 25 25zm0 12.5c-16.7 0-50 8.4-50 25v18.8c0 3.4 2.8 6.2 6.2 6.2h87.5c3.4 0 6.2-2.8 6.2-6.2v-18.8c0-16.6-33.2-25-49.9-25z'/%3E%3C/svg%3E"
-									alt="Alfred Rupert D. De Guzman"
-								/>
+								<img src="/images/researchers/alfred.jpeg" alt="Alfred Rupert D. De Guzman" />
 							</div>
 							<div class="card-info">
 								<h3>Alfred Rupert D. De Guzman</h3>
@@ -217,10 +211,7 @@
 						<div class="card-front">
 							<div class="photo-wrapper">
 								<div class="photo-glow"></div>
-								<img
-									src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 200'%3E%3Crect fill='%23e0e0e0' width='200' height='200'/%3E%3Cpath fill='%23b0b0b0' d='M100 95c13.8 0 25-11.2 25-25s-11.2-25-25-25-25 11.2-25 25 11.2 25 25 25zm0 12.5c-16.7 0-50 8.4-50 25v18.8c0 3.4 2.8 6.2 6.2 6.2h87.5c3.4 0 6.2-2.8 6.2-6.2v-18.8c0-16.6-33.2-25-49.9-25z'/%3E%3C/svg%3E"
-									alt="Janssen M. Palac"
-								/>
+								<img src="/images/researchers/janssen.jpeg" alt="Janssen M. Palac" />
 							</div>
 							<div class="card-info">
 								<h3>Janssen M. Palac</h3>
@@ -235,10 +226,7 @@
 						<div class="card-front">
 							<div class="photo-wrapper">
 								<div class="photo-glow"></div>
-								<img
-									src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 200'%3E%3Crect fill='%23e0e0e0' width='200' height='200'/%3E%3Cpath fill='%23b0b0b0' d='M100 95c13.8 0 25-11.2 25-25s-11.2-25-25-25-25 11.2-25 25 11.2 25 25 25zm0 12.5c-16.7 0-50 8.4-50 25v18.8c0 3.4 2.8 6.2 6.2 6.2h87.5c3.4 0 6.2-2.8 6.2-6.2v-18.8c0-16.6-33.2-25-49.9-25z'/%3E%3C/svg%3E"
-									alt="Marc Ashriel V. San Pedro"
-								/>
+								<img src="/images/researchers/marc.jpeg" alt="Marc Ashriel V. San Pedro" />
 							</div>
 							<div class="card-info">
 								<h3>Marc Ashriel V. San Pedro</h3>

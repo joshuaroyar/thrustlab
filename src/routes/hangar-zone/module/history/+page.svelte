@@ -7,6 +7,7 @@
 	import SearchModal from '$lib/components/SearchModal.svelte';
 	import ImageModal from '$lib/components/ui/ImageModal.svelte';
 	import ImageGrid from '$lib/components/ui/ImageGrid.svelte';
+	import SectionHeader from '$lib/components/ui/SectionHeader.svelte';
 	import { onMount } from 'svelte';
 
 	const totalPages = 4;
@@ -119,11 +120,7 @@
 		>
 			<!-- Section 1 -->
 			<section>
-				<h2
-					class="font-heading clip-path-custom relative z-20 inline-flex max-w-[90%] items-center gap-3 rounded-t-2xl bg-[#1b3558] px-6 py-3 text-xl font-extrabold text-white md:max-w-fit md:text-2xl"
-				>
-					PRINCIPLE OF JET PROPULSION
-				</h2>
+				<SectionHeader title="PRINCIPLE OF JET PROPULSION" />
 				<div
 					class="relative z-10 -mt-[2px] rounded-tr-3xl rounded-b-3xl border-4 border-[#1b3558] bg-white p-6 text-[#1b3558] shadow-xl md:p-8"
 				>
@@ -156,11 +153,7 @@
 
 			<!-- Section 2 -->
 			<section>
-				<h2
-					class="font-heading clip-path-custom relative z-20 inline-flex max-w-[90%] items-center gap-3 rounded-t-2xl bg-[#1b3558] px-6 py-3 text-xl font-extrabold text-white md:max-w-fit md:text-2xl"
-				>
-					HISTORY OF JET PROPULSION
-				</h2>
+				<SectionHeader title="HISTORY OF JET PROPULSION" />
 				<div
 					class="relative z-10 -mt-[2px] rounded-tr-3xl rounded-b-3xl border-4 border-[#1b3558] bg-white p-6 text-[#1b3558] shadow-xl md:p-8"
 				>
@@ -251,11 +244,7 @@
 			out:fade={{ duration: 200 }}
 		>
 			<section>
-				<h2
-					class="font-heading clip-path-custom relative z-20 inline-flex max-w-[90%] items-center gap-3 rounded-t-2xl bg-[#1b3558] px-6 py-3 text-xl font-extrabold text-white md:max-w-fit md:text-2xl"
-				>
-					MODERN JET ENGINE DEVELOPMENT
-				</h2>
+				<SectionHeader title="MODERN JET ENGINE DEVELOPMENT" />
 				<div
 					class="relative z-10 -mt-[2px] rounded-tr-3xl rounded-b-3xl border-4 border-[#1b3558] bg-white p-6 text-[#1b3558] shadow-xl md:p-8"
 				>
@@ -366,11 +355,7 @@
 			out:fade={{ duration: 200 }}
 		>
 			<section>
-				<h2
-					class="font-heading clip-path-custom relative z-20 inline-flex max-w-[90%] items-center gap-3 rounded-t-2xl bg-[#1b3558] px-6 py-3 text-xl font-extrabold text-white md:max-w-fit md:text-2xl"
-				>
-					PROPULSION DEVICES
-				</h2>
+				<SectionHeader title="PROPULSION DEVICES" />
 				<div
 					class="relative z-10 -mt-[2px] rounded-tr-3xl rounded-b-3xl border-4 border-[#1b3558] bg-white p-6 text-[#1b3558] shadow-xl md:p-8"
 				>
@@ -428,20 +413,20 @@
 			</section>
 
 			<section>
-				<h2
-					class="font-heading clip-path-custom relative z-20 inline-flex max-w-[90%] items-center gap-3 rounded-t-2xl bg-[#1b3558] px-6 py-3 text-xl font-extrabold text-white md:max-w-fit md:text-2xl"
-				>
-					JET ENGINES – BASIC OPERATION
-				</h2>
+				<SectionHeader title="JET ENGINES – BASIC OPERATION" />
 				<div
 					class="relative z-10 -mt-[2px] rounded-tr-3xl rounded-b-3xl border-4 border-[#1b3558] bg-white p-6 text-[#1b3558] shadow-xl md:p-8"
 				>
 					<div class="grid grid-cols-1 items-start gap-8 md:grid-cols-2">
 						<div class="overflow-hidden rounded-xl border-2 border-[#1b3558]/20 shadow-md">
-							<img
-								src="/images/hangar-zone/history/10.png"
-								alt="Jet Engine Operation Diagram"
-								class="h-auto w-full object-cover"
+							<ImageGrid
+								images={[
+									{
+										src: '/images/hangar-zone/history/10.png',
+										alt: 'Jet Engine Operation Diagram'
+									}
+								]}
+								columns={1}
 							/>
 						</div>
 						<div class="flex flex-col justify-center">
@@ -486,11 +471,7 @@
 			out:fade={{ duration: 200 }}
 		>
 			<section>
-				<h2
-					class="font-heading clip-path-custom relative z-20 inline-flex max-w-[90%] items-center gap-3 rounded-t-2xl bg-[#1b3558] px-6 py-3 text-xl font-extrabold text-white md:max-w-fit md:text-2xl"
-				>
-					TYPES OF JET ENGINES
-				</h2>
+				<SectionHeader title="TYPES OF JET ENGINES" />
 				<div
 					class="relative z-10 -mt-[2px] rounded-tr-3xl rounded-b-3xl border-4 border-[#1b3558] bg-white p-6 text-[#1b3558] shadow-xl md:p-8"
 				>
@@ -546,10 +527,9 @@
 								</li>
 							</ul>
 							<div class="overflow-hidden rounded-xl shadow-md">
-								<img
-									src="/images/hangar-zone/history/12.png"
-									alt="Pulse Jet Diagram"
-									class="h-auto w-full"
+								<ImageGrid
+									images={[{ src: '/images/hangar-zone/history/12.png', alt: 'Pulse Jet Diagram' }]}
+									columns={1}
 								/>
 							</div>
 						</div>
@@ -569,10 +549,9 @@
 								</li>
 							</ul>
 							<div class="overflow-hidden rounded-xl shadow-md">
-								<img
-									src="/images/hangar-zone/history/13.png"
-									alt="Scram Jet Diagram"
-									class="h-auto w-full"
+								<ImageGrid
+									images={[{ src: '/images/hangar-zone/history/13.png', alt: 'Scram Jet Diagram' }]}
+									columns={1}
 								/>
 							</div>
 						</div>
@@ -594,10 +573,9 @@
 									</li>
 								</ul>
 								<div class="overflow-hidden rounded-xl shadow-md">
-									<img
-										src="/images/hangar-zone/history/14.png"
-										alt="Rocket Engine"
-										class="h-auto w-full"
+									<ImageGrid
+										images={[{ src: '/images/hangar-zone/history/14.png', alt: 'Rocket Engine' }]}
+										columns={1}
 									/>
 								</div>
 							</div>
@@ -617,10 +595,11 @@
 									</li>
 								</ul>
 								<div class="overflow-hidden rounded-xl shadow-md">
-									<img
-										src="/images/hangar-zone/history/15.png"
-										alt="Gas Turbine Engine"
-										class="h-auto w-full"
+									<ImageGrid
+										images={[
+											{ src: '/images/hangar-zone/history/15.png', alt: 'Gas Turbine Engine' }
+										]}
+										columns={1}
 									/>
 								</div>
 							</div>
@@ -671,7 +650,5 @@
 
 <style>
 	/* Custom clip path for section titles to create the angled effect */
-	.clip-path-custom {
-		clip-path: polygon(0 0, 92% 0, 100% 100%, 0% 100%);
-	}
+	/* .clip-path-custom moved to global app.css */
 </style>

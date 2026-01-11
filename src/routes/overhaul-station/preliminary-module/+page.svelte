@@ -74,7 +74,7 @@
 			<div in:fly={{ y: 20, duration: 400, delay: 200 }} out:fade={{ duration: 200 }}>
 				<section class="opacity-100">
 					<h2
-						class="font-heading relative z-[2] mb-[-2px] inline-flex w-fit min-w-[40%] items-center gap-4 rounded-t-3xl bg-[#5da8cb] px-8 py-3 text-xl font-bold tracking-wide text-white uppercase shadow-none [clip-path:polygon(0_0,92%_0,100%_100%,0%_100%)] md:px-12 md:text-2xl"
+						class="font-heading relative z-[2] mx-auto mb-[-2px] flex w-full max-w-6xl items-center justify-center gap-4 rounded-t-3xl bg-[#5da8cb] px-12 py-4 text-2xl font-bold tracking-wide text-white uppercase shadow-none [clip-path:polygon(0_0,92%_0,100%_100%,0%_100%)] md:text-3xl"
 					>
 						<span class="hidden md:inline">01</span> GAS TURBINE ENGINE OVERHAUL
 					</h2>
@@ -146,7 +146,7 @@
 			<div in:fly={{ y: 20, duration: 400, delay: 200 }} out:fade={{ duration: 200 }}>
 				<section class="opacity-100">
 					<h2
-						class="font-heading relative z-[2] mb-[-2px] inline-flex w-fit min-w-[40%] items-center gap-4 rounded-t-3xl bg-[#5da8cb] px-8 py-3 text-xl font-bold tracking-wide text-white uppercase shadow-none [clip-path:polygon(0_0,92%_0,100%_100%,0%_100%)] md:px-12 md:text-2xl"
+						class="font-heading relative z-[2] mx-auto mb-[-2px] flex w-full max-w-6xl items-center justify-center gap-4 rounded-t-3xl bg-[#5da8cb] px-12 py-4 text-2xl font-bold tracking-wide text-white uppercase shadow-none [clip-path:polygon(0_0,92%_0,100%_100%,0%_100%)] md:text-3xl"
 					>
 						<span class="hidden md:inline">02</span> OVERHAUL PROCEDURES
 					</h2>
@@ -313,7 +313,7 @@
 			<div in:fly={{ y: 20, duration: 400, delay: 200 }} out:fade={{ duration: 200 }}>
 				<section class="opacity-100">
 					<h2
-						class="font-heading relative z-[2] mb-[-2px] inline-flex w-fit min-w-[40%] items-center gap-4 rounded-t-3xl bg-[#5da8cb] px-8 py-3 text-xl font-bold tracking-wide text-white uppercase shadow-none [clip-path:polygon(0_0,92%_0,100%_100%,0%_100%)] md:px-12 md:text-2xl"
+						class="font-heading relative z-[2] mx-auto mb-[-2px] flex w-full max-w-6xl items-center justify-center gap-4 rounded-t-3xl bg-[#5da8cb] px-12 py-4 text-2xl font-bold tracking-wide text-white uppercase shadow-none [clip-path:polygon(0_0,92%_0,100%_100%,0%_100%)] md:text-3xl"
 					>
 						<span class="hidden md:inline">03</span> BALANCING, ASSEMBLY & TESTING
 					</h2>

@@ -80,9 +80,9 @@
 				</div>
 
 				<!-- Character Image -->
-				<div class="relative z-20 h-40 w-32 shrink-0 md:h-[9.75rem] md:w-[8rem]">
+				<div class="relative z-20 h-64 w-auto shrink-0 md:h-[24rem] md:w-auto">
 					<img
-						src="/icons/jaja.png"
+						src="/images/jaja-vest.png"
 						alt="Jaja Character"
 						class="h-full w-full object-contain drop-shadow-md"
 					/>

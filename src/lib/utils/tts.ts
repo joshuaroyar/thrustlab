@@ -8,6 +8,7 @@ class TTSService {
 	private currentAudio: HTMLAudioElement | null = null;
 	private isPlaying: boolean = false;
 	private currentResolve: (() => void) | null = null;
+	private muted: boolean = false;
 
 	/**
 	 * Convert text to speech and play it
@@ -16,6 +17,11 @@ class TTSService {
 	 */
 	async speak(text: string): Promise<void> {
 		if (typeof window === 'undefined') return;
+
+		// If muted, just return immediately
+		if (this.muted) {
+			return;
+		}
 
 		if (!text || text.trim() === '') {
 			console.warn('TTS: Empty text provided');
@@ -210,6 +216,24 @@ class TTSService {
 		});
 
 		await Promise.allSettled(promises);
+	}
+
+	/**
+	 * Set mute state
+	 * @param muted - Whether audio should be muted
+	 */
+	setMuted(muted: boolean): void {
+		this.muted = muted;
+		if (muted) {
+			this.stop();
+		}
+	}
+
+	/**
+	 * Get current mute state
+	 */
+	isMuted(): boolean {
+		return this.muted;
 	}
 }
 

@@ -307,19 +307,21 @@
 >
 	{#if viewState === 'selection'}
 		<!-- Module Selection View -->
-		<div class="content-wrapper animate-on-scroll mx-auto max-w-[1200px]">
+		<div class="content-wrapper animate-on-scroll mx-auto max-w-7xl">
 			<h1
 				class="page-title animate-gradient-flash font-heading mb-6 bg-gradient-to-r from-blue-400 via-cyan-400 to-blue-400 bg-clip-text text-center text-4xl font-black tracking-tight text-transparent drop-shadow-xl md:text-6xl"
 			>
 				Test Bay
 			</h1>
 			<p
-				class="intro-text font-body mx-auto mb-8 max-w-[900px] text-justify text-xl leading-relaxed font-bold text-[#1b3558] md:text-2xl"
+				class="mx-auto mb-8 max-w-[900px] text-center text-xl leading-relaxed font-bold text-[#1b3558] drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)] md:text-2xl"
+				style="font-family: 'Gotham', 'Gotham Bold', sans-serif;"
 			>
 				Welcome to the Test Bay, where learning turns into a challenge. Here, students face
-				interactive assessments designed to gauge their understanding of the Hangar Zone, Turbofan
-				Engine Zone, and Overhaul Bay. It's not just an activity—it's a test of mastery, confidence,
-				and readiness to take flight.
+				<span class="text-[#76667f]"
+					>interactive assessments designed to gauge their understanding</span
+				> of the Hangar Zone, Turbofan Engine Zone, and Overhaul Bay. It's not just an activity—it's a
+				test of mastery, confidence, and readiness to take flight.
 			</p>
 
 			<div

@@ -375,3 +375,8 @@ main {
 		animation: none !important;
 	}
 }
+
+/* Custom Clip Path for Section Headers */
+.clip-path-custom {
+	clip-path: polygon(0 0, 92% 0, 100% 100%, 0% 100%);
+}

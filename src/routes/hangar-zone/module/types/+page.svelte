@@ -7,6 +7,7 @@
 	import SearchModal from '$lib/components/SearchModal.svelte';
 	import ImageModal from '$lib/components/ui/ImageModal.svelte';
 	import ImageGrid from '$lib/components/ui/ImageGrid.svelte';
+	import SectionHeader from '$lib/components/ui/SectionHeader.svelte';
 	import { onMount } from 'svelte';
 
 	const totalPages = 4;
@@ -117,11 +118,7 @@
 		>
 			<!-- Section 1 -->
 			<section>
-				<h2
-					class="font-heading clip-path-custom relative z-20 inline-flex max-w-[90%] items-center gap-3 rounded-t-2xl bg-[#1b3558] px-6 py-3 text-xl font-extrabold text-white md:max-w-fit md:text-2xl"
-				>
-					TURBO JET
-				</h2>
+				<SectionHeader title="TURBO JET" />
 				<div
 					class="relative z-10 -mt-[2px] rounded-tr-3xl rounded-b-3xl border-4 border-[#1b3558] bg-white p-6 text-[#1b3558] shadow-xl md:p-8"
 				>
@@ -163,11 +160,7 @@
 
 			<!-- Section 2 -->
 			<section>
-				<h2
-					class="font-heading clip-path-custom relative z-20 inline-flex max-w-[90%] items-center gap-3 rounded-t-2xl bg-[#1b3558] px-6 py-3 text-xl font-extrabold text-white md:max-w-fit md:text-2xl"
-				>
-					AIRFLOW THROUGH TURBOJET
-				</h2>
+				<SectionHeader title="AIRFLOW THROUGH TURBOJET" />
 				<div
 					class="relative z-10 -mt-[2px] rounded-tr-3xl rounded-b-3xl border-4 border-[#1b3558] bg-white p-6 text-[#1b3558] shadow-xl md:p-8"
 				>
@@ -211,11 +204,7 @@
 			out:fade={{ duration: 200 }}
 		>
 			<section>
-				<h2
-					class="font-heading clip-path-custom relative z-20 inline-flex max-w-[90%] items-center gap-3 rounded-t-2xl bg-[#1b3558] px-6 py-3 text-xl font-extrabold text-white md:max-w-fit md:text-2xl"
-				>
-					TURBOPROP
-				</h2>
+				<SectionHeader title="TURBOPROP" />
 				<div
 					class="relative z-10 -mt-[2px] rounded-tr-3xl rounded-b-3xl border-4 border-[#1b3558] bg-white p-6 text-[#1b3558] shadow-xl md:p-8"
 				>
@@ -249,11 +238,7 @@
 			</section>
 
 			<section>
-				<h2
-					class="font-heading clip-path-custom relative z-20 inline-flex max-w-[90%] items-center gap-3 rounded-t-2xl bg-[#1b3558] px-6 py-3 text-xl font-extrabold text-white md:max-w-fit md:text-2xl"
-				>
-					TURBOPROP PARAMETERS
-				</h2>
+				<SectionHeader title="TURBOPROP PARAMETERS" />
 				<div
 					class="relative z-10 -mt-[2px] rounded-tr-3xl rounded-b-3xl border-4 border-[#1b3558] bg-white p-6 text-[#1b3558] shadow-xl md:p-8"
 				>
@@ -292,11 +277,7 @@
 			out:fade={{ duration: 200 }}
 		>
 			<section>
-				<h2
-					class="font-heading clip-path-custom relative z-20 inline-flex max-w-[90%] items-center gap-3 rounded-t-2xl bg-[#1b3558] px-6 py-3 text-xl font-extrabold text-white md:max-w-fit md:text-2xl"
-				>
-					TURBOSHAFT
-				</h2>
+				<SectionHeader title="TURBOSHAFT" />
 				<div
 					class="relative z-10 -mt-[2px] rounded-tr-3xl rounded-b-3xl border-4 border-[#1b3558] bg-white p-6 text-[#1b3558] shadow-xl md:p-8"
 				>
@@ -324,11 +305,7 @@
 			</section>
 
 			<section>
-				<h2
-					class="font-heading clip-path-custom relative z-20 inline-flex max-w-[90%] items-center gap-3 rounded-t-2xl bg-[#1b3558] px-6 py-3 text-xl font-extrabold text-white md:max-w-fit md:text-2xl"
-				>
-					AIRFLOW THROUGH TURBOSHAFT
-				</h2>
+				<SectionHeader title="AIRFLOW THROUGH TURBOSHAFT" />
 				<div
 					class="relative z-10 -mt-[2px] rounded-tr-3xl rounded-b-3xl border-4 border-[#1b3558] bg-white p-6 text-[#1b3558] shadow-xl md:p-8"
 				>
@@ -371,11 +348,7 @@
 			out:fade={{ duration: 200 }}
 		>
 			<section>
-				<h2
-					class="font-heading clip-path-custom relative z-20 inline-flex max-w-[90%] items-center gap-3 rounded-t-2xl bg-[#1b3558] px-6 py-3 text-xl font-extrabold text-white md:max-w-fit md:text-2xl"
-				>
-					TURBOPROP AND TURBOSHAFT
-				</h2>
+				<SectionHeader title="TURBOPROP AND TURBOSHAFT" />
 				<div
 					class="relative z-10 -mt-[2px] rounded-tr-3xl rounded-b-3xl border-4 border-[#1b3558] bg-white p-6 text-[#1b3558] shadow-xl md:p-8"
 				>
@@ -425,11 +398,7 @@
 			</section>
 
 			<section>
-				<h2
-					class="font-heading clip-path-custom relative z-20 inline-flex max-w-[90%] items-center gap-3 rounded-t-2xl bg-[#1b3558] px-6 py-3 text-xl font-extrabold text-white md:max-w-fit md:text-2xl"
-				>
-					TURBOPROP AND TURBOSHAFT
-				</h2>
+				<SectionHeader title="TURBOPROP AND TURBOSHAFT" />
 				<div
 					class="relative z-10 -mt-[2px] rounded-tr-3xl rounded-b-3xl border-4 border-[#1b3558] bg-white p-6 text-[#1b3558] shadow-xl md:p-8"
 				>
@@ -466,11 +435,7 @@
 			</section>
 
 			<section>
-				<h2
-					class="font-heading clip-path-custom relative z-20 inline-flex max-w-[90%] items-center gap-3 rounded-t-2xl bg-[#1b3558] px-6 py-3 text-xl font-extrabold text-white md:max-w-fit md:text-2xl"
-				>
-					DUCTED AND UNDUCTED PROP FAN
-				</h2>
+				<SectionHeader title="DUCTED AND UNDUCTED PROP FAN" />
 				<div
 					class="relative z-10 -mt-[2px] rounded-tr-3xl rounded-b-3xl border-4 border-[#1b3558] bg-white p-6 text-[#1b3558] shadow-xl md:p-8"
 				>
@@ -543,7 +508,5 @@
 </div>
 
 <style>
-	.clip-path-custom {
-		clip-path: polygon(0 0, 92% 0, 100% 100%, 0% 100%);
-	}
+	/* .clip-path-custom moved to global app.css */
 </style>

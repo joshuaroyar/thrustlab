@@ -10,6 +10,7 @@
 	import { MODULE_CONTENT } from '$lib/data/searchContent';
 	import SearchModal from '$lib/components/SearchModal.svelte';
 	import ImageModal from '$lib/components/ui/ImageModal.svelte';
+	import SectionHeader from '$lib/components/ui/SectionHeader.svelte';
 
 	let mounted = $state(false);
 
@@ -137,20 +138,25 @@
 	<!-- Header Section -->
 	<div class="mb-12 text-center">
 		<h1
-			class="animate-gradient-flash font-heading mb-8 bg-gradient-to-r from-[#D35400] via-[#FFD966] to-[#D35400] bg-clip-text text-4xl font-black tracking-tight text-transparent drop-shadow-xl md:text-7xl"
+			class="animate-gradient-flash font-heading mb-8 bg-gradient-to-r from-[#B34700] via-[#FFD966] to-[#B34700] bg-clip-text pb-4 text-5xl font-black tracking-tight text-transparent drop-shadow-[0_4px_10px_rgba(211,84,0,0.4)] md:text-8xl"
 		>
 			Turbofan Engine
 		</h1>
 		<p
-			class="font-body mx-auto max-w-3xl text-justify text-xl font-bold leading-relaxed text-[#D35400] md:text-justify md:text-2xl"
+			class="mx-auto max-w-[900px] text-center text-xl leading-relaxed font-bold text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)] md:text-2xl"
+			style="font-family: 'Gotham', 'Gotham Bold', sans-serif;"
 		>
-			Enter the Turbofan Engine Zone, an immersive hub where students can explore a fully rotatable 3D turbofan engine in stunning detail. Here, they can interact with each component, uncover the inner workings of every section, and gain a clear understanding of how these powerful machines drive modern aircraft to the skies.
+			Enter the Turbofan Engine Zone, an immersive hub where students can <span
+				class="text-[#FFD966]">explore a fully rotatable 3D turbofan engine in stunning detail</span
+			>. Here, they can interact with each component, uncover the inner workings of every section,
+			and gain a clear understanding of how these powerful machines drive modern aircraft to the
+			skies.
 		</p>
 	</div>
 
 	<!-- Search Bar -->
 	<div
-		class="mx-auto mb-8 flex w-full max-w-md min-w-[300px] items-center gap-4 rounded-full border-2 border-[#D35400]/30 bg-white/95 px-4 py-2 shadow-sm backdrop-blur-md transition-all focus-within:border-[#D35400] focus-within:shadow-[0_0_20px_rgba(211,84,0,0.3)] md:mr-0 md:ml-auto md:w-auto"
+		class="mx-auto mb-8 flex w-full max-w-md min-w-[300px] items-center gap-4 rounded-full border-2 border-[#B34700]/30 bg-white/95 px-4 py-2 shadow-sm backdrop-blur-md transition-all focus-within:border-[#B34700] focus-within:shadow-[0_0_20px_rgba(211,84,0,0.3)] md:mr-0 md:ml-auto md:w-auto"
 	>
 		<input
 			type="text"
@@ -181,19 +187,19 @@
 	<!-- Tab Toggle Buttons -->
 	<div class="mb-8 flex justify-end gap-4 pr-0 md:gap-8 md:pr-8">
 		<button
-			class="font-heading relative border-b-2 border-transparent bg-transparent px-2 py-2 text-lg font-bold tracking-wider text-[#E8F4FA]/70 uppercase transition-all hover:-translate-y-0.5 hover:text-white hover:opacity-100 {activeTab ===
+			class="font-heading relative rounded-xl border-2 border-transparent px-6 py-2 text-xl font-black tracking-wider uppercase transition-all hover:-translate-y-0.5 hover:bg-white/10 {activeTab ===
 			'overview'
-				? '!border-[#D35400] font-black !text-[#D35400] !opacity-100'
-				: ''}"
+				? 'bg-white text-[#B34700] shadow-lg'
+				: 'text-white'}"
 			onclick={() => (activeTab = 'overview')}
 		>
 			Overview
 		</button>
 		<button
-			class="font-heading relative border-b-2 border-transparent bg-transparent px-2 py-2 text-lg font-bold tracking-wider text-[#E8F4FA]/70 uppercase transition-all hover:-translate-y-0.5 hover:text-white hover:opacity-100 {activeTab ===
+			class="font-heading relative rounded-xl border-2 border-transparent px-6 py-2 text-xl font-black tracking-wider uppercase transition-all hover:-translate-y-0.5 hover:bg-white/10 {activeTab ===
 			'sections'
-				? '!border-[#D35400] font-black !text-[#D35400] !opacity-100'
-				: ''}"
+				? 'bg-white text-[#B34700] shadow-lg'
+				: 'text-white'}"
 			onclick={() => (activeTab = 'sections')}
 		>
 			Engine Sections
@@ -209,13 +215,9 @@
 		>
 			<!-- 3D Engine Container -->
 			<section class="opacity-100">
-				<h2
-					class="font-heading relative z-[2] mb-[-2px] inline-flex w-fit min-w-[40%] items-center gap-4 rounded-t-3xl bg-[#D35400] px-8 py-3 text-xl font-bold tracking-wide text-white uppercase shadow-none [clip-path:polygon(0_0,92%_0,100%_100%,0%_100%)] md:px-12 md:text-2xl"
-				>
-					Learn, Explore and Understand the Turbofan Engine
-				</h2>
+				<SectionHeader title="Learn, Explore and Understand the Turbofan Engine" color="#B34700" />
 				<div
-					class="relative z-[1] min-h-[300px] rounded-tr-3xl rounded-b-3xl border-[3px] border-[#D35400] bg-white p-6 text-[#1a2b47] md:p-8"
+					class="relative z-[1] rounded-tr-3xl rounded-b-3xl border-[3px] border-[#B34700] bg-white p-6 text-[#1a2b47] md:p-8"
 				>
 					<div class="relative h-[450px] w-full">
 						<ModelViewer
@@ -225,7 +227,7 @@
 							autoLoad={true}
 						/>
 						<button
-							class="absolute top-4 right-4 z-10 flex h-10 w-10 items-center justify-center rounded-full bg-white/90 text-[#D35400] shadow-md transition-all hover:scale-110 hover:bg-white hover:text-[#D35400]"
+							class="absolute top-4 right-4 z-10 flex h-10 w-10 items-center justify-center rounded-full bg-white/90 text-[#B34700] shadow-md transition-all hover:scale-110 hover:bg-white hover:text-[#B34700]"
 							title="View Instructions & Fullscreen"
 							onclick={() => goto('/turbofan-engine/engine-fullscreen')}
 						>
@@ -254,7 +256,7 @@
 							<img src="/icons/jaja.png" alt="Jaja" class="h-auto w-20" />
 						</div>
 						<div
-							class="font-body flex items-center rounded-xl border-4 border-[#D35400] bg-white p-3 font-semibold text-[#1a2b47] shadow-[4px_4px_0px_rgba(0,0,0,0.1)]"
+							class="font-body flex items-center rounded-xl border-4 border-[#B34700] bg-white p-3 font-semibold text-[#1a2b47] shadow-[4px_4px_0px_rgba(0,0,0,0.1)]"
 						>
 							<div
 								class="[&_.markdown-body]:font-inherit [&_.markdown-body]:m-0 [&_.markdown-body]:leading-tight [&_.markdown-body]:text-inherit"
@@ -264,7 +266,7 @@
 								/>
 							</div>
 							<div
-								class="ml-2 inline-flex items-center justify-center text-[#D35400]"
+								class="ml-2 inline-flex items-center justify-center text-[#B34700]"
 								aria-hidden="true"
 							>
 								<svg
@@ -273,7 +275,7 @@
 									height="24"
 									viewBox="0 0 24 24"
 									fill="none"
-									stroke="#D35400"
+									stroke="#B34700"
 									stroke-width="3"
 									stroke-linecap="round"
 									stroke-linejoin="round"
@@ -297,30 +299,26 @@
 
 			<!-- Overview & Parameters Container -->
 			<section class="opacity-100">
-				<h2
-					class="font-heading relative z-[2] mb-[-2px] inline-flex w-fit min-w-[40%] items-center gap-4 rounded-t-3xl bg-[#D35400] px-8 py-3 text-xl font-bold tracking-wide text-white uppercase shadow-none [clip-path:polygon(0_0,92%_0,100%_100%,0%_100%)] md:px-12 md:text-2xl"
-				>
-					OVERVIEW AND PARAMETERS
-				</h2>
+				<SectionHeader title="OVERVIEW AND PARAMETERS" color="#B34700" />
 				<div
-					class="relative z-[1] min-h-[300px] rounded-tr-3xl rounded-b-3xl border-[3px] border-[#D35400] bg-white p-6 text-[#1a2b47] md:p-8"
+					class="relative z-[1] rounded-tr-3xl rounded-b-3xl border-[3px] border-[#B34700] bg-white p-6 text-[#1a2b47] md:p-8"
 				>
 					<div class="mb-6 leading-loose">
 						<ul class="my-8 list-none pl-0">
 							<li
-								class="relative mb-5 pl-10 text-lg leading-relaxed text-[#2c3e50] before:absolute before:left-2 before:text-2xl before:font-bold before:text-[#D35400] before:content-['▸']"
+								class="relative mb-5 pl-10 text-lg leading-relaxed text-[#2c3e50] before:absolute before:left-2 before:text-2xl before:font-bold before:text-[#B34700] before:content-['▸']"
 							>
 								A turbofan engine consists of a multi-bladed ducted propeller driven by a gas
 								turbine engine.
 							</li>
 							<li
-								class="relative mb-5 pl-10 text-lg leading-relaxed text-[#2c3e50] before:absolute before:left-2 before:text-2xl before:font-bold before:text-[#D35400] before:content-['▸']"
+								class="relative mb-5 pl-10 text-lg leading-relaxed text-[#2c3e50] before:absolute before:left-2 before:text-2xl before:font-bold before:text-[#B34700] before:content-['▸']"
 							>
 								Turbofans were developed to provide a compromise between the best features of the
 								turbojet and the turboprop.
 							</li>
 							<li
-								class="relative mb-5 pl-10 text-lg leading-relaxed text-[#2c3e50] before:absolute before:left-2 before:text-2xl before:font-bold before:text-[#D35400] before:content-['▸']"
+								class="relative mb-5 pl-10 text-lg leading-relaxed text-[#2c3e50] before:absolute before:left-2 before:text-2xl before:font-bold before:text-[#B34700] before:content-['▸']"
 							>
 								Turbofan engines have turbojet-type cruise speed capability yet retain some of the
 								short-field takeoff capability of a turboprop.
@@ -355,13 +353,9 @@
 						<div class="flex flex-col gap-12">
 							<!-- Section 1: Introduction to Turbofans -->
 							<section class="opacity-100">
-								<h2
-									class="font-heading relative z-[2] mb-[-2px] inline-flex w-fit min-w-[40%] items-center gap-4 rounded-t-3xl bg-[#D35400] px-8 py-3 text-xl font-bold tracking-wide text-white uppercase shadow-none [clip-path:polygon(0_0,92%_0,100%_100%,0%_100%)] md:px-12 md:text-2xl"
-								>
-									INTRODUCTION TO TURBOFAN ENGINES
-								</h2>
+								<SectionHeader title="INTRODUCTION TO TURBOFAN ENGINES" color="#B34700" />
 								<div
-									class="relative z-[1] min-h-[300px] rounded-tr-3xl rounded-b-3xl border-[3px] border-[#D35400] bg-white p-6 text-[#1a2b47] md:p-8"
+									class="relative z-[1] rounded-tr-3xl rounded-b-3xl border-[3px] border-[#B34700] bg-white p-6 text-[#1a2b47] md:p-8"
 								>
 									<div class="mb-6 leading-loose">
 										<p class="mb-6 text-justify text-lg leading-loose text-[#2c3e50]">
@@ -394,13 +388,9 @@
 
 							<!-- Section 2: Bypass Engine Concept -->
 							<section class="opacity-100">
-								<h2
-									class="font-heading relative z-[2] mb-[-2px] inline-flex w-fit min-w-[40%] items-center gap-4 rounded-t-3xl bg-[#D35400] px-8 py-3 text-xl font-bold tracking-wide text-white uppercase shadow-none [clip-path:polygon(0_0,92%_0,100%_100%,0%_100%)] md:px-12 md:text-2xl"
-								>
-									THE BYPASS ENGINE CONCEPT
-								</h2>
+								<SectionHeader title="THE BYPASS ENGINE CONCEPT" color="#B34700" />
 								<div
-									class="relative z-[1] min-h-[300px] rounded-tr-3xl rounded-b-3xl border-[3px] border-[#D35400] bg-white p-6 text-[#1a2b47] md:p-8"
+									class="relative z-[1] rounded-tr-3xl rounded-b-3xl border-[3px] border-[#B34700] bg-white p-6 text-[#1a2b47] md:p-8"
 								>
 									<div class="mb-6 leading-loose">
 										<p class="mb-6 text-justify text-lg leading-loose text-[#2c3e50]">
@@ -418,25 +408,24 @@
 											amount of air that passes through the engine core.
 										</p>
 									</div>
-									<div class="my-8 flex justify-center">
-										<img
-											src="/images/turbofan-more-info/img_2.png"
-											alt="Turbofan Bypass Engine"
-											class="h-auto max-w-full rounded-xl shadow-md"
-										/>
-									</div>
+									<ImageGrid
+										images={[
+											{
+												src: '/images/turbofan-more-info/img_2.png',
+												alt: 'Turbofan Bypass Engine'
+											}
+										]}
+										columns={1}
+										height="auto"
+									/>
 								</div>
 							</section>
 
 							<!-- Section 3: Classifications -->
 							<section class="opacity-100">
-								<h2
-									class="font-heading relative z-[2] mb-[-2px] inline-flex w-fit min-w-[40%] items-center gap-4 rounded-t-3xl bg-[#D35400] px-8 py-3 text-xl font-bold tracking-wide text-white uppercase shadow-none [clip-path:polygon(0_0,92%_0,100%_100%,0%_100%)] md:px-12 md:text-2xl"
-								>
-									TURBOFAN CLASSIFICATIONS AND RATIOS
-								</h2>
+								<SectionHeader title="TURBOFAN CLASSIFICATIONS AND RATIOS" color="#B34700" />
 								<div
-									class="relative z-[1] min-h-[300px] rounded-tr-3xl rounded-b-3xl border-[3px] border-[#D35400] bg-white p-6 text-[#1a2b47] md:p-8"
+									class="relative z-[1] rounded-tr-3xl rounded-b-3xl border-[3px] border-[#B34700] bg-white p-6 text-[#1a2b47] md:p-8"
 								>
 									<div class="mb-6 leading-loose">
 										<p class="mb-6 text-justify text-lg leading-loose text-[#2c3e50]">
@@ -447,17 +436,17 @@
 										</p>
 										<ul class="my-8 list-none pl-0">
 											<li
-												class="relative mb-5 pl-10 text-lg leading-relaxed text-[#2c3e50] before:absolute before:left-2 before:text-2xl before:font-bold before:text-[#D35400] before:content-['▸']"
+												class="relative mb-5 pl-10 text-lg leading-relaxed text-[#2c3e50] before:absolute before:left-2 before:text-2xl before:font-bold before:text-[#B34700] before:content-['▸']"
 											>
 												Low bypass (1:1)
 											</li>
 											<li
-												class="relative mb-5 pl-10 text-lg leading-relaxed text-[#2c3e50] before:absolute before:left-2 before:text-2xl before:font-bold before:text-[#D35400] before:content-['▸']"
+												class="relative mb-5 pl-10 text-lg leading-relaxed text-[#2c3e50] before:absolute before:left-2 before:text-2xl before:font-bold before:text-[#B34700] before:content-['▸']"
 											>
 												Medium bypass (2:1 or 3:1)
 											</li>
 											<li
-												class="relative mb-5 pl-10 text-lg leading-relaxed text-[#2c3e50] before:absolute before:left-2 before:text-2xl before:font-bold before:text-[#D35400] before:content-['▸']"
+												class="relative mb-5 pl-10 text-lg leading-relaxed text-[#2c3e50] before:absolute before:left-2 before:text-2xl before:font-bold before:text-[#B34700] before:content-['▸']"
 											>
 												High bypass (4:1 or greater)
 											</li>
@@ -467,17 +456,17 @@
 										</p>
 										<ul class="my-8 list-none pl-0">
 											<li
-												class="relative mb-5 pl-10 text-lg leading-relaxed text-[#2c3e50] before:absolute before:left-2 before:text-2xl before:font-bold before:text-[#D35400] before:content-['▸']"
+												class="relative mb-5 pl-10 text-lg leading-relaxed text-[#2c3e50] before:absolute before:left-2 before:text-2xl before:font-bold before:text-[#B34700] before:content-['▸']"
 											>
 												<strong>Bypass Ratio:</strong> bypass air to engine air
 											</li>
 											<li
-												class="relative mb-5 pl-10 text-lg leading-relaxed text-[#2c3e50] before:absolute before:left-2 before:text-2xl before:font-bold before:text-[#D35400] before:content-['▸']"
+												class="relative mb-5 pl-10 text-lg leading-relaxed text-[#2c3e50] before:absolute before:left-2 before:text-2xl before:font-bold before:text-[#B34700] before:content-['▸']"
 											>
 												<strong>Thrust Ratio:</strong> fan to engine core exhaust
 											</li>
 											<li
-												class="relative mb-5 pl-10 text-lg leading-relaxed text-[#2c3e50] before:absolute before:left-2 before:text-2xl before:font-bold before:text-[#D35400] before:content-['▸']"
+												class="relative mb-5 pl-10 text-lg leading-relaxed text-[#2c3e50] before:absolute before:left-2 before:text-2xl before:font-bold before:text-[#B34700] before:content-['▸']"
 											>
 												<strong>Fan Pressure Ratio:</strong> pressure leaving the fan to pressure entering
 												the fan
@@ -504,13 +493,9 @@
 						<div class="flex flex-col gap-12">
 							<!-- Section 4: Detailed Engine View -->
 							<section class="opacity-100">
-								<h2
-									class="font-heading relative z-[2] mb-[-2px] inline-flex w-fit min-w-[40%] items-center gap-4 rounded-t-3xl bg-[#D35400] px-8 py-3 text-xl font-bold tracking-wide text-white uppercase shadow-none [clip-path:polygon(0_0,92%_0,100%_100%,0%_100%)] md:px-12 md:text-2xl"
-								>
-									TURBOFAN ENGINE DETAILS AND COMPONENTS
-								</h2>
+								<SectionHeader title="TURBOFAN ENGINE DETAILS AND COMPONENTS" color="#B34700" />
 								<div
-									class="relative z-[1] min-h-[300px] rounded-tr-3xl rounded-b-3xl border-[3px] border-[#D35400] bg-white p-6 text-[#1a2b47] md:p-8"
+									class="relative z-[1] rounded-tr-3xl rounded-b-3xl border-[3px] border-[#B34700] bg-white p-6 text-[#1a2b47] md:p-8"
 								>
 									<div class="mb-6 leading-loose">
 										<p class="mb-6 text-justify text-lg leading-loose text-[#2c3e50]">
@@ -526,13 +511,16 @@
 											also helps cool the engine and reduce exhaust noise.
 										</p>
 									</div>
-									<div class="my-8 flex justify-center">
-										<img
-											src="/images/turbofan-more-info/img_4.png"
-											alt="Turbofan Engine Details"
-											class="h-auto max-w-full rounded-xl shadow-md"
-										/>
-									</div>
+									<ImageGrid
+										images={[
+											{
+												src: '/images/turbofan-more-info/img_4.png',
+												alt: 'Turbofan Engine Details'
+											}
+										]}
+										columns={1}
+										height="auto"
+									/>
 								</div>
 							</section>
 						</div>
@@ -546,9 +534,9 @@
 					<div class="mx-auto grid max-w-7xl grid-cols-[1fr_auto_1fr] items-center gap-4">
 						<button
 							onclick={prevPage}
-							class="group flex items-center gap-2 justify-self-start rounded-xl border-2 border-[#D35400]/30 bg-white/90 px-4 py-3 font-bold text-[#1b3558] backdrop-blur-md transition-all hover:-translate-y-1 hover:border-[#D35400] hover:shadow-lg md:px-6"
+							class="group flex items-center gap-2 justify-self-start rounded-xl border-2 border-[#B34700]/30 bg-white/90 px-4 py-3 font-bold text-[#1b3558] backdrop-blur-md transition-all hover:-translate-y-1 hover:border-[#B34700] hover:shadow-lg md:px-6"
 						>
-							<span class="text-xl text-[#D35400]">←</span>
+							<span class="text-xl text-[#B34700]">←</span>
 							<span class="hidden font-bold text-[#0A1628] md:inline"
 								>{currentPage === 1 ? 'Previous: Hangar Zone' : 'Previous'}</span
 							>
@@ -559,7 +547,7 @@
 								<button
 									class="flex h-10 w-10 items-center justify-center rounded-full font-bold transition-all {currentPage ===
 									i + 1
-										? 'scale-110 bg-[#D35400] text-white'
+										? 'scale-110 bg-[#B34700] text-white'
 										: 'bg-[#1b3558] text-white hover:bg-[#1b3558]/80'}"
 									onclick={() => goToPage(i + 1)}
 									aria-label="Go to page {i + 1}"
@@ -571,12 +559,12 @@
 
 						<button
 							onclick={nextPage}
-							class="group flex items-center gap-2 justify-self-end rounded-xl border-2 border-[#D35400]/30 bg-white/90 px-4 py-3 font-bold text-[#1b3558] backdrop-blur-md transition-all hover:-translate-y-1 hover:border-[#D35400] hover:shadow-lg md:px-6"
+							class="group flex items-center gap-2 justify-self-end rounded-xl border-2 border-[#B34700]/30 bg-white/90 px-4 py-3 font-bold text-[#1b3558] backdrop-blur-md transition-all hover:-translate-y-1 hover:border-[#B34700] hover:shadow-lg md:px-6"
 						>
 							<span class="hidden font-bold text-[#0A1628] md:inline"
 								>{currentPage === totalPages ? 'Next: Engine Sections' : 'Next'}</span
 							>
-							<span class="text-xl text-[#D35400]">→</span>
+							<span class="text-xl text-[#B34700]">→</span>
 						</button>
 					</div>
 				</div>
@@ -590,7 +578,7 @@
 			out:fade={{ duration: 200 }}
 		>
 			<h2
-				class="animate-gradient-flash font-heading m-0 mb-8 bg-gradient-to-r from-[#D35400] via-[#FFD966] to-[#D35400] bg-[length:200%_100%] bg-clip-text text-center text-3xl font-black text-transparent drop-shadow-md md:text-5xl"
+				class="animate-gradient-flash font-heading m-0 mb-8 bg-gradient-to-r from-[#B34700] via-[#FFD966] to-[#B34700] bg-[length:200%_100%] bg-clip-text text-center text-4xl font-black text-transparent drop-shadow-[0_2px_8px_rgba(211,84,0,0.4)] md:text-5xl"
 			>
 				LEARNING MODULE 03:<br />
 				SECTIONS OF A GAS TURBINE ENGINE
@@ -600,13 +588,9 @@
 			{#if currentPageSections === 1}
 				<div class="flex flex-col gap-12">
 					<section class="opacity-100">
-						<h2
-							class="font-heading relative z-[2] mb-[-2px] inline-flex w-fit min-w-[40%] items-center gap-4 rounded-t-3xl bg-[#D35400] px-8 py-3 text-xl font-bold tracking-wide text-white uppercase shadow-none [clip-path:polygon(0_0,92%_0,100%_100%,0%_100%)] md:px-12 md:text-2xl"
-						>
-							ENGINE COMPONENTS
-						</h2>
+						<SectionHeader title="ENGINE COMPONENTS" color="#B34700" />
 						<div
-							class="relative z-[1] min-h-[300px] rounded-tr-3xl rounded-b-3xl border-[3px] border-[#D35400] bg-white p-6 text-[#1a2b47] md:p-8"
+							class="relative z-[1] rounded-tr-3xl rounded-b-3xl border-[3px] border-[#B34700] bg-white p-6 text-[#1a2b47] md:p-8"
 						>
 							<div class="mb-6 leading-loose">
 								<p class="mb-6 text-justify text-lg leading-loose text-[#2c3e50]">
@@ -615,7 +599,7 @@
 								</p>
 								<ul class="my-8 list-none pl-0">
 									<li
-										class="relative mb-5 pl-10 text-lg leading-relaxed text-[#2c3e50] before:absolute before:left-2 before:text-2xl before:font-bold before:text-[#D35400] before:content-['▸']"
+										class="relative mb-5 pl-10 text-lg leading-relaxed text-[#2c3e50] before:absolute before:left-2 before:text-2xl before:font-bold before:text-[#B34700] before:content-['▸']"
 									>
 										A turbine engine's hot section includes the combustion, turbine, and exhaust
 										sections. The cold section, on the other hand, includes the air inlet duct and
@@ -630,9 +614,7 @@
 								<ImageGrid
 									images={[
 										{
-											src: '/images/turbofan-module3/3d_img_1.png',
-											alt: '3D VIEW WITHOUT CASING–COLOR CODED PER SECTION',
-											caption: '(3D VIEW WITHOUT CASING–COLOR CODED PER SECTION)'
+											src: '/images/turbofan-module3/3d_img_1.png'
 										}
 									]}
 									columns={1}
@@ -643,13 +625,9 @@
 					</section>
 
 					<section class="opacity-100">
-						<h2
-							class="font-heading relative z-[2] mb-[-2px] inline-flex w-fit min-w-[40%] items-center gap-4 rounded-t-3xl bg-[#D35400] px-8 py-3 text-xl font-bold tracking-wide text-white uppercase shadow-none [clip-path:polygon(0_0,92%_0,100%_100%,0%_100%)] md:px-12 md:text-2xl"
-						>
-							COLD SECTION: AIR INLET
-						</h2>
+						<SectionHeader title="COLD SECTION: AIR INLET" color="#B34700" />
 						<div
-							class="relative z-[1] min-h-[300px] rounded-tr-3xl rounded-b-3xl border-[3px] border-[#D35400] bg-white p-6 text-[#1a2b47] md:p-8"
+							class="relative z-[1] rounded-tr-3xl rounded-b-3xl border-[3px] border-[#B34700] bg-white p-6 text-[#1a2b47] md:p-8"
 						>
 							<div class="mb-6 leading-loose">
 								<div
@@ -680,13 +658,13 @@
 									under all airspeed and angles of attack, to avoid compressor stall or surge to be
 									avoided.
 								</p>
-								<div class="my-8 rounded-xl border-l-4 border-[#D35400] bg-orange-50 p-6 shadow-sm">
-									<h5 class="font-heading mb-4 text-xl font-bold text-[#D35400]">
+								<div class="my-8 rounded-xl border-l-4 border-[#B34700] bg-orange-50 p-6 shadow-sm">
+									<h5 class="font-heading mb-4 text-xl font-bold text-[#B34700]">
 										Functions of the air inlet:
 									</h5>
 									<ul class="list-none pl-0">
 										<li
-											class="relative mb-3 pl-6 text-base leading-relaxed text-[#2c3e50] before:absolute before:top-2 before:left-0 before:h-2 before:w-2 before:rounded-full before:bg-[#D35400]"
+											class="relative mb-3 pl-6 text-base leading-relaxed text-[#2c3e50] before:absolute before:top-2 before:left-0 before:h-2 before:w-2 before:rounded-full before:bg-[#B34700]"
 										>
 											Recover as much of the total pressure of the free airstream as possible and
 											deliver this pressure to the compressor. This is known as <b>ram recovery</b>
@@ -694,12 +672,12 @@
 											<b>pressure recovery</b>.
 										</li>
 										<li
-											class="relative mb-3 pl-6 text-base leading-relaxed text-[#2c3e50] before:absolute before:top-2 before:left-0 before:h-2 before:w-2 before:rounded-full before:bg-[#D35400]"
+											class="relative mb-3 pl-6 text-base leading-relaxed text-[#2c3e50] before:absolute before:top-2 before:left-0 before:h-2 before:w-2 before:rounded-full before:bg-[#B34700]"
 										>
 											Many inlets are shaped to raise the air pressure above atmospheric pressure.
 										</li>
 										<li
-											class="relative mb-3 pl-6 text-base leading-relaxed text-[#2c3e50] before:absolute before:top-2 before:left-0 before:h-2 before:w-2 before:rounded-full before:bg-[#D35400]"
+											class="relative mb-3 pl-6 text-base leading-relaxed text-[#2c3e50] before:absolute before:top-2 before:left-0 before:h-2 before:w-2 before:rounded-full before:bg-[#B34700]"
 										>
 											Provide a uniform supply of air to the compressor so the compressor can
 											operate efficiently.
@@ -711,16 +689,12 @@
 					</section>
 
 					<section class="opacity-100">
-						<h2
-							class="font-heading relative z-[2] mb-[-2px] inline-flex w-fit min-w-[40%] items-center gap-4 rounded-t-3xl bg-[#D35400] px-8 py-3 text-xl font-bold tracking-wide text-white uppercase shadow-none [clip-path:polygon(0_0,92%_0,100%_100%,0%_100%)] md:px-12 md:text-2xl"
-						>
-							Types of Air Inlet Ducts
-						</h2>
+						<SectionHeader title="Types of Air Inlet Ducts" color="#B34700" />
 						<div
-							class="relative z-[1] min-h-[300px] rounded-tr-3xl rounded-b-3xl border-[3px] border-[#D35400] bg-white p-6 text-[#1a2b47] md:p-8"
+							class="relative z-[1] rounded-tr-3xl rounded-b-3xl border-[3px] border-[#B34700] bg-white p-6 text-[#1a2b47] md:p-8"
 						>
 							<h5
-								class="font-heading mb-4 text-lg font-bold text-[#D35400] underline decoration-2 underline-offset-4"
+								class="font-heading mb-4 text-lg font-bold text-[#B34700] underline decoration-2 underline-offset-4"
 							>
 								Engine Mounted
 							</h5>
@@ -731,7 +705,7 @@
 							</p>
 
 							<h5
-								class="font-heading mb-4 text-lg font-bold text-[#D35400] underline decoration-2 underline-offset-4"
+								class="font-heading mb-4 text-lg font-bold text-[#B34700] underline decoration-2 underline-offset-4"
 							>
 								Wings Mounted
 							</h5>
@@ -742,7 +716,7 @@
 							</p>
 
 							<h5
-								class="font-heading mb-4 text-lg font-bold text-[#D35400] underline decoration-2 underline-offset-4"
+								class="font-heading mb-4 text-lg font-bold text-[#B34700] underline decoration-2 underline-offset-4"
 							>
 								Fuselage Mounted
 							</h5>
@@ -755,13 +729,9 @@
 					</section>
 
 					<section class="opacity-100">
-						<h2
-							class="font-heading relative z-[2] mb-[-2px] inline-flex w-fit min-w-[40%] items-center gap-4 rounded-t-3xl bg-[#D35400] px-8 py-3 text-xl font-bold tracking-wide text-white uppercase shadow-none [clip-path:polygon(0_0,92%_0,100%_100%,0%_100%)] md:px-12 md:text-2xl"
-						>
-							Subsonic Inlets
-						</h2>
+						<SectionHeader title="Subsonic Inlets" color="#B34700" />
 						<div
-							class="relative z-[1] min-h-[300px] rounded-tr-3xl rounded-b-3xl border-[3px] border-[#D35400] bg-white p-6 text-[#1a2b47] md:p-8"
+							class="relative z-[1] rounded-tr-3xl rounded-b-3xl border-[3px] border-[#B34700] bg-white p-6 text-[#1a2b47] md:p-8"
 						>
 							<p class="mb-6 text-justify text-lg leading-loose text-[#2c3e50]">
 								A typical subsonic air inlet consists of a fixed geometry duct whose diameter
@@ -774,13 +744,9 @@
 					</section>
 
 					<section class="opacity-100">
-						<h2
-							class="font-heading relative z-[2] mb-[-2px] inline-flex w-fit min-w-[40%] items-center gap-4 rounded-t-3xl bg-[#D35400] px-8 py-3 text-xl font-bold tracking-wide text-white uppercase shadow-none [clip-path:polygon(0_0,92%_0,100%_100%,0%_100%)] md:px-12 md:text-2xl"
-						>
-							Supersonic Inlets
-						</h2>
+						<SectionHeader title="Supersonic Inlets" color="#B34700" />
 						<div
-							class="relative z-[1] min-h-[300px] rounded-tr-3xl rounded-b-3xl border-[3px] border-[#D35400] bg-white p-6 text-[#1a2b47] md:p-8"
+							class="relative z-[1] rounded-tr-3xl rounded-b-3xl border-[3px] border-[#B34700] bg-white p-6 text-[#1a2b47] md:p-8"
 						>
 							<p class="mb-6 text-justify text-lg leading-loose text-[#2c3e50]">
 								On supersonic aircraft a typical air inlet duct has either a fixed or variable
@@ -799,13 +765,9 @@
 					</section>
 
 					<section class="opacity-100">
-						<h2
-							class="font-heading relative z-[2] mb-[-2px] inline-flex w-fit min-w-[40%] items-center gap-4 rounded-t-3xl bg-[#D35400] px-8 py-3 text-xl font-bold tracking-wide text-white uppercase shadow-none [clip-path:polygon(0_0,92%_0,100%_100%,0%_100%)] md:px-12 md:text-2xl"
-						>
-							Bellmouth Inlets
-						</h2>
+						<SectionHeader title="Bellmouth Inlets" color="#B34700" />
 						<div
-							class="relative z-[1] min-h-[300px] rounded-tr-3xl rounded-b-3xl border-[3px] border-[#D35400] bg-white p-6 text-[#1a2b47] md:p-8"
+							class="relative z-[1] rounded-tr-3xl rounded-b-3xl border-[3px] border-[#B34700] bg-white p-6 text-[#1a2b47] md:p-8"
 						>
 							<p class="mb-6 text-justify text-lg leading-loose text-[#2c3e50]">
 								Bellmouth inlets have a convergent profile that is designed specifically for
@@ -823,13 +785,9 @@
 			{#if currentPageSections === 2}
 				<div class="flex flex-col gap-12">
 					<section class="opacity-100">
-						<h2
-							class="font-heading relative z-[2] mb-[-2px] inline-flex w-fit min-w-[40%] items-center gap-4 rounded-t-3xl bg-[#D35400] px-8 py-3 text-xl font-bold tracking-wide text-white uppercase shadow-none [clip-path:polygon(0_0,92%_0,100%_100%,0%_100%)] md:px-12 md:text-2xl"
-						>
-							COMPRESSOR SECTION
-						</h2>
+						<SectionHeader title="COMPRESSOR SECTION" color="#B34700" />
 						<div
-							class="relative z-[1] min-h-[300px] rounded-tr-3xl rounded-b-3xl border-[3px] border-[#D35400] bg-white p-6 text-[#1a2b47] md:p-8"
+							class="relative z-[1] rounded-tr-3xl rounded-b-3xl border-[3px] border-[#B34700] bg-white p-6 text-[#1a2b47] md:p-8"
 						>
 							<div
 								class="relative mb-6 h-[400px] w-full rounded-xl border border-gray-200 bg-gray-50 shadow-inner"
@@ -846,7 +804,7 @@
 							</p>
 
 							<h5
-								class="font-heading mb-4 text-lg font-bold text-[#D35400] underline decoration-2 underline-offset-4"
+								class="font-heading mb-4 text-lg font-bold text-[#B34700] underline decoration-2 underline-offset-4"
 							>
 								Compressor Pressure Ratio
 							</h5>
@@ -857,13 +815,13 @@
 								The amount of air passing through the engine is dependent upon three factors:
 							</p>
 							<ol class="mb-6 list-decimal pl-10 leading-loose text-[#2c3e50]">
-								<li class="pl-2 marker:font-bold marker:text-[#D35400]">
+								<li class="pl-2 marker:font-bold marker:text-[#B34700]">
 									The compressor speed (rpm)
 								</li>
-								<li class="pl-2 marker:font-bold marker:text-[#D35400]">
+								<li class="pl-2 marker:font-bold marker:text-[#B34700]">
 									The forward speed of the aircraft
 								</li>
-								<li class="pl-2 marker:font-bold marker:text-[#D35400]">
+								<li class="pl-2 marker:font-bold marker:text-[#B34700]">
 									The density of the ambient (surrounding) air
 								</li>
 							</ol>
@@ -874,13 +832,13 @@
 								and move the air at a velocity of <b>400 to 500 feet per second</b>.
 							</p>
 
-							<div class="my-8 rounded-xl border-l-4 border-[#D35400] bg-orange-50 p-6 shadow-sm">
-								<h5 class="font-heading mb-4 text-xl font-bold text-[#D35400]">
+							<div class="my-8 rounded-xl border-l-4 border-[#B34700] bg-orange-50 p-6 shadow-sm">
+								<h5 class="font-heading mb-4 text-xl font-bold text-[#B34700]">
 									Functions of the Compressor Section
 								</h5>
 								<ul class="list-none pl-0">
 									<li
-										class="relative mb-3 pl-6 text-base leading-relaxed text-[#2c3e50] before:absolute before:top-2 before:left-0 before:h-2 before:w-2 before:rounded-full before:bg-[#D35400]"
+										class="relative mb-3 pl-6 text-base leading-relaxed text-[#2c3e50] before:absolute before:top-2 before:left-0 before:h-2 before:w-2 before:rounded-full before:bg-[#B34700]"
 									>
 										Its primary function is <b
 											>to supply air in sufficient quantity to satisfy the requirements of the
@@ -888,7 +846,7 @@
 										>.
 									</li>
 									<li
-										class="relative mb-3 pl-6 text-base leading-relaxed text-[#2c3e50] before:absolute before:top-2 before:left-0 before:h-2 before:w-2 before:rounded-full before:bg-[#D35400]"
+										class="relative mb-3 pl-6 text-base leading-relaxed text-[#2c3e50] before:absolute before:top-2 before:left-0 before:h-2 before:w-2 before:rounded-full before:bg-[#B34700]"
 									>
 										A secondary function of the compressor is <b
 											>to supply bleed air/customer bleed air for various purposes in the engine and
@@ -896,7 +854,7 @@
 										>.
 									</li>
 									<li
-										class="relative mb-3 pl-6 text-base leading-relaxed text-[#2c3e50] before:absolute before:top-2 before:left-0 before:h-2 before:w-2 before:rounded-full before:bg-[#D35400]"
+										class="relative mb-3 pl-6 text-base leading-relaxed text-[#2c3e50] before:absolute before:top-2 before:left-0 before:h-2 before:w-2 before:rounded-full before:bg-[#B34700]"
 									>
 										The bleed-air is taken from any of the various pressure stages of the
 										compressor. Bleeding air from the compressor does cause a small but <b
@@ -910,13 +868,13 @@
 									of bleed air are:
 								</p>
 								<ol class="list-decimal pl-10 leading-loose text-[#2c3e50]">
-									<li class="pl-2 marker:font-bold marker:text-[#D35400]">
+									<li class="pl-2 marker:font-bold marker:text-[#B34700]">
 										<b>Cabin pressurization, heating, and cooling;</b>
 									</li>
-									<li class="pl-2 marker:font-bold marker:text-[#D35400]">
+									<li class="pl-2 marker:font-bold marker:text-[#B34700]">
 										<b>De-icing and anti-icing equipment;</b>
 									</li>
-									<li class="pl-2 marker:font-bold marker:text-[#D35400]">
+									<li class="pl-2 marker:font-bold marker:text-[#B34700]">
 										<b>Pneumatic starting of engines</b>
 									</li>
 								</ol>
@@ -930,16 +888,12 @@
 			{#if currentPageSections === 2}
 				<div class="flex flex-col gap-12">
 					<section class="opacity-100">
-						<h2
-							class="font-heading relative z-[2] mb-[-2px] inline-flex w-fit min-w-[40%] items-center gap-4 rounded-t-3xl bg-[#D35400] px-8 py-3 text-xl font-bold tracking-wide text-white uppercase shadow-none [clip-path:polygon(0_0,92%_0,100%_100%,0%_100%)] md:px-12 md:text-2xl"
-						>
-							Types of Compressor
-						</h2>
+						<SectionHeader title="Types of Compressor" color="#B34700" />
 						<div
-							class="relative z-[1] min-h-[300px] rounded-tr-3xl rounded-b-3xl border-[3px] border-[#D35400] bg-white p-6 text-[#1a2b47] md:p-8"
+							class="relative z-[1] rounded-tr-3xl rounded-b-3xl border-[3px] border-[#B34700] bg-white p-6 text-[#1a2b47] md:p-8"
 						>
 							<h5
-								class="font-heading mb-4 text-lg font-bold text-[#D35400] underline decoration-2 underline-offset-4"
+								class="font-heading mb-4 text-lg font-bold text-[#B34700] underline decoration-2 underline-offset-4"
 							>
 								Centrifugal Flow Compressor
 							</h5>
@@ -950,17 +904,17 @@
 							</p>
 							<ul class="my-8 list-none pl-0">
 								<li
-									class="relative mb-5 pl-10 text-lg leading-relaxed text-[#2c3e50] before:absolute before:left-2 before:text-2xl before:font-bold before:text-[#D35400] before:content-['▸']"
+									class="relative mb-5 pl-10 text-lg leading-relaxed text-[#2c3e50] before:absolute before:left-2 before:text-2xl before:font-bold before:text-[#B34700] before:content-['▸']"
 								>
 									An Impeller (also called rotor);
 								</li>
 								<li
-									class="relative mb-5 pl-10 text-lg leading-relaxed text-[#2c3e50] before:absolute before:left-2 before:text-2xl before:font-bold before:text-[#D35400] before:content-['▸']"
+									class="relative mb-5 pl-10 text-lg leading-relaxed text-[#2c3e50] before:absolute before:left-2 before:text-2xl before:font-bold before:text-[#B34700] before:content-['▸']"
 								>
 									Diffuser;
 								</li>
 								<li
-									class="relative mb-5 pl-10 text-lg leading-relaxed text-[#2c3e50] before:absolute before:left-2 before:text-2xl before:font-bold before:text-[#D35400] before:content-['▸']"
+									class="relative mb-5 pl-10 text-lg leading-relaxed text-[#2c3e50] before:absolute before:left-2 before:text-2xl before:font-bold before:text-[#B34700] before:content-['▸']"
 								>
 									And a Manifold
 								</li>
@@ -985,19 +939,19 @@
 							</p>
 
 							<h5
-								class="font-heading mb-4 text-lg font-bold text-[#D35400] underline decoration-2 underline-offset-4"
+								class="font-heading mb-4 text-lg font-bold text-[#B34700] underline decoration-2 underline-offset-4"
 							>
 								Double sided / Double Entry Impeller
 							</h5>
 							<ul class="my-8 list-none pl-0">
 								<li
-									class="relative mb-5 pl-10 text-lg leading-relaxed text-[#2c3e50] before:absolute before:left-2 before:text-2xl before:font-bold before:text-[#D35400] before:content-['▸']"
+									class="relative mb-5 pl-10 text-lg leading-relaxed text-[#2c3e50] before:absolute before:left-2 before:text-2xl before:font-bold before:text-[#B34700] before:content-['▸']"
 								>
 									When two impellers are mounted back-to-back, a double-sided or double-entry
 									impeller is created.
 								</li>
 								<li
-									class="relative mb-5 pl-10 text-lg leading-relaxed text-[#2c3e50] before:absolute before:left-2 before:text-2xl before:font-bold before:text-[#D35400] before:content-['▸']"
+									class="relative mb-5 pl-10 text-lg leading-relaxed text-[#2c3e50] before:absolute before:left-2 before:text-2xl before:font-bold before:text-[#B34700] before:content-['▸']"
 								>
 									A single-stage, double-sided impeller allows a higher mass airflow than that of a
 									similar sized single-stage, single-sided impeller. Therefore, engines “with
@@ -1006,7 +960,7 @@
 							</ul>
 
 							<h5
-								class="font-heading mb-4 text-lg font-bold text-[#D35400] underline decoration-2 underline-offset-4"
+								class="font-heading mb-4 text-lg font-bold text-[#B34700] underline decoration-2 underline-offset-4"
 							>
 								Process of Compression
 							</h5>
@@ -1018,13 +972,13 @@
 							</p>
 							<ul class="my-8 list-none pl-0">
 								<li
-									class="relative mb-5 pl-10 text-lg leading-relaxed text-[#2c3e50] before:absolute before:left-2 before:text-2xl before:font-bold before:text-[#D35400] before:content-['▸']"
+									class="relative mb-5 pl-10 text-lg leading-relaxed text-[#2c3e50] before:absolute before:left-2 before:text-2xl before:font-bold before:text-[#B34700] before:content-['▸']"
 								>
 									This prepares the air for entry into the flame burning area of the combustion
 									section at a lower velocity so that the flame of combustion can burn continuously.
 								</li>
 								<li
-									class="relative mb-5 pl-10 text-lg leading-relaxed text-[#2c3e50] before:absolute before:left-2 before:text-2xl before:font-bold before:text-[#D35400] before:content-['▸']"
+									class="relative mb-5 pl-10 text-lg leading-relaxed text-[#2c3e50] before:absolute before:left-2 before:text-2xl before:font-bold before:text-[#B34700] before:content-['▸']"
 								>
 									If the air passed through the flame area at a high velocity, <b
 										>it could extinguish the flame</b
@@ -1037,20 +991,20 @@
 							</p>
 							<ul class="my-8 list-none pl-0">
 								<li
-									class="relative mb-5 pl-10 text-lg leading-relaxed text-[#2c3e50] before:absolute before:left-2 before:text-2xl before:font-bold before:text-[#D35400] before:content-['▸']"
+									class="relative mb-5 pl-10 text-lg leading-relaxed text-[#2c3e50] before:absolute before:left-2 before:text-2xl before:font-bold before:text-[#B34700] before:content-['▸']"
 								>
 									The compressor manifold diverts the flow of air from the diffuser, which is an
 									integral part of the manifold, into the combustion chambers.
 								</li>
 								<li
-									class="relative mb-5 pl-10 text-lg leading-relaxed text-[#2c3e50] before:absolute before:left-2 before:text-2xl before:font-bold before:text-[#D35400] before:content-['▸']"
+									class="relative mb-5 pl-10 text-lg leading-relaxed text-[#2c3e50] before:absolute before:left-2 before:text-2xl before:font-bold before:text-[#B34700] before:content-['▸']"
 								>
 									The manifold has one outlet port for each chamber so that the air is evenly
 									divided.
 								</li>
 							</ul>
 
-							<h5 class="font-heading my-8 text-center text-xl font-bold text-[#D35400] uppercase">
+							<h5 class="font-heading my-8 text-center text-xl font-bold text-[#B34700] uppercase">
 								CENTRIFUGAL FLOW COMPRESSOR
 							</h5>
 							<div class="overflow-x-auto rounded-xl border border-gray-200 shadow-md">
@@ -1097,13 +1051,9 @@
 					</section>
 
 					<section class="opacity-100">
-						<h2
-							class="font-heading relative z-[2] mb-[-2px] inline-flex w-fit min-w-[40%] items-center gap-4 rounded-t-3xl bg-[#D35400] px-8 py-3 text-xl font-bold tracking-wide text-white uppercase shadow-none [clip-path:polygon(0_0,92%_0,100%_100%,0%_100%)] md:px-12 md:text-2xl"
-						>
-							Axial Flow Compressor
-						</h2>
+						<SectionHeader title="Axial Flow Compressor" color="#B34700" />
 						<div
-							class="relative z-[1] min-h-[300px] rounded-tr-3xl rounded-b-3xl border-[3px] border-[#D35400] bg-white p-6 text-[#1a2b47] md:p-8"
+							class="relative z-[1] rounded-tr-3xl rounded-b-3xl border-[3px] border-[#B34700] bg-white p-6 text-[#1a2b47] md:p-8"
 						>
 							<p class="mb-6 text-justify text-lg leading-loose text-[#2c3e50]">
 								In an axial flow compressor, the airflow is along the horizontal axis of the
@@ -1118,13 +1068,13 @@
 							</p>
 							<ul class="my-8 list-none pl-0">
 								<li
-									class="relative mb-5 pl-10 text-lg leading-relaxed text-[#2c3e50] before:absolute before:left-2 before:text-2xl before:font-bold before:text-[#D35400] before:content-['▸']"
+									class="relative mb-5 pl-10 text-lg leading-relaxed text-[#2c3e50] before:absolute before:left-2 before:text-2xl before:font-bold before:text-[#B34700] before:content-['▸']"
 								>
 									The rotor blades are usually made of <b>stainless steel</b> with the latter stages
 									being made of <b>titanium</b>.
 								</li>
 								<li
-									class="relative mb-5 pl-10 text-lg leading-relaxed text-[#2c3e50] before:absolute before:left-2 before:text-2xl before:font-bold before:text-[#D35400] before:content-['▸']"
+									class="relative mb-5 pl-10 text-lg leading-relaxed text-[#2c3e50] before:absolute before:left-2 before:text-2xl before:font-bold before:text-[#B34700] before:content-['▸']"
 								>
 									The design of blade attachment to the rotor disk rims varies, but they are
 									commonly fitted into disks by either <b>bulb-type</b> or <b>fir- tree methods</b>,
@@ -1172,18 +1122,18 @@
 							</p>
 							<ul class="my-8 list-none pl-0">
 								<li
-									class="relative mb-5 pl-10 text-lg leading-relaxed text-[#2c3e50] before:absolute before:left-2 before:text-2xl before:font-bold before:text-[#D35400] before:content-['▸']"
+									class="relative mb-5 pl-10 text-lg leading-relaxed text-[#2c3e50] before:absolute before:left-2 before:text-2xl before:font-bold before:text-[#B34700] before:content-['▸']"
 								>
 									Stator vanes are normally constructed out of steel or nickel because those metals
 									have high fatigue strength.
 								</li>
 								<li
-									class="relative mb-5 pl-10 text-lg leading-relaxed text-[#2c3e50] before:absolute before:left-2 before:text-2xl before:font-bold before:text-[#D35400] before:content-['▸']"
+									class="relative mb-5 pl-10 text-lg leading-relaxed text-[#2c3e50] before:absolute before:left-2 before:text-2xl before:font-bold before:text-[#B34700] before:content-['▸']"
 								>
 									Stator vanes are often shrouded at their tips to minimize vibration tendencies.
 								</li>
 								<li
-									class="relative mb-5 pl-10 text-lg leading-relaxed text-[#2c3e50] before:absolute before:left-2 before:text-2xl before:font-bold before:text-[#D35400] before:content-['▸']"
+									class="relative mb-5 pl-10 text-lg leading-relaxed text-[#2c3e50] before:absolute before:left-2 before:text-2xl before:font-bold before:text-[#B34700] before:content-['▸']"
 								>
 									Some axial compressors with high compressor pressure ratios utilize <b
 										>variable inlet guide vanes</b
@@ -1191,7 +1141,7 @@
 									plus several stages of <b>variable stator vanes</b>.
 								</li>
 								<li
-									class="relative mb-5 pl-10 text-lg leading-relaxed text-[#2c3e50] before:absolute before:left-2 before:text-2xl before:font-bold before:text-[#D35400] before:content-['▸']"
+									class="relative mb-5 pl-10 text-lg leading-relaxed text-[#2c3e50] before:absolute before:left-2 before:text-2xl before:font-bold before:text-[#B34700] before:content-['▸']"
 								>
 									These variable inlet guide vanes and stators automatically reposition themselves
 									to maintain proper airflow through the engine under varying operating conditions.
@@ -1215,32 +1165,32 @@
 							/>
 
 							<h5
-								class="font-heading mb-4 text-lg font-bold text-[#D35400] underline decoration-2 underline-offset-4"
+								class="font-heading mb-4 text-lg font-bold text-[#B34700] underline decoration-2 underline-offset-4"
 							>
 								Pressure Stage
 							</h5>
 							<ul class="my-8 list-none pl-0">
 								<li
-									class="relative mb-5 pl-10 text-lg leading-relaxed text-[#2c3e50] before:absolute before:left-2 before:text-2xl before:font-bold before:text-[#D35400] before:content-['▸']"
+									class="relative mb-5 pl-10 text-lg leading-relaxed text-[#2c3e50] before:absolute before:left-2 before:text-2xl before:font-bold before:text-[#B34700] before:content-['▸']"
 								>
 									Each consecutive row of rotor blades and stator vanes constitutes a <b
 										>pressure stage</b
 									>.
 								</li>
 								<li
-									class="relative mb-5 pl-10 text-lg leading-relaxed text-[#2c3e50] before:absolute before:left-2 before:text-2xl before:font-bold before:text-[#D35400] before:content-['▸']"
+									class="relative mb-5 pl-10 text-lg leading-relaxed text-[#2c3e50] before:absolute before:left-2 before:text-2xl before:font-bold before:text-[#B34700] before:content-['▸']"
 								>
 									The number of stages is determined by the amount of air and total pressure rise
 									required.
 								</li>
 								<li
-									class="relative mb-5 pl-10 text-lg leading-relaxed text-[#2c3e50] before:absolute before:left-2 before:text-2xl before:font-bold before:text-[#D35400] before:content-['▸']"
+									class="relative mb-5 pl-10 text-lg leading-relaxed text-[#2c3e50] before:absolute before:left-2 before:text-2xl before:font-bold before:text-[#B34700] before:content-['▸']"
 								>
 									A single stage in an axial flow compressor is capable of producing a compressor
 									pressure ratio of only <b>1.25:1</b>.
 								</li>
 								<li
-									class="relative mb-5 pl-10 text-lg leading-relaxed text-[#2c3e50] before:absolute before:left-2 before:text-2xl before:font-bold before:text-[#D35400] before:content-['▸']"
+									class="relative mb-5 pl-10 text-lg leading-relaxed text-[#2c3e50] before:absolute before:left-2 before:text-2xl before:font-bold before:text-[#B34700] before:content-['▸']"
 								>
 									Therefore, high compressor pressure ratios are obtained by adding more compressor
 									stages. In order to add more compressor stages, multi-spool compressors are
@@ -1249,51 +1199,51 @@
 							</ul>
 
 							<h5
-								class="font-heading mb-4 text-lg font-bold text-[#D35400] underline decoration-2 underline-offset-4"
+								class="font-heading mb-4 text-lg font-bold text-[#B34700] underline decoration-2 underline-offset-4"
 							>
 								Process of Compression
 							</h5>
 							<ul class="my-8 list-none pl-0">
 								<li
-									class="relative mb-5 pl-10 text-lg leading-relaxed text-[#2c3e50] before:absolute before:left-2 before:text-2xl before:font-bold before:text-[#D35400] before:content-['▸']"
+									class="relative mb-5 pl-10 text-lg leading-relaxed text-[#2c3e50] before:absolute before:left-2 before:text-2xl before:font-bold before:text-[#B34700] before:content-['▸']"
 								>
 									The air from the air inlet is guided by the inlet guide vanes to the rotors and
 									stators.
 								</li>
 								<li
-									class="relative mb-5 pl-10 text-lg leading-relaxed text-[#2c3e50] before:absolute before:left-2 before:text-2xl before:font-bold before:text-[#D35400] before:content-['▸']"
+									class="relative mb-5 pl-10 text-lg leading-relaxed text-[#2c3e50] before:absolute before:left-2 before:text-2xl before:font-bold before:text-[#B34700] before:content-['▸']"
 								>
 									Each compressor stage raises the pressure of the incoming air while the air's
 									velocity is alternately increased then decreased as airflow proceeds through the
 									compressor.
 								</li>
 								<li
-									class="relative mb-5 pl-10 text-lg leading-relaxed text-[#2c3e50] before:absolute before:left-2 before:text-2xl before:font-bold before:text-[#D35400] before:content-['▸']"
+									class="relative mb-5 pl-10 text-lg leading-relaxed text-[#2c3e50] before:absolute before:left-2 before:text-2xl before:font-bold before:text-[#B34700] before:content-['▸']"
 								>
 									The rotor blades slightly accelerate the airflow then the stator vanes diffuse the
 									air, slowing it and increasing the pressure.
 								</li>
 								<li
-									class="relative mb-5 pl-10 text-lg leading-relaxed text-[#2c3e50] before:absolute before:left-2 before:text-2xl before:font-bold before:text-[#D35400] before:content-['▸']"
+									class="relative mb-5 pl-10 text-lg leading-relaxed text-[#2c3e50] before:absolute before:left-2 before:text-2xl before:font-bold before:text-[#B34700] before:content-['▸']"
 								>
 									The overall result is increased air pressure and relatively constant air velocity
 									from compressor inlet to outlet.
 								</li>
 								<li
-									class="relative mb-5 pl-10 text-lg leading-relaxed text-[#2c3e50] before:absolute before:left-2 before:text-2xl before:font-bold before:text-[#D35400] before:content-['▸']"
+									class="relative mb-5 pl-10 text-lg leading-relaxed text-[#2c3e50] before:absolute before:left-2 before:text-2xl before:font-bold before:text-[#B34700] before:content-['▸']"
 								>
 									The outlet guide vanes will now guide the compressed air into the diffuser to
 									prepare the air mass for combustion.
 								</li>
 								<li
-									class="relative mb-5 pl-10 text-lg leading-relaxed text-[#2c3e50] before:absolute before:left-2 before:text-2xl before:font-bold before:text-[#D35400] before:content-['▸']"
+									class="relative mb-5 pl-10 text-lg leading-relaxed text-[#2c3e50] before:absolute before:left-2 before:text-2xl before:font-bold before:text-[#B34700] before:content-['▸']"
 								>
 									This process will repeat depending on the number of spools the compressor have.
 								</li>
 							</ul>
 
 							<h5
-								class="font-heading mb-4 text-lg font-bold text-[#D35400] underline decoration-2 underline-offset-4"
+								class="font-heading mb-4 text-lg font-bold text-[#B34700] underline decoration-2 underline-offset-4"
 							>
 								Multi Spool Compressors
 							</h5>
@@ -1303,7 +1253,7 @@
 							</p>
 							<ul class="my-8 list-none pl-0">
 								<li
-									class="relative mb-5 pl-10 text-lg leading-relaxed text-[#2c3e50] before:absolute before:left-2 before:text-2xl before:font-bold before:text-[#D35400] before:content-['▸']"
+									class="relative mb-5 pl-10 text-lg leading-relaxed text-[#2c3e50] before:absolute before:left-2 before:text-2xl before:font-bold before:text-[#B34700] before:content-['▸']"
 								>
 									Each section is connected to a portion of the turbine section by shafts that run
 									coaxially, one within the other.
@@ -1311,20 +1261,20 @@
 							</ul>
 
 							<h5
-								class="font-heading mb-4 text-lg font-bold text-[#D35400] underline decoration-2 underline-offset-4"
+								class="font-heading mb-4 text-lg font-bold text-[#B34700] underline decoration-2 underline-offset-4"
 							>
 								Dual Spool Compressor
 							</h5>
 							<ul class="my-8 list-none pl-0">
 								<li
-									class="relative mb-5 pl-10 text-lg leading-relaxed text-[#2c3e50] before:absolute before:left-2 before:text-2xl before:font-bold before:text-[#D35400] before:content-['▸']"
+									class="relative mb-5 pl-10 text-lg leading-relaxed text-[#2c3e50] before:absolute before:left-2 before:text-2xl before:font-bold before:text-[#B34700] before:content-['▸']"
 								>
 									The <b>front section</b> of a dual- spool compressor is called the
 									<b>low pressure, low speed, or N1 compressor</b>. This low pressure compressor is
 									typically driven by a two-stage turbine at the rear of the turbine section.
 								</li>
 								<li
-									class="relative mb-5 pl-10 text-lg leading-relaxed text-[#2c3e50] before:absolute before:left-2 before:text-2xl before:font-bold before:text-[#D35400] before:content-['▸']"
+									class="relative mb-5 pl-10 text-lg leading-relaxed text-[#2c3e50] before:absolute before:left-2 before:text-2xl before:font-bold before:text-[#B34700] before:content-['▸']"
 								>
 									The <b>second compressor</b> section of a twin-spool compressor is called the
 									<b>high pressure, high speed, or N2 compressor</b> and is typically driven by a single
@@ -1340,24 +1290,24 @@
 							/>
 
 							<h5
-								class="font-heading mb-4 text-lg font-bold text-[#D35400] underline decoration-2 underline-offset-4"
+								class="font-heading mb-4 text-lg font-bold text-[#B34700] underline decoration-2 underline-offset-4"
 							>
 								Triple Spool Compressor
 							</h5>
 							<ul class="my-8 list-none pl-0">
 								<li
-									class="relative mb-5 pl-10 text-lg leading-relaxed text-[#2c3e50] before:absolute before:left-2 before:text-2xl before:font-bold before:text-[#D35400] before:content-['▸']"
+									class="relative mb-5 pl-10 text-lg leading-relaxed text-[#2c3e50] before:absolute before:left-2 before:text-2xl before:font-bold before:text-[#B34700] before:content-['▸']"
 								>
 									In this arrangement the <b>fan</b> is referred to as the
 									<b>low speed, or N1 compressor</b>
 								</li>
 								<li
-									class="relative mb-5 pl-10 text-lg leading-relaxed text-[#2c3e50] before:absolute before:left-2 before:text-2xl before:font-bold before:text-[#D35400] before:content-['▸']"
+									class="relative mb-5 pl-10 text-lg leading-relaxed text-[#2c3e50] before:absolute before:left-2 before:text-2xl before:font-bold before:text-[#B34700] before:content-['▸']"
 								>
 									The compressor next in line is called the <b>intermediate, or N2 compressor</b>,
 								</li>
 								<li
-									class="relative mb-5 pl-10 text-lg leading-relaxed text-[#2c3e50] before:absolute before:left-2 before:text-2xl before:font-bold before:text-[#D35400] before:content-['▸']"
+									class="relative mb-5 pl-10 text-lg leading-relaxed text-[#2c3e50] before:absolute before:left-2 before:text-2xl before:font-bold before:text-[#B34700] before:content-['▸']"
 								>
 									The innermost compressor is the <b>high pressure, or N3 compressor</b>.
 								</li>
@@ -1370,7 +1320,7 @@
 								height="260px"
 							/>
 
-							<h5 class="font-heading my-8 text-center text-xl font-bold text-[#D35400] uppercase">
+							<h5 class="font-heading my-8 text-center text-xl font-bold text-[#B34700] uppercase">
 								AXIAL FLOW COMPRESSOR
 							</h5>
 							<div class="overflow-x-auto rounded-xl border border-gray-200 shadow-md">
@@ -1413,7 +1363,7 @@
 							</div>
 
 							<h5
-								class="font-heading mt-8 mb-4 text-lg font-bold text-[#D35400] underline decoration-2 underline-offset-4"
+								class="font-heading mt-8 mb-4 text-lg font-bold text-[#B34700] underline decoration-2 underline-offset-4"
 							>
 								Compressor Stall
 							</h5>
@@ -1424,26 +1374,26 @@
 								be described as an imbalance between the two vector quantities, inlet velocity, and
 								compressor rotational speed.
 							</p>
-							<div class="my-8 rounded-xl border-l-4 border-[#D35400] bg-orange-50 p-6 shadow-sm">
-								<h5 class="font-heading mb-4 text-xl font-bold text-[#D35400]">
+							<div class="my-8 rounded-xl border-l-4 border-[#B34700] bg-orange-50 p-6 shadow-sm">
+								<h5 class="font-heading mb-4 text-xl font-bold text-[#B34700]">
 									Causes of Compressor Stall
 								</h5>
 								<ul class="list-none pl-0">
 									<li
-										class="relative mb-3 pl-6 text-base leading-relaxed text-[#2c3e50] before:absolute before:top-2 before:left-0 before:h-2 before:w-2 before:rounded-full before:bg-[#D35400]"
+										class="relative mb-3 pl-6 text-base leading-relaxed text-[#2c3e50] before:absolute before:top-2 before:left-0 before:h-2 before:w-2 before:rounded-full before:bg-[#B34700]"
 									>
 										Compressor stalls typically occur when the engine inlet air becomes turbulent or
 										disrupted when an aircraft flies in severe turbulence or performs abrupt flight
 										maneuvers.
 									</li>
 									<li
-										class="relative mb-3 pl-6 text-base leading-relaxed text-[#2c3e50] before:absolute before:top-2 before:left-0 before:h-2 before:w-2 before:rounded-full before:bg-[#D35400]"
+										class="relative mb-3 pl-6 text-base leading-relaxed text-[#2c3e50] before:absolute before:top-2 before:left-0 before:h-2 before:w-2 before:rounded-full before:bg-[#B34700]"
 									>
 										Excessive fuel flow produced by a sudden engine acceleration, accompanied by
 										incompatible engine rpm and airflow combinations.
 									</li>
 									<li
-										class="relative mb-3 pl-6 text-base leading-relaxed text-[#2c3e50] before:absolute before:top-2 before:left-0 before:h-2 before:w-2 before:rounded-full before:bg-[#D35400]"
+										class="relative mb-3 pl-6 text-base leading-relaxed text-[#2c3e50] before:absolute before:top-2 before:left-0 before:h-2 before:w-2 before:rounded-full before:bg-[#B34700]"
 									>
 										Contamination or damage to compressor blades, stator vanes, or turbine
 										components can also cause a compressor stall.
@@ -1452,7 +1402,7 @@
 							</div>
 
 							<h5
-								class="font-heading mb-4 text-lg font-bold text-[#D35400] underline decoration-2 underline-offset-4"
+								class="font-heading mb-4 text-lg font-bold text-[#B34700] underline decoration-2 underline-offset-4"
 							>
 								Hung Stalls
 							</h5>
@@ -1468,13 +1418,9 @@
 			<!-- Page 3: HOT SECTION: COMBUSTION -->
 			{#if currentPageSections === 3}
 				<section class="opacity-100">
-					<h2
-						class="font-heading relative z-[2] mb-[-2px] inline-flex w-fit min-w-[40%] items-center gap-4 rounded-t-3xl bg-[#D35400] px-8 py-3 text-xl font-bold tracking-wide text-white uppercase shadow-none [clip-path:polygon(0_0,92%_0,100%_100%,0%_100%)] md:px-12 md:text-2xl"
-					>
-						HOT SECTION: COMBUSTION
-					</h2>
+					<SectionHeader title="HOT SECTION: COMBUSTION" color="#B34700" />
 					<div
-						class="relative z-[1] min-h-[300px] rounded-tr-3xl rounded-b-3xl border-[3px] border-[#D35400] bg-white p-6 text-[#1a2b47] md:p-8"
+						class="relative z-[1] rounded-tr-3xl rounded-b-3xl border-[3px] border-[#B34700] bg-white p-6 text-[#1a2b47] md:p-8"
 					>
 						<div
 							class="relative mb-6 h-[400px] w-full rounded-xl border border-gray-200 bg-gray-50 shadow-inner"
@@ -1486,20 +1432,20 @@
 						</p>
 						<ul class="my-8 list-none pl-0">
 							<li
-								class="relative mb-5 pl-10 text-lg leading-relaxed text-[#2c3e50] before:absolute before:left-2 before:text-2xl before:font-bold before:text-[#D35400] before:content-['▸']"
+								class="relative mb-5 pl-10 text-lg leading-relaxed text-[#2c3e50] before:absolute before:left-2 before:text-2xl before:font-bold before:text-[#B34700] before:content-['▸']"
 							>
 								A combustion section is typically located directly between the compressor diffuser
 								and turbine section.
 							</li>
 							<li
-								class="relative mb-5 pl-10 text-lg leading-relaxed text-[#2c3e50] before:absolute before:left-2 before:text-2xl before:font-bold before:text-[#D35400] before:content-['▸']"
+								class="relative mb-5 pl-10 text-lg leading-relaxed text-[#2c3e50] before:absolute before:left-2 before:text-2xl before:font-bold before:text-[#B34700] before:content-['▸']"
 							>
 								All combustion sections contain the same basic elements: one or more combustion
 								chambers (combustors), a fuel injection system, an ignition source, and a fuel
 								drainage system.
 							</li>
 							<li
-								class="relative mb-5 pl-10 text-lg leading-relaxed text-[#2c3e50] before:absolute before:left-2 before:text-2xl before:font-bold before:text-[#D35400] before:content-['▸']"
+								class="relative mb-5 pl-10 text-lg leading-relaxed text-[#2c3e50] before:absolute before:left-2 before:text-2xl before:font-bold before:text-[#B34700] before:content-['▸']"
 							>
 								The primary function of the combustion section is to burn the fuel/air mixture,
 								thereby adding heat energy to the air.
@@ -1507,7 +1453,7 @@
 						</ul>
 
 						<h5
-							class="font-heading mb-4 text-lg font-bold text-[#D35400] underline decoration-2 underline-offset-4"
+							class="font-heading mb-4 text-lg font-bold text-[#B34700] underline decoration-2 underline-offset-4"
 						>
 							Fuel Injection System
 						</h5>
@@ -1519,7 +1465,7 @@
 						</p>
 
 						<h5
-							class="font-heading mb-4 text-lg font-bold text-[#D35400] underline decoration-2 underline-offset-4"
+							class="font-heading mb-4 text-lg font-bold text-[#B34700] underline decoration-2 underline-offset-4"
 						>
 							Fuel Drainage System
 						</h5>
@@ -1538,7 +1484,7 @@
 						/>
 
 						<h5
-							class="font-heading mb-4 text-lg font-bold text-[#D35400] underline decoration-2 underline-offset-4"
+							class="font-heading mb-4 text-lg font-bold text-[#B34700] underline decoration-2 underline-offset-4"
 						>
 							Combustion Chambers (Combustors)
 						</h5>
@@ -1550,16 +1496,12 @@
 				</section>
 
 				<section class="opacity-100">
-					<h2
-						class="font-heading relative z-[2] mb-[-2px] inline-flex w-fit min-w-[40%] items-center gap-4 rounded-t-3xl bg-[#D35400] px-8 py-3 text-xl font-bold tracking-wide text-white uppercase shadow-none [clip-path:polygon(0_0,92%_0,100%_100%,0%_100%)] md:px-12 md:text-2xl"
-					>
-						Types of Combustion Chambers
-					</h2>
+					<SectionHeader title="Types of Combustion Chambers" color="#B34700" />
 					<div
-						class="relative z-[1] min-h-[300px] rounded-tr-3xl rounded-b-3xl border-[3px] border-[#D35400] bg-white p-6 text-[#1a2b47] md:p-8"
+						class="relative z-[1] rounded-tr-3xl rounded-b-3xl border-[3px] border-[#B34700] bg-white p-6 text-[#1a2b47] md:p-8"
 					>
 						<h5
-							class="font-heading mb-4 text-lg font-bold text-[#D35400] underline decoration-2 underline-offset-4"
+							class="font-heading mb-4 text-lg font-bold text-[#B34700] underline decoration-2 underline-offset-4"
 						>
 							Multiple Can Type / Tubular
 						</h5>
@@ -1587,7 +1529,7 @@
 						</p>
 
 						<h5
-							class="font-heading mb-4 text-lg font-bold text-[#D35400] underline decoration-2 underline-offset-4"
+							class="font-heading mb-4 text-lg font-bold text-[#B34700] underline decoration-2 underline-offset-4"
 						>
 							Annular Type or Basket Type Combustor
 						</h5>
@@ -1609,7 +1551,7 @@
 						/>
 
 						<h5
-							class="font-heading mb-4 text-lg font-bold text-[#D35400] underline decoration-2 underline-offset-4"
+							class="font-heading mb-4 text-lg font-bold text-[#B34700] underline decoration-2 underline-offset-4"
 						>
 							Can-Annular Type Combustor / Tuboannular
 						</h5>
@@ -1632,32 +1574,28 @@
 				</section>
 
 				<section class="opacity-100">
-					<h2
-						class="font-heading relative z-[2] mb-[-2px] inline-flex w-fit min-w-[40%] items-center gap-4 rounded-t-3xl bg-[#D35400] px-8 py-3 text-xl font-bold tracking-wide text-white uppercase shadow-none [clip-path:polygon(0_0,92%_0,100%_100%,0%_100%)] md:px-12 md:text-2xl"
-					>
-						Characteristics of a Good Combustion Chamber
-					</h2>
+					<SectionHeader title="Characteristics of a Good Combustion Chamber" color="#B34700" />
 					<div
-						class="relative z-[1] min-h-[300px] rounded-tr-3xl rounded-b-3xl border-[3px] border-[#D35400] bg-white p-6 text-[#1a2b47] md:p-8"
+						class="relative z-[1] rounded-tr-3xl rounded-b-3xl border-[3px] border-[#B34700] bg-white p-6 text-[#1a2b47] md:p-8"
 					>
 						<ul class="my-8 list-none pl-0">
 							<li
-								class="relative mb-5 pl-10 text-lg leading-relaxed text-[#2c3e50] before:absolute before:left-2 before:text-2xl before:font-bold before:text-[#D35400] before:content-['▸']"
+								class="relative mb-5 pl-10 text-lg leading-relaxed text-[#2c3e50] before:absolute before:left-2 before:text-2xl before:font-bold before:text-[#B34700] before:content-['▸']"
 							>
 								Mix fuel and air effectively in the best ratio for good combustion.
 							</li>
 							<li
-								class="relative mb-5 pl-10 text-lg leading-relaxed text-[#2c3e50] before:absolute before:left-2 before:text-2xl before:font-bold before:text-[#D35400] before:content-['▸']"
+								class="relative mb-5 pl-10 text-lg leading-relaxed text-[#2c3e50] before:absolute before:left-2 before:text-2xl before:font-bold before:text-[#B34700] before:content-['▸']"
 							>
 								Burn the mixture as efficiently as possible.
 							</li>
 							<li
-								class="relative mb-5 pl-10 text-lg leading-relaxed text-[#2c3e50] before:absolute before:left-2 before:text-2xl before:font-bold before:text-[#D35400] before:content-['▸']"
+								class="relative mb-5 pl-10 text-lg leading-relaxed text-[#2c3e50] before:absolute before:left-2 before:text-2xl before:font-bold before:text-[#B34700] before:content-['▸']"
 							>
 								Cool the hot combustion gases to a temperature the turbine blades can tolerate.
 							</li>
 							<li
-								class="relative mb-5 pl-10 text-lg leading-relaxed text-[#2c3e50] before:absolute before:left-2 before:text-2xl before:font-bold before:text-[#D35400] before:content-['▸']"
+								class="relative mb-5 pl-10 text-lg leading-relaxed text-[#2c3e50] before:absolute before:left-2 before:text-2xl before:font-bold before:text-[#B34700] before:content-['▸']"
 							>
 								Distribute hot gases evenly to the turbine section
 							</li>
@@ -1666,36 +1604,32 @@
 				</section>
 
 				<section class="opacity-100">
-					<h2
-						class="font-heading relative z-[2] mb-[-2px] inline-flex w-fit min-w-[40%] items-center gap-4 rounded-t-3xl bg-[#D35400] px-8 py-3 text-xl font-bold tracking-wide text-white uppercase shadow-none [clip-path:polygon(0_0,92%_0,100%_100%,0%_100%)] md:px-12 md:text-2xl"
-					>
-						Primary and Secondary Air
-					</h2>
+					<SectionHeader title="Primary and Secondary Air" color="#B34700" />
 					<div
-						class="relative z-[1] min-h-[300px] rounded-tr-3xl rounded-b-3xl border-[3px] border-[#D35400] bg-white p-6 text-[#1a2b47] md:p-8"
+						class="relative z-[1] rounded-tr-3xl rounded-b-3xl border-[3px] border-[#B34700] bg-white p-6 text-[#1a2b47] md:p-8"
 					>
 						<ul class="my-8 list-none pl-0">
 							<li
-								class="relative mb-5 pl-10 text-lg leading-relaxed text-[#2c3e50] before:absolute before:left-2 before:text-2xl before:font-bold before:text-[#D35400] before:content-['▸']"
+								class="relative mb-5 pl-10 text-lg leading-relaxed text-[#2c3e50] before:absolute before:left-2 before:text-2xl before:font-bold before:text-[#B34700] before:content-['▸']"
 							>
 								In order to allow the combustion section to mix the incoming fuel and air, ignite
 								the mixture, and cool the combustion gases, airflow through a combustor is divided
 								into primary and secondary paths.
 							</li>
 							<li
-								class="relative mb-5 pl-10 text-lg leading-relaxed text-[#2c3e50] before:absolute before:left-2 before:text-2xl before:font-bold before:text-[#D35400] before:content-['▸']"
+								class="relative mb-5 pl-10 text-lg leading-relaxed text-[#2c3e50] before:absolute before:left-2 before:text-2xl before:font-bold before:text-[#B34700] before:content-['▸']"
 							>
 								Approximately 25 to 35 percent of the incoming air is designated as primary while 65
 								to 75 percent becomes secondary.
 							</li>
 							<li
-								class="relative mb-5 pl-10 text-lg leading-relaxed text-[#2c3e50] before:absolute before:left-2 before:text-2xl before:font-bold before:text-[#D35400] before:content-['▸']"
+								class="relative mb-5 pl-10 text-lg leading-relaxed text-[#2c3e50] before:absolute before:left-2 before:text-2xl before:font-bold before:text-[#B34700] before:content-['▸']"
 							>
 								Primary, or combustion air, is directed inside the liner in the front end of a
 								combustor. It is used to support the combustion.
 							</li>
 							<li
-								class="relative mb-5 pl-10 text-lg leading-relaxed text-[#2c3e50] before:absolute before:left-2 before:text-2xl before:font-bold before:text-[#D35400] before:content-['▸']"
+								class="relative mb-5 pl-10 text-lg leading-relaxed text-[#2c3e50] before:absolute before:left-2 before:text-2xl before:font-bold before:text-[#B34700] before:content-['▸']"
 							>
 								The secondary airflow in the combustion section forms a cooling air blanket on both
 								sides of the liner and centers the combustion flames so they do not contact the
@@ -1713,36 +1647,32 @@
 				</section>
 
 				<section class="opacity-100">
-					<h2
-						class="font-heading relative z-[2] mb-[-2px] inline-flex w-fit min-w-[40%] items-center gap-4 rounded-t-3xl bg-[#D35400] px-8 py-3 text-xl font-bold tracking-wide text-white uppercase shadow-none [clip-path:polygon(0_0,92%_0,100%_100%,0%_100%)] md:px-12 md:text-2xl"
-					>
-						Flameout
-					</h2>
+					<SectionHeader title="Flameout" color="#B34700" />
 					<div
-						class="relative z-[1] min-h-[300px] rounded-tr-3xl rounded-b-3xl border-[3px] border-[#D35400] bg-white p-6 text-[#1a2b47] md:p-8"
+						class="relative z-[1] rounded-tr-3xl rounded-b-3xl border-[3px] border-[#B34700] bg-white p-6 text-[#1a2b47] md:p-8"
 					>
 						<ul class="my-8 list-none pl-0">
 							<li
-								class="relative mb-5 pl-10 text-lg leading-relaxed text-[#2c3e50] before:absolute before:left-2 before:text-2xl before:font-bold before:text-[#D35400] before:content-['▸']"
+								class="relative mb-5 pl-10 text-lg leading-relaxed text-[#2c3e50] before:absolute before:left-2 before:text-2xl before:font-bold before:text-[#B34700] before:content-['▸']"
 							>
 								The situation wherein an excessively high velocity airflow could literally blow the
 								flame out of the engine/combustion chamber.
 							</li>
 						</ul>
 						<h5
-							class="font-heading mb-4 text-lg font-bold text-[#D35400] underline decoration-2 underline-offset-4"
+							class="font-heading mb-4 text-lg font-bold text-[#B34700] underline decoration-2 underline-offset-4"
 						>
 							Two Types of Flameout
 						</h5>
 						<ul class="my-8 list-none pl-0">
 							<li
-								class="relative mb-5 pl-10 text-lg leading-relaxed text-[#2c3e50] before:absolute before:left-2 before:text-2xl before:font-bold before:text-[#D35400] before:content-['▸']"
+								class="relative mb-5 pl-10 text-lg leading-relaxed text-[#2c3e50] before:absolute before:left-2 before:text-2xl before:font-bold before:text-[#B34700] before:content-['▸']"
 							>
 								<b>Lean Die Out</b> - usually occurs at high altitude, where low engine speeds and low
 								fuel pressure form a weak flame that can die out in a normal airflow.
 							</li>
 							<li
-								class="relative mb-5 pl-10 text-lg leading-relaxed text-[#2c3e50] before:absolute before:left-2 before:text-2xl before:font-bold before:text-[#D35400] before:content-['▸']"
+								class="relative mb-5 pl-10 text-lg leading-relaxed text-[#2c3e50] before:absolute before:left-2 before:text-2xl before:font-bold before:text-[#B34700] before:content-['▸']"
 							>
 								<b>Rich Blow Out</b> - occurs during rapid engine acceleration when an overly-rich mixture
 								causes the fuel temperature to drop below the combustion temperature or when there is
@@ -1753,13 +1683,9 @@
 				</section>
 
 				<section class="opacity-100">
-					<h2
-						class="font-heading relative z-[2] mb-[-2px] inline-flex w-fit min-w-[40%] items-center gap-4 rounded-t-3xl bg-[#D35400] px-8 py-3 text-xl font-bold tracking-wide text-white uppercase shadow-none [clip-path:polygon(0_0,92%_0,100%_100%,0%_100%)] md:px-12 md:text-2xl"
-					>
-						Combustion Process
-					</h2>
+					<SectionHeader title="Combustion Process" color="#B34700" />
 					<div
-						class="relative z-[1] min-h-[300px] rounded-tr-3xl rounded-b-3xl border-[3px] border-[#D35400] bg-white p-6 text-[#1a2b47] md:p-8"
+						class="relative z-[1] rounded-tr-3xl rounded-b-3xl border-[3px] border-[#B34700] bg-white p-6 text-[#1a2b47] md:p-8"
 					>
 						<p class="mb-6 text-justify text-lg leading-loose text-[#2c3e50]"></p>
 						<p class="mb-6 text-justify text-lg leading-loose text-[#2c3e50]">
@@ -1781,20 +1707,16 @@
 			<!-- Page 4: TURBINE SECTION -->
 			{#if currentPageSections === 4}
 				<section class="opacity-100">
-					<h2
-						class="font-heading relative z-[2] mb-[-2px] inline-flex w-fit min-w-[40%] items-center gap-4 rounded-t-3xl bg-[#D35400] px-8 py-3 text-xl font-bold tracking-wide text-white uppercase shadow-none [clip-path:polygon(0_0,92%_0,100%_100%,0%_100%)] md:px-12 md:text-2xl"
-					>
-						TURBINE
-					</h2>
+					<SectionHeader title="TURBINE" color="#B34700" />
 					<div
-						class="relative z-[1] min-h-[300px] rounded-tr-3xl rounded-b-3xl border-[3px] border-[#D35400] bg-white p-6 text-[#1a2b47] md:p-8"
+						class="relative z-[1] rounded-tr-3xl rounded-b-3xl border-[3px] border-[#B34700] bg-white p-6 text-[#1a2b47] md:p-8"
 					>
 						<div
 							class="mb-6 h-[250px] w-full overflow-hidden rounded-xl border border-white/20 shadow-inner md:h-[400px]"
 						>
 							<ModelViewer modelPath="/models/Turbine.glb" autoLoad={true} />
 						</div>
-						<p class="mb-4 text-center font-bold text-[#D35400] italic">
+						<p class="mb-4 text-center font-bold text-[#B34700] italic">
 							(3D SECTIONED VIEW OF TURBINE ONLY)
 						</p>
 						<p class="mb-6 text-justify text-lg leading-loose text-[#2c3e50]">
@@ -1813,7 +1735,7 @@
 						/>
 
 						<h5
-							class="font-heading mb-4 text-lg font-bold text-[#D35400] underline decoration-2 underline-offset-4"
+							class="font-heading mb-4 text-lg font-bold text-[#B34700] underline decoration-2 underline-offset-4"
 						>
 							Case
 						</h5>
@@ -1825,7 +1747,7 @@
 						</p>
 
 						<h5
-							class="font-heading mb-4 text-lg font-bold text-[#D35400] underline decoration-2 underline-offset-4"
+							class="font-heading mb-4 text-lg font-bold text-[#B34700] underline decoration-2 underline-offset-4"
 						>
 							Turbine Stator
 						</h5>
@@ -1842,7 +1764,7 @@
 						</p>
 
 						<h5
-							class="font-heading mb-4 text-lg font-bold text-[#D35400] underline decoration-2 underline-offset-4"
+							class="font-heading mb-4 text-lg font-bold text-[#B34700] underline decoration-2 underline-offset-4"
 						>
 							Turbine Rotor
 						</h5>
@@ -1852,13 +1774,13 @@
 						</p>
 						<ul class="my-8 list-none pl-0">
 							<li
-								class="relative mb-5 pl-10 text-lg leading-relaxed text-[#2c3e50] before:absolute before:left-2 before:text-2xl before:font-bold before:text-[#D35400] before:content-['▸']"
+								class="relative mb-5 pl-10 text-lg leading-relaxed text-[#2c3e50] before:absolute before:left-2 before:text-2xl before:font-bold before:text-[#B34700] before:content-['▸']"
 							>
 								The turbine wheel is a dynamically balanced unit consisting of blades attached to a
 								rotating disk.
 							</li>
 							<li
-								class="relative mb-5 pl-10 text-lg leading-relaxed text-[#2c3e50] before:absolute before:left-2 before:text-2xl before:font-bold before:text-[#D35400] before:content-['▸']"
+								class="relative mb-5 pl-10 text-lg leading-relaxed text-[#2c3e50] before:absolute before:left-2 before:text-2xl before:font-bold before:text-[#B34700] before:content-['▸']"
 							>
 								The turbine disk is the anchoring component for the turbine blades and is bolted or
 								welded to the main shaft.
@@ -1889,13 +1811,9 @@
 				</section>
 
 				<section class="opacity-100">
-					<h2
-						class="font-heading relative z-[2] mb-[-2px] inline-flex w-fit min-w-[40%] items-center gap-4 rounded-t-3xl bg-[#D35400] px-8 py-3 text-xl font-bold tracking-wide text-white uppercase shadow-none [clip-path:polygon(0_0,92%_0,100%_100%,0%_100%)] md:px-12 md:text-2xl"
-					>
-						Turbine Blades
-					</h2>
+					<SectionHeader title="Turbine Blades" color="#B34700" />
 					<div
-						class="relative z-[1] min-h-[300px] rounded-tr-3xl rounded-b-3xl border-[3px] border-[#D35400] bg-white p-6 text-[#1a2b47] md:p-8"
+						class="relative z-[1] rounded-tr-3xl rounded-b-3xl border-[3px] border-[#B34700] bg-white p-6 text-[#1a2b47] md:p-8"
 					>
 						<p class="mb-6 text-justify text-lg leading-loose text-[#2c3e50]">
 							Turbine blades are airfoil-shaped components designed to extract the maximum amount of
@@ -1907,13 +1825,13 @@
 						</p>
 						<ul class="my-8 list-none pl-0">
 							<li
-								class="relative mb-5 pl-10 text-lg leading-relaxed text-[#2c3e50] before:absolute before:left-2 before:text-2xl before:font-bold before:text-[#D35400] before:content-['▸']"
+								class="relative mb-5 pl-10 text-lg leading-relaxed text-[#2c3e50] before:absolute before:left-2 before:text-2xl before:font-bold before:text-[#B34700] before:content-['▸']"
 							>
 								<b>Impulse Turbine Blades</b> – the blades merely change the direction of airflow coming
 								from the turbine nozzle and cause relatively no change in gas pressure or velocity.
 							</li>
 							<li
-								class="relative mb-5 pl-10 text-lg leading-relaxed text-[#2c3e50] before:absolute before:left-2 before:text-2xl before:font-bold before:text-[#D35400] before:content-['▸']"
+								class="relative mb-5 pl-10 text-lg leading-relaxed text-[#2c3e50] before:absolute before:left-2 before:text-2xl before:font-bold before:text-[#B34700] before:content-['▸']"
 							>
 								<b>Reaction Turbine Blades</b> – produce a turning force based on an aerodynamic action.
 								To do this, the turbine blades form a series of converging ducts that increase gas velocity
@@ -1940,7 +1858,7 @@
 						/>
 						<ul class="my-8 list-none pl-0">
 							<li
-								class="relative mb-5 pl-10 text-lg leading-relaxed text-[#2c3e50] before:absolute before:left-2 before:text-2xl before:font-bold before:text-[#D35400] before:content-['▸']"
+								class="relative mb-5 pl-10 text-lg leading-relaxed text-[#2c3e50] before:absolute before:left-2 before:text-2xl before:font-bold before:text-[#B34700] before:content-['▸']"
 							>
 								<b>Impulse-Reaction Turbine Blades</b> – a combination of impulse and reaction blades,
 								the workload along the length of the blade is evenly distributed. The blade base is impulse-shaped
@@ -1949,7 +1867,7 @@
 						</ul>
 
 						<h5
-							class="font-heading mb-4 text-lg font-bold text-[#D35400] underline decoration-2 underline-offset-4"
+							class="font-heading mb-4 text-lg font-bold text-[#B34700] underline decoration-2 underline-offset-4"
 						>
 							Shrouded Turbine Blades
 						</h5>
@@ -1961,13 +1879,9 @@
 				</section>
 
 				<section class="opacity-100">
-					<h2
-						class="font-heading relative z-[2] mb-[-2px] inline-flex w-fit min-w-[40%] items-center gap-4 rounded-t-3xl bg-[#D35400] px-8 py-3 text-xl font-bold tracking-wide text-white uppercase shadow-none [clip-path:polygon(0_0,92%_0,100%_100%,0%_100%)] md:px-12 md:text-2xl"
-					>
-						Cooling of the Turbine Section
-					</h2>
+					<SectionHeader title="Cooling of the Turbine Section" color="#B34700" />
 					<div
-						class="relative z-[1] min-h-[300px] rounded-tr-3xl rounded-b-3xl border-[3px] border-[#D35400] bg-white p-6 text-[#1a2b47] md:p-8"
+						class="relative z-[1] rounded-tr-3xl rounded-b-3xl border-[3px] border-[#B34700] bg-white p-6 text-[#1a2b47] md:p-8"
 					>
 						<p class="mb-6 text-justify text-lg leading-loose text-[#2c3e50]">
 							The most common ways of cooling the components in the turbine section is to use engine
@@ -1976,14 +1890,14 @@
 						</p>
 						<ul class="my-8 list-none pl-0">
 							<li
-								class="relative mb-5 pl-10 text-lg leading-relaxed text-[#2c3e50] before:absolute before:left-2 before:text-2xl before:font-bold before:text-[#D35400] before:content-['▸']"
+								class="relative mb-5 pl-10 text-lg leading-relaxed text-[#2c3e50] before:absolute before:left-2 before:text-2xl before:font-bold before:text-[#B34700] before:content-['▸']"
 							>
 								<b>Convection Cooling/Film Cooling</b> – compressor bleed air is typically directed in
 								through the hollow blades and out through holes in the tip, leading edge, and trailing
 								edge.
 							</li>
 							<li
-								class="relative mb-5 pl-10 text-lg leading-relaxed text-[#2c3e50] before:absolute before:left-2 before:text-2xl before:font-bold before:text-[#D35400] before:content-['▸']"
+								class="relative mb-5 pl-10 text-lg leading-relaxed text-[#2c3e50] before:absolute before:left-2 before:text-2xl before:font-bold before:text-[#B34700] before:content-['▸']"
 							>
 								<b>Transpiration Cooling</b> – only used on stationary nozzle vanes, bleed air is ducted
 								into the vanes and exits through the porous material.
@@ -2018,20 +1932,16 @@
 			<!-- Page 5: EXHAUST SECTION & ACCESSORIES -->
 			{#if currentPageSections === 5}
 				<section class="opacity-100">
-					<h2
-						class="font-heading relative z-[2] mb-[-2px] inline-flex w-fit min-w-[40%] items-center gap-4 rounded-t-3xl bg-[#D35400] px-8 py-3 text-xl font-bold tracking-wide text-white uppercase shadow-none [clip-path:polygon(0_0,92%_0,100%_100%,0%_100%)] md:px-12 md:text-2xl"
-					>
-						EXHAUST SECTION
-					</h2>
+					<SectionHeader title="EXHAUST SECTION" color="#B34700" />
 					<div
-						class="relative z-[1] min-h-[300px] rounded-tr-3xl rounded-b-3xl border-[3px] border-[#D35400] bg-white p-6 text-[#1a2b47] md:p-8"
+						class="relative z-[1] rounded-tr-3xl rounded-b-3xl border-[3px] border-[#B34700] bg-white p-6 text-[#1a2b47] md:p-8"
 					>
 						<div
 							class="mb-6 h-[250px] w-full overflow-hidden rounded-xl border border-white/20 shadow-inner md:h-[400px]"
 						>
 							<ModelViewer modelPath="/models/Exhaust.glb" autoLoad={true} />
 						</div>
-						<p class="mb-4 text-center font-bold text-[#D35400] italic">
+						<p class="mb-4 text-center font-bold text-[#B34700] italic">
 							(3D SECTIONED VIEW OF EXHAUST ONLY)
 						</p>
 						<p class="mb-6 text-justify text-lg leading-loose text-[#2c3e50]">
@@ -2049,7 +1959,7 @@
 						/>
 
 						<h5
-							class="font-heading mb-4 text-lg font-bold text-[#D35400] underline decoration-2 underline-offset-4"
+							class="font-heading mb-4 text-lg font-bold text-[#B34700] underline decoration-2 underline-offset-4"
 						>
 							Exhaust Cone
 						</h5>
@@ -2060,7 +1970,7 @@
 						</p>
 
 						<h5
-							class="font-heading mb-4 text-lg font-bold text-[#D35400] underline decoration-2 underline-offset-4"
+							class="font-heading mb-4 text-lg font-bold text-[#B34700] underline decoration-2 underline-offset-4"
 						>
 							Tailpipe
 						</h5>
@@ -2072,7 +1982,7 @@
 						</p>
 
 						<h5
-							class="font-heading mb-4 text-lg font-bold text-[#D35400] underline decoration-2 underline-offset-4"
+							class="font-heading mb-4 text-lg font-bold text-[#B34700] underline decoration-2 underline-offset-4"
 						>
 							Exhaust Nozzle
 						</h5>
@@ -2083,13 +1993,13 @@
 						</p>
 						<ul class="my-8 list-none pl-0">
 							<li
-								class="relative mb-5 pl-10 text-lg leading-relaxed text-[#2c3e50] before:absolute before:left-2 before:text-2xl before:font-bold before:text-[#D35400] before:content-['▸']"
+								class="relative mb-5 pl-10 text-lg leading-relaxed text-[#2c3e50] before:absolute before:left-2 before:text-2xl before:font-bold before:text-[#B34700] before:content-['▸']"
 							>
 								<b>Converging Exhaust Nozzle</b> – the convergent shape produces a venturi that accelerates
 								the exhaust gases and increases engine thrust.
 							</li>
 							<li
-								class="relative mb-5 pl-10 text-lg leading-relaxed text-[#2c3e50] before:absolute before:left-2 before:text-2xl before:font-bold before:text-[#D35400] before:content-['▸']"
+								class="relative mb-5 pl-10 text-lg leading-relaxed text-[#2c3e50] before:absolute before:left-2 before:text-2xl before:font-bold before:text-[#B34700] before:content-['▸']"
 							>
 								<b>Converging-Diverging Nozzle</b> – the converging portion of the exhaust nozzle accelerates
 								the turbine exhaust gases to supersonic speed at the narrowest part of the duct, then,
@@ -2107,7 +2017,7 @@
 						/>
 
 						<h5
-							class="font-heading mb-4 text-lg font-bold text-[#D35400] underline decoration-2 underline-offset-4"
+							class="font-heading mb-4 text-lg font-bold text-[#B34700] underline decoration-2 underline-offset-4"
 						>
 							Mixer Unit
 						</h5>
@@ -2127,7 +2037,7 @@
 						/>
 
 						<h5
-							class="font-heading mb-4 text-lg font-bold text-[#D35400] underline decoration-2 underline-offset-4"
+							class="font-heading mb-4 text-lg font-bold text-[#B34700] underline decoration-2 underline-offset-4"
 						>
 							Variable Geometry Nozzle
 						</h5>
@@ -2138,7 +2048,7 @@
 						</p>
 
 						<h5
-							class="font-heading mb-4 text-lg font-bold text-[#D35400] underline decoration-2 underline-offset-4"
+							class="font-heading mb-4 text-lg font-bold text-[#B34700] underline decoration-2 underline-offset-4"
 						>
 							Afterburners
 						</h5>
@@ -2149,7 +2059,7 @@
 						</p>
 
 						<h5
-							class="font-heading mb-4 text-lg font-bold text-[#D35400] underline decoration-2 underline-offset-4"
+							class="font-heading mb-4 text-lg font-bold text-[#B34700] underline decoration-2 underline-offset-4"
 						>
 							Thrust Reversers
 						</h5>
@@ -2160,7 +2070,7 @@
 						</p>
 
 						<h5
-							class="font-heading mb-4 text-lg font-bold text-[#D35400] underline decoration-2 underline-offset-4"
+							class="font-heading mb-4 text-lg font-bold text-[#B34700] underline decoration-2 underline-offset-4"
 						>
 							Noise Suppressors
 						</h5>
@@ -2175,13 +2085,9 @@
 				</section>
 
 				<section class="opacity-100">
-					<h2
-						class="font-heading relative z-[2] mb-[-2px] inline-flex w-fit min-w-[40%] items-center gap-4 rounded-t-3xl bg-[#D35400] px-8 py-3 text-xl font-bold tracking-wide text-white uppercase shadow-none [clip-path:polygon(0_0,92%_0,100%_100%,0%_100%)] md:px-12 md:text-2xl"
-					>
-						Accessory Section
-					</h2>
+					<SectionHeader title="Accessory Section" color="#B34700" />
 					<div
-						class="relative z-[1] min-h-[300px] rounded-tr-3xl rounded-b-3xl border-[3px] border-[#D35400] bg-white p-6 text-[#1a2b47] md:p-8"
+						class="relative z-[1] rounded-tr-3xl rounded-b-3xl border-[3px] border-[#B34700] bg-white p-6 text-[#1a2b47] md:p-8"
 					>
 						<p class="mb-6 text-justify text-lg leading-loose text-[#2c3e50]">
 							The accessory section, or accessory drive, of a gas turbine engine is used to power
@@ -2210,13 +2116,9 @@
 				</section>
 
 				<section class="opacity-100">
-					<h2
-						class="font-heading relative z-[2] mb-[-2px] inline-flex w-fit min-w-[40%] items-center gap-4 rounded-t-3xl bg-[#D35400] px-8 py-3 text-xl font-bold tracking-wide text-white uppercase shadow-none [clip-path:polygon(0_0,92%_0,100%_100%,0%_100%)] md:px-12 md:text-2xl"
-					>
-						Auxiliary Power Units
-					</h2>
+					<SectionHeader title="Auxiliary Power Units" color="#B34700" />
 					<div
-						class="relative z-[1] min-h-[300px] rounded-tr-3xl rounded-b-3xl border-[3px] border-[#D35400] bg-white p-6 text-[#1a2b47] md:p-8"
+						class="relative z-[1] rounded-tr-3xl rounded-b-3xl border-[3px] border-[#B34700] bg-white p-6 text-[#1a2b47] md:p-8"
 					>
 						<p class="mb-6 text-justify text-lg leading-loose text-[#2c3e50]">
 							The Auxiliary Power Unit (APU) is a constant-speed gas turbine engine. The APU is a
@@ -2228,17 +2130,17 @@
 						</p>
 						<ul class="my-8 list-none pl-0">
 							<li
-								class="relative mb-5 pl-10 text-lg leading-relaxed text-[#2c3e50] before:absolute before:left-2 before:text-2xl before:font-bold before:text-[#D35400] before:content-['▸']"
+								class="relative mb-5 pl-10 text-lg leading-relaxed text-[#2c3e50] before:absolute before:left-2 before:text-2xl before:font-bold before:text-[#B34700] before:content-['▸']"
 							>
 								Electrical power for the aircraft systems,
 							</li>
 							<li
-								class="relative mb-5 pl-10 text-lg leading-relaxed text-[#2c3e50] before:absolute before:left-2 before:text-2xl before:font-bold before:text-[#D35400] before:content-['▸']"
+								class="relative mb-5 pl-10 text-lg leading-relaxed text-[#2c3e50] before:absolute before:left-2 before:text-2xl before:font-bold before:text-[#B34700] before:content-['▸']"
 							>
 								Bleed air for engine starting and air conditioning on the ground,
 							</li>
 							<li
-								class="relative mb-5 pl-10 text-lg leading-relaxed text-[#2c3e50] before:absolute before:left-2 before:text-2xl before:font-bold before:text-[#D35400] before:content-['▸']"
+								class="relative mb-5 pl-10 text-lg leading-relaxed text-[#2c3e50] before:absolute before:left-2 before:text-2xl before:font-bold before:text-[#B34700] before:content-['▸']"
 							>
 								Bleed air for air conditioning/pressurization and wing anti-ice in flight.
 							</li>
@@ -2272,9 +2174,9 @@
 				<div class="mx-auto grid max-w-7xl grid-cols-[1fr_auto_1fr] items-center gap-4">
 					<button
 						onclick={prevPageSections}
-						class="group flex items-center gap-2 justify-self-start rounded-xl border-2 border-[#D35400]/30 bg-white/90 px-4 py-3 font-bold text-[#1b3558] backdrop-blur-md transition-all hover:-translate-y-1 hover:border-[#D35400] hover:shadow-lg md:px-6"
+						class="group flex items-center gap-2 justify-self-start rounded-xl border-2 border-[#B34700]/30 bg-white/90 px-4 py-3 font-bold text-[#1b3558] backdrop-blur-md transition-all hover:-translate-y-1 hover:border-[#B34700] hover:shadow-lg md:px-6"
 					>
-						<span class="text-xl text-[#D35400]">←</span>
+						<span class="text-xl text-[#B34700]">←</span>
 						<span class="hidden font-bold text-[#0A1628] md:inline"
 							>{currentPageSections === 1 ? 'Previous: Overview' : 'Previous'}</span
 						>
@@ -2285,7 +2187,7 @@
 							<button
 								class="flex h-10 w-10 items-center justify-center rounded-full font-bold transition-all {currentPageSections ===
 								i + 1
-									? 'scale-110 bg-[#D35400] text-white'
+									? 'scale-110 bg-[#B34700] text-white'
 									: 'bg-[#1b3558] text-white hover:bg-[#1b3558]/80'}"
 								onclick={() => goToPageSections(i + 1)}
 								aria-label="Go to page {i + 1}"
@@ -2297,14 +2199,14 @@
 
 					<button
 						onclick={nextPageSections}
-						class="group flex items-center gap-2 justify-self-end rounded-xl border-2 border-[#D35400]/30 bg-white/90 px-4 py-3 font-bold text-[#1b3558] backdrop-blur-md transition-all hover:-translate-y-1 hover:border-[#D35400] hover:shadow-lg md:px-6"
+						class="group flex items-center gap-2 justify-self-end rounded-xl border-2 border-[#B34700]/30 bg-white/90 px-4 py-3 font-bold text-[#1b3558] backdrop-blur-md transition-all hover:-translate-y-1 hover:border-[#B34700] hover:shadow-lg md:px-6"
 					>
 						<span class="hidden font-bold text-[#0A1628] md:inline"
 							>{currentPageSections === totalPagesSections
 								? 'Next: Overhaul Station'
 								: 'Next'}</span
 						>
-						<span class="text-xl text-[#D35400]">→</span>
+						<span class="text-xl text-[#B34700]">→</span>
 					</button>
 				</div>
 			</div>
