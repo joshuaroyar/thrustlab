@@ -80,7 +80,7 @@ ${contextBlock || 'No relevant context was retrieved.'}
 
   const stream = createUIMessageStream({
     originalMessages: messages,
-    execute: ({ writer }) => {
+    execute: async ({ writer }) => {
       // Only send citations for non-greeting queries that have results
       if (!isGreeting && citations.length > 0) {
         writer.write({
@@ -90,9 +90,10 @@ ${contextBlock || 'No relevant context was retrieved.'}
       }
 
       try {
+        const modelMessages = await convertToModelMessages(messages);
         const result = streamText({
-          model: groq('llama-3.1-8b-instant'),
-          messages: convertToModelMessages(messages),
+          model: groq('llama-3.1-8b-instant') as any, // Type assertion for v2 compatibility
+          messages: modelMessages,
           system: systemPrompt,
         });
 
