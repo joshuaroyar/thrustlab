@@ -195,7 +195,7 @@
 			>
 				<div class="flex flex-col gap-3">
 					<h1
-						class="animate-gradient-flash font-heading m-0 bg-gradient-to-r from-[#FFD966] via-[#00CED1] to-[#FFD966] bg-[length:200%_100%] bg-clip-text text-center text-2xl font-black text-transparent drop-shadow-md md:text-3xl"
+						class="animate-gradient-flash gradient-animated font-heading m-0 text-center text-2xl font-black drop-shadow-md md:text-3xl"
 					>
 						Welcome aboard!
 					</h1>
@@ -348,7 +348,7 @@
 		class="rounded-2xl border border-sky-300/20 bg-[#0a2f35]/70 p-2 text-center backdrop-blur-md"
 	>
 		<p
-			class="animate-gradient-flash font-heading m-0 bg-gradient-to-r from-[#FFD966] via-[#00CED1] to-[#FFD966] bg-[length:200%_100%] bg-clip-text text-xl font-black text-transparent md:text-2xl"
+			class="animate-gradient-flash gradient-animated font-heading m-0 text-xl font-black md:text-2xl"
 		>
 			Press <kbd
 				class="mx-1 inline-block rounded border border-[#FFD966] bg-[#FFD966]/30 px-2 py-1 font-mono text-base font-bold text-[#FFD966]"

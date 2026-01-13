@@ -11,5 +11,8 @@ export default defineConfig({
 			allow: ['..']
 		}
 	},
-	plugins: [tailwindcss(), sveltekit()]
+	plugins: [tailwindcss(), sveltekit()],
+	optimizeDeps: {
+		exclude: ['@babylonjs/core', '@babylonjs/loaders']
+	}
 });

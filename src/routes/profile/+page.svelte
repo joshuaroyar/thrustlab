@@ -168,7 +168,7 @@
 		{#if mobileView === 'menu'}
 			<!-- Menu View -->
 			<div
-				class="flex flex-1 flex-col overflow-y-auto px-6 pt-36 pb-24"
+				class="flex flex-1 flex-col overflow-y-auto px-6 pt-16 pb-24"
 				in:fade={{ duration: 200 }}
 			>
 				<!-- Avatar Header -->
@@ -207,7 +207,9 @@
 							</button>
 						</div>
 					</div>
-					<h1 class="mb-1 text-3xl font-black tracking-tight text-white drop-shadow-lg">
+					<h1
+						class="animate-gradient-flash gradient-animated mb-1 text-3xl font-black tracking-tight drop-shadow-lg"
+					>
 						{data.profile?.fullName ||
 							data.user?.user_metadata?.full_name ||
 							data.user?.email ||
@@ -379,7 +381,7 @@
 			>
 				<!-- Header -->
 				<div
-					class="flex items-center gap-3 border-b border-white/5 bg-slate-900/60 p-4 pt-20 shadow-lg backdrop-blur-md"
+					class="flex items-center gap-3 border-b border-white/5 bg-slate-900/60 p-4 pt-6 shadow-lg backdrop-blur-md"
 				>
 					<button
 						onclick={() => (mobileView = 'menu')}
@@ -676,7 +678,7 @@
 			{#if selectedTab === 'account'}
 				<section class="tab-content" in:fade={{ duration: 200 }}>
 					<header class="tab-header">
-						<h1>Account Settings</h1>
+						<h1 class="animate-gradient-flash gradient-animated">Account Settings</h1>
 						<p>Manage your profile details and contact info.</p>
 					</header>
 

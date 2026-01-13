@@ -308,13 +308,13 @@
 <SkyBackground dawn={true} />
 
 <div
-	class="relative z-10 mx-auto min-h-screen max-w-[1400px] px-4 pt-32 pb-24 md:px-8 md:pt-40 md:pb-16"
+	class="relative z-10 mx-auto min-h-screen max-w-[1400px] px-4 pt-16 pb-24 md:px-8 md:pt-20 md:pb-16"
 >
 	{#if viewState === 'selection'}
 		<!-- Module Selection View -->
 		<div class="content-wrapper animate-on-scroll mx-auto max-w-7xl">
 			<h1
-				class="page-title animate-on-scroll animate-gradient-flash font-heading mb-6 bg-gradient-to-r from-purple-400 via-fuchsia-500 to-purple-400 bg-clip-text text-center text-5xl font-black tracking-tight text-transparent drop-shadow-[0_4px_10px_rgba(168,85,247,0.4)] md:text-8xl"
+				class="page-title animate-on-scroll animate-gradient-flash gradient-animated font-heading mb-6 text-center text-5xl font-black tracking-tight drop-shadow-[0_4px_10px_rgba(132,97,244,0.4)] md:text-8xl"
 			>
 				Test Bay
 			</h1>
@@ -323,7 +323,7 @@
 				style="font-family: 'Gotham', 'Gotham Bold', sans-serif;"
 			>
 				Welcome to the Test Bay, where learning turns into a challenge. Here, students face
-				<span class="text-purple-400"
+				<span style="color: var(--testbay-accent);"
 					>interactive assessments designed to gauge their understanding</span
 				> of the Hangar Zone, Turbofan Engine Zone, and Overhaul Bay. It's not just an activity—it's a
 				test of mastery, confidence, and readiness to take flight.
@@ -412,7 +412,7 @@
 	{:else if viewState === 'quiz' && selectedModule}
 		<!-- Quiz View -->
 		<div
-			class="quiz-container mx-auto flex min-h-screen max-w-[1200px] flex-col justify-center px-4 pt-32 pb-12 md:px-8 md:pt-40"
+			class="quiz-container mx-auto flex min-h-screen max-w-[1200px] flex-col justify-center px-4 pt-16 pb-12 md:px-8 md:pt-20"
 		>
 			<!-- Main Question Card (Unified) -->
 			{#if currentQuestion}
@@ -426,7 +426,7 @@
 					>
 						<button
 							class="font-heading group flex items-center gap-2 text-lg font-bold transition-all hover:-translate-x-1"
-							style="color: {getModuleColor(selectedModule.id)};"
+							style="color: var(--testbay-accent);"
 							onclick={backToSelection}
 						>
 							<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor">
@@ -441,7 +441,7 @@
 						</button>
 						<h2
 							class="font-heading text-xl font-extrabold uppercase md:text-2xl"
-							style="color: {getModuleColor(selectedModule.id)};"
+							style="color: var(--testbay-accent);"
 						>
 							Module {selectedModule.id}: {selectedModule.title}
 						</h2>
@@ -586,7 +586,7 @@
 		<div class="results-container mx-auto max-w-[900px] p-4 text-center md:p-8">
 			<div class="results-header">
 				<h1
-					class="font-heading mb-2 bg-gradient-to-r from-purple-400 via-fuchsia-500 to-purple-400 bg-clip-text text-4xl font-black text-transparent drop-shadow-[0_2px_4px_rgba(0,0,0,0.3)] md:text-6xl"
+					class="font-heading gradient-animated mb-2 text-4xl font-black drop-shadow-[0_2px_4px_rgba(0,0,0,0.3)] md:text-6xl"
 				>
 					{score >= 70 ? 'Congratulations!' : 'Assessment Complete'}
 				</h1>
@@ -736,7 +736,10 @@
 
 			{#if showReview}
 				<div class="review-section mx-auto max-w-[800px] text-left">
-					<h3 class="font-heading mb-8 text-3xl font-extrabold text-[#E8F4FA] drop-shadow-sm">
+					<h3
+						class="font-heading mb-8 text-3xl font-extrabold drop-shadow-sm"
+						style="color: var(--testbay-accent);"
+					>
 						📝 Answer Review
 					</h3>
 					{#each selectedModule.questions as question, idx}

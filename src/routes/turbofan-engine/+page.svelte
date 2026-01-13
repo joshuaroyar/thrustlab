@@ -35,7 +35,9 @@
 	}
 
 	function scrollToTop() {
-		window.scrollTo({ top: 0, behavior: 'smooth' });
+		// Use 'auto' (instant) scrolling for pagination to ensure the user is immediately at the top
+		// 'smooth' can sometimes fail if the page height changes dynamically during the scroll
+		window.scrollTo({ top: 0, behavior: 'auto' });
 	}
 
 	function nextPage() {
@@ -130,7 +132,7 @@
 
 <!-- Main Content -->
 <div
-	class="animate-on-scroll relative z-10 mx-auto min-h-screen w-full max-w-[1200px] px-4 pt-32 pb-8 md:px-8 md:pt-40 md:pb-16"
+	class="animate-on-scroll relative z-10 mx-auto min-h-screen w-full max-w-[1200px] px-4 pt-16 pb-8 md:px-8 md:pt-20 md:pb-16"
 >
 	<SearchModal />
 	<ImageModal />
@@ -138,7 +140,7 @@
 	<!-- Header Section -->
 	<div class="mb-12 text-center">
 		<h1
-			class="animate-gradient-flash font-heading mb-8 bg-gradient-to-r from-[#B34700] via-[#FFD966] to-[#B34700] bg-clip-text pb-4 text-5xl font-black tracking-tight text-transparent drop-shadow-[0_4px_10px_rgba(211,84,0,0.4)] md:text-8xl"
+			class="animate-gradient-flash gradient-animated font-heading mb-8 pb-4 text-5xl font-black tracking-tight drop-shadow-[0_4px_10px_rgba(211,84,0,0.4)] md:text-8xl"
 		>
 			Turbofan Engine
 		</h1>
@@ -147,7 +149,7 @@
 			style="font-family: 'Gotham', 'Gotham Bold', sans-serif;"
 		>
 			Enter the Turbofan Engine Zone, an immersive hub where students can <span
-				class="text-[#FFD966]">explore a fully rotatable 3D turbofan engine in stunning detail</span
+				class="text-[#D35400]">explore a fully rotatable 3D turbofan engine in stunning detail</span
 			>. Here, they can interact with each component, uncover the inner workings of every section,
 			and gain a clear understanding of how these powerful machines drive modern aircraft to the
 			skies.
@@ -187,19 +189,19 @@
 	<!-- Tab Toggle Buttons -->
 	<div class="mb-8 flex justify-end gap-4 pr-0 md:gap-8 md:pr-8">
 		<button
-			class="font-heading relative rounded-xl border-2 border-transparent px-6 py-2 text-xl font-black tracking-wider uppercase transition-all hover:-translate-y-0.5 hover:bg-white/10 {activeTab ===
+			class="font-heading relative rounded-xl border-2 px-6 py-2 text-xl font-black tracking-wider uppercase transition-all hover:-translate-y-0.5 {activeTab ===
 			'overview'
-				? 'bg-white text-[#B34700] shadow-lg'
-				: 'text-white'}"
+				? 'border-[#ff9f43] bg-[#B34700]/90 text-white shadow-[0_0_15px_rgba(179,71,0,0.5)] drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)] backdrop-blur-md'
+				: 'border-white/30 bg-black/40 text-white shadow-md drop-shadow-[0_2px_6px_rgba(0,0,0,0.7)] hover:bg-black/50'}"
 			onclick={() => (activeTab = 'overview')}
 		>
 			Overview
 		</button>
 		<button
-			class="font-heading relative rounded-xl border-2 border-transparent px-6 py-2 text-xl font-black tracking-wider uppercase transition-all hover:-translate-y-0.5 hover:bg-white/10 {activeTab ===
+			class="font-heading relative rounded-xl border-2 px-6 py-2 text-xl font-black tracking-wider uppercase transition-all hover:-translate-y-0.5 {activeTab ===
 			'sections'
-				? 'bg-white text-[#B34700] shadow-lg'
-				: 'text-white'}"
+				? 'border-[#ff9f43] bg-[#B34700]/90 text-white shadow-[0_0_15px_rgba(179,71,0,0.5)] drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)] backdrop-blur-md'
+				: 'border-white/30 bg-black/40 text-white shadow-md drop-shadow-[0_2px_6px_rgba(0,0,0,0.7)] hover:bg-black/50'}"
 			onclick={() => (activeTab = 'sections')}
 		>
 			Engine Sections
@@ -217,7 +219,7 @@
 			<section class="opacity-100">
 				<SectionHeader title="Learn, Explore and Understand the Turbofan Engine" color="#B34700" />
 				<div
-					class="relative z-[1] rounded-tr-3xl rounded-b-3xl border-[3px] border-[#B34700] bg-white p-6 text-[#1a2b47] md:p-8"
+					class="relative z-[1] rounded-3xl border-[5px] border-[#B34700] bg-white p-6 text-[#1a2b47] md:p-8"
 				>
 					<div class="relative h-[450px] w-full">
 						<ModelViewer
@@ -297,66 +299,83 @@
 				</div>
 			</section>
 
-			<!-- Overview & Parameters Container -->
-			<section class="opacity-100">
-				<SectionHeader title="OVERVIEW AND PARAMETERS" color="#B34700" />
-				<div
-					class="relative z-[1] rounded-tr-3xl rounded-b-3xl border-[3px] border-[#B34700] bg-white p-6 text-[#1a2b47] md:p-8"
-				>
-					<div class="mb-6 leading-loose">
-						<ul class="my-8 list-none pl-0">
-							<li
-								class="relative mb-5 pl-10 text-lg leading-relaxed text-[#2c3e50] before:absolute before:left-2 before:text-2xl before:font-bold before:text-[#B34700] before:content-['▸']"
-							>
-								A turbofan engine consists of a multi-bladed ducted propeller driven by a gas
-								turbine engine.
-							</li>
-							<li
-								class="relative mb-5 pl-10 text-lg leading-relaxed text-[#2c3e50] before:absolute before:left-2 before:text-2xl before:font-bold before:text-[#B34700] before:content-['▸']"
-							>
-								Turbofans were developed to provide a compromise between the best features of the
-								turbojet and the turboprop.
-							</li>
-							<li
-								class="relative mb-5 pl-10 text-lg leading-relaxed text-[#2c3e50] before:absolute before:left-2 before:text-2xl before:font-bold before:text-[#B34700] before:content-['▸']"
-							>
-								Turbofan engines have turbojet-type cruise speed capability yet retain some of the
-								short-field takeoff capability of a turboprop.
-							</li>
-						</ul>
-					</div>
-					<ImageGrid
-						images={[
-							{
-								src: '/images/turbofan-overview/1.1.png',
-								alt: 'Pressure Parameter',
-								caption: 'Pressure'
-							},
-							{
-								src: '/images/turbofan-overview/1.2.png',
-								alt: 'Temperature Parameter',
-								caption: 'Temperature'
-							},
-							{ src: '/images/turbofan-overview/1.3.png', alt: 'Flow Parameter', caption: 'Flow' }
-						]}
-						columns={3}
-						height="220px"
-					/>
-				</div>
-			</section>
-
 			<!-- More About Turbofan Container with Pagination -->
 			<div id="more-info-section" class="flex flex-col gap-8">
 				<!-- Paginated Content -->
 				<div class="flex flex-col gap-8">
 					{#if currentPage === 1}
 						<div class="flex flex-col gap-12">
-							<!-- Section 1: Introduction to Turbofans -->
+							<!-- Overview & Parameters Container (Moved to Page 1) -->
 							<section class="opacity-100">
-								<SectionHeader title="INTRODUCTION TO TURBOFAN ENGINES" color="#B34700" />
+								<SectionHeader title="OVERVIEW AND PARAMETERS" color="#B34700" />
 								<div
-									class="relative z-[1] rounded-tr-3xl rounded-b-3xl border-[3px] border-[#B34700] bg-white p-6 text-[#1a2b47] md:p-8"
+									class="relative z-[1] rounded-3xl border-[5px] border-[#B34700] bg-white p-6 text-[#1a2b47] md:p-8"
 								>
+									<div class="mb-6 leading-loose">
+										<ul class="my-8 list-none pl-0">
+											<li
+												class="relative mb-5 pl-10 text-lg leading-relaxed text-[#2c3e50] before:absolute before:left-2 before:text-2xl before:font-bold before:text-[#B34700] before:content-['▸']"
+											>
+												A turbofan engine consists of a multi-bladed ducted propeller driven by a
+												gas turbine engine.
+											</li>
+											<li
+												class="relative mb-5 pl-10 text-lg leading-relaxed text-[#2c3e50] before:absolute before:left-2 before:text-2xl before:font-bold before:text-[#B34700] before:content-['▸']"
+											>
+												Turbofans were developed to provide a compromise between the best features
+												of the turbojet and the turboprop.
+											</li>
+											<li
+												class="relative mb-5 pl-10 text-lg leading-relaxed text-[#2c3e50] before:absolute before:left-2 before:text-2xl before:font-bold before:text-[#B34700] before:content-['▸']"
+											>
+												Turbofan engines have turbojet-type cruise speed capability yet retain some
+												of the short-field takeoff capability of a turboprop.
+											</li>
+										</ul>
+									</div>
+									<ImageGrid
+										images={[
+											{
+												src: '/images/turbofan-overview/1.1.png',
+												alt: 'Pressure Parameter',
+												caption: 'Pressure'
+											},
+											{
+												src: '/images/turbofan-overview/1.2.png',
+												alt: 'Temperature Parameter',
+												caption: 'Temperature'
+											},
+											{
+												src: '/images/turbofan-overview/1.3.png',
+												alt: 'Flow Parameter',
+												caption: 'Flow'
+											}
+										]}
+										columns={3}
+										height="220px"
+									/>
+								</div>
+							</section>
+							<!-- Section 1: More About Turbofan Engine -->
+							<section class="opacity-100">
+								<SectionHeader title="MORE ABOUT TURBOFAN ENGINE" color="#B34700" />
+								<div
+									class="relative z-[1] rounded-3xl border-[5px] border-[#B34700] bg-white p-6 text-[#1a2b47] md:p-8"
+								>
+									<ImageGrid
+										images={[
+											{
+												src: '/images/turbofan-more-info/img_1.1.png',
+												alt: 'Turbofan Engine Forward Fan'
+											},
+											{
+												src: '/images/turbofan-more-info/img_1.2.png',
+												alt: 'Turbofan Engine Aft Fan'
+											}
+										]}
+										columns={2}
+										height="260px"
+									/>
 									<div class="mb-6 leading-loose">
 										<p class="mb-6 text-justify text-lg leading-loose text-[#2c3e50]">
 											The airlines' choice. Turbofans are like Turbojets but also have a large fan
@@ -372,25 +391,25 @@
 									<ImageGrid
 										images={[
 											{
-												src: '/images/turbofan-more-info/img_1.1.png',
-												alt: 'Turbofan Engine Forward Fan'
-											},
-											{
-												src: '/images/turbofan-more-info/img_1.2.png',
-												alt: 'Turbofan Engine Aft Fan'
+												src: '/images/turbofan-more-info/img_2.png',
+												alt: 'Turbofan Bypass Engine'
 											}
 										]}
-										columns={2}
-										height="260px"
+										columns={1}
+										height="auto"
 									/>
 								</div>
 							</section>
+						</div>
+					{/if}
 
+					{#if currentPage === 2}
+						<div class="flex flex-col gap-12">
 							<!-- Section 2: Bypass Engine Concept -->
 							<section class="opacity-100">
 								<SectionHeader title="THE BYPASS ENGINE CONCEPT" color="#B34700" />
 								<div
-									class="relative z-[1] rounded-tr-3xl rounded-b-3xl border-[3px] border-[#B34700] bg-white p-6 text-[#1a2b47] md:p-8"
+									class="relative z-[1] rounded-3xl border-[5px] border-[#B34700] bg-white p-6 text-[#1a2b47] md:p-8"
 								>
 									<div class="mb-6 leading-loose">
 										<p class="mb-6 text-justify text-lg leading-loose text-[#2c3e50]">
@@ -411,12 +430,13 @@
 									<ImageGrid
 										images={[
 											{
-												src: '/images/turbofan-more-info/img_2.png',
-												alt: 'Turbofan Bypass Engine'
-											}
+												src: '/images/turbofan-more-info/img_3.1.png',
+												alt: 'Turbofan Classifications'
+											},
+											{ src: '/images/turbofan-more-info/img_3.2.png', alt: 'Bypass Ratio Types' }
 										]}
-										columns={1}
-										height="auto"
+										columns={2}
+										height="260px"
 									/>
 								</div>
 							</section>
@@ -425,7 +445,7 @@
 							<section class="opacity-100">
 								<SectionHeader title="TURBOFAN CLASSIFICATIONS AND RATIOS" color="#B34700" />
 								<div
-									class="relative z-[1] rounded-tr-3xl rounded-b-3xl border-[3px] border-[#B34700] bg-white p-6 text-[#1a2b47] md:p-8"
+									class="relative z-[1] rounded-3xl border-[5px] border-[#B34700] bg-white p-6 text-[#1a2b47] md:p-8"
 								>
 									<div class="mb-6 leading-loose">
 										<p class="mb-6 text-justify text-lg leading-loose text-[#2c3e50]">
@@ -476,44 +496,6 @@
 									<ImageGrid
 										images={[
 											{
-												src: '/images/turbofan-more-info/img_3.1.png',
-												alt: 'Turbofan Classifications'
-											},
-											{ src: '/images/turbofan-more-info/img_3.2.png', alt: 'Bypass Ratio Types' }
-										]}
-										columns={2}
-										height="260px"
-									/>
-								</div>
-							</section>
-						</div>
-					{/if}
-
-					{#if currentPage === 2}
-						<div class="flex flex-col gap-12">
-							<!-- Section 4: Detailed Engine View -->
-							<section class="opacity-100">
-								<SectionHeader title="TURBOFAN ENGINE DETAILS AND COMPONENTS" color="#B34700" />
-								<div
-									class="relative z-[1] rounded-tr-3xl rounded-b-3xl border-[3px] border-[#B34700] bg-white p-6 text-[#1a2b47] md:p-8"
-								>
-									<div class="mb-6 leading-loose">
-										<p class="mb-6 text-justify text-lg leading-loose text-[#2c3e50]">
-											The turbofan engine represents a significant advancement in jet propulsion
-											technology. By incorporating a large bypass fan at the front of the engine,
-											turbofans achieve superior fuel efficiency and reduced noise compared to pure
-											turbojets.
-										</p>
-										<p class="mb-6 text-justify text-lg leading-loose text-[#2c3e50]">
-											Modern high-bypass turbofan engines are the standard powerplant for commercial
-											aviation, offering the perfect balance of thrust, efficiency, and
-											environmental performance. The bypass air not only contributes to thrust but
-											also helps cool the engine and reduce exhaust noise.
-										</p>
-									</div>
-									<ImageGrid
-										images={[
-											{
 												src: '/images/turbofan-more-info/img_4.png',
 												alt: 'Turbofan Engine Details'
 											}
@@ -529,7 +511,7 @@
 
 				<!-- Bottom Navigation (Overview) -->
 				<div
-					class="fixed right-0 bottom-16 left-0 z-40 border-t border-white/20 bg-black/90 p-4 backdrop-blur-md md:static md:mt-12 md:bg-transparent md:p-0 md:pt-6 md:backdrop-blur-none"
+					class="fixed right-0 bottom-16 left-0 z-40 border-t border-white/20 bg-black/90 p-4 backdrop-blur-md md:static md:mt-6 md:bg-transparent md:p-0 md:pt-4 md:backdrop-blur-none"
 				>
 					<div class="mx-auto grid max-w-7xl grid-cols-[1fr_auto_1fr] items-center gap-4">
 						<button
@@ -578,7 +560,7 @@
 			out:fade={{ duration: 200 }}
 		>
 			<h2
-				class="animate-gradient-flash font-heading m-0 mb-8 bg-gradient-to-r from-[#B34700] via-[#FFD966] to-[#B34700] bg-[length:200%_100%] bg-clip-text text-center text-4xl font-black text-transparent drop-shadow-[0_2px_8px_rgba(211,84,0,0.4)] md:text-5xl"
+				class="animate-gradient-flash gradient-animated font-heading m-0 mb-8 text-center text-4xl font-black drop-shadow-[0_2px_8px_rgba(211,84,0,0.4)] md:text-5xl"
 			>
 				LEARNING MODULE 03:<br />
 				SECTIONS OF A GAS TURBINE ENGINE
@@ -590,7 +572,7 @@
 					<section class="opacity-100">
 						<SectionHeader title="ENGINE COMPONENTS" color="#B34700" />
 						<div
-							class="relative z-[1] rounded-b-3xl border-[3px] border-[#B34700] bg-white p-6 text-[#1a2b47] md:p-8"
+							class="relative z-[1] rounded-b-3xl border-[5px] border-[#B34700] bg-white p-6 text-[#1a2b47] md:p-8"
 						>
 							<div class="mb-6 leading-loose">
 								<p class="mb-6 text-justify text-lg leading-loose text-[#2c3e50]">
@@ -627,7 +609,7 @@
 					<section class="opacity-100">
 						<SectionHeader title="COLD SECTION: AIR INLET" color="#B34700" />
 						<div
-							class="relative z-[1] rounded-b-3xl border-[3px] border-[#B34700] bg-white p-6 text-[#1a2b47] md:p-8"
+							class="relative z-[1] rounded-b-3xl border-[5px] border-[#B34700] bg-white p-6 text-[#1a2b47] md:p-8"
 						>
 							<div class="mb-6 leading-loose">
 								<div
@@ -635,9 +617,6 @@
 								>
 									<ModelViewer modelPath="/models/Intake.glb" autoLoad={true} />
 								</div>
-								<p class="mb-6 text-center text-sm text-gray-500 italic">
-									(3D SECTIONED VIEW OF AIR INLET ONLY)
-								</p>
 								<p class="mb-6 text-justify text-lg leading-loose text-[#2c3e50]">
 									The air intake of a gas turbine engine is either built into the airframe itself,
 									if the engine is mounted in the airframe, or is the forward part of the nacelle
@@ -691,7 +670,7 @@
 					<section class="opacity-100">
 						<SectionHeader title="Types of Air Inlet Ducts" color="#B34700" />
 						<div
-							class="relative z-[1] rounded-b-3xl border-[3px] border-[#B34700] bg-white p-6 text-[#1a2b47] md:p-8"
+							class="relative z-[1] rounded-b-3xl border-[5px] border-[#B34700] bg-white p-6 text-[#1a2b47] md:p-8"
 						>
 							<h5
 								class="font-heading mb-4 text-lg font-bold text-[#B34700] underline decoration-2 underline-offset-4"
@@ -731,7 +710,7 @@
 					<section class="opacity-100">
 						<SectionHeader title="Subsonic Inlets" color="#B34700" />
 						<div
-							class="relative z-[1] rounded-b-3xl border-[3px] border-[#B34700] bg-white p-6 text-[#1a2b47] md:p-8"
+							class="relative z-[1] rounded-b-3xl border-[5px] border-[#B34700] bg-white p-6 text-[#1a2b47] md:p-8"
 						>
 							<p class="mb-6 text-justify text-lg leading-loose text-[#2c3e50]">
 								A typical subsonic air inlet consists of a fixed geometry duct whose diameter
@@ -746,7 +725,7 @@
 					<section class="opacity-100">
 						<SectionHeader title="Supersonic Inlets" color="#B34700" />
 						<div
-							class="relative z-[1] rounded-b-3xl border-[3px] border-[#B34700] bg-white p-6 text-[#1a2b47] md:p-8"
+							class="relative z-[1] rounded-b-3xl border-[5px] border-[#B34700] bg-white p-6 text-[#1a2b47] md:p-8"
 						>
 							<p class="mb-6 text-justify text-lg leading-loose text-[#2c3e50]">
 								On supersonic aircraft a typical air inlet duct has either a fixed or variable
@@ -767,7 +746,7 @@
 					<section class="opacity-100">
 						<SectionHeader title="Bellmouth Inlets" color="#B34700" />
 						<div
-							class="relative z-[1] rounded-b-3xl border-[3px] border-[#B34700] bg-white p-6 text-[#1a2b47] md:p-8"
+							class="relative z-[1] rounded-b-3xl border-[5px] border-[#B34700] bg-white p-6 text-[#1a2b47] md:p-8"
 						>
 							<p class="mb-6 text-justify text-lg leading-loose text-[#2c3e50]">
 								Bellmouth inlets have a convergent profile that is designed specifically for
@@ -787,16 +766,14 @@
 					<section class="opacity-100">
 						<SectionHeader title="COMPRESSOR SECTION" color="#B34700" />
 						<div
-							class="relative z-[1] rounded-b-3xl border-[3px] border-[#B34700] bg-white p-6 text-[#1a2b47] md:p-8"
+							class="relative z-[1] rounded-b-3xl border-[5px] border-[#B34700] bg-white p-6 text-[#1a2b47] md:p-8"
 						>
 							<div
 								class="relative mb-6 h-[400px] w-full rounded-xl border border-gray-200 bg-gray-50 shadow-inner"
 							>
 								<ModelViewer modelPath="/models/Compression.glb" autoLoad={true} />
 							</div>
-							<p class="mb-6 text-center text-sm text-gray-500 italic">
-								(3D SECTIONED VIEW OF COMPRESSOR SECTION ONLY)
-							</p>
+
 							<p class="mb-6 text-justify text-lg leading-loose text-[#2c3e50]">
 								The second major section and also a part of the cold section of a gas turbine engine
 								is the compressor. It is the component that forces air into the engine. Its main
@@ -890,7 +867,7 @@
 					<section class="opacity-100">
 						<SectionHeader title="Types of Compressor" color="#B34700" />
 						<div
-							class="relative z-[1] rounded-b-3xl border-[3px] border-[#B34700] bg-white p-6 text-[#1a2b47] md:p-8"
+							class="relative z-[1] rounded-b-3xl border-[5px] border-[#B34700] bg-white p-6 text-[#1a2b47] md:p-8"
 						>
 							<h5
 								class="font-heading mb-4 text-lg font-bold text-[#B34700] underline decoration-2 underline-offset-4"
@@ -1007,42 +984,50 @@
 							<h5 class="font-heading my-8 text-center text-xl font-bold text-[#B34700] uppercase">
 								CENTRIFUGAL FLOW COMPRESSOR
 							</h5>
-							<div class="overflow-x-auto rounded-xl border border-gray-200 shadow-md">
+							<div
+								class="mx-auto max-w-4xl overflow-x-auto rounded-xl border-2 border-black shadow-md"
+							>
 								<table class="w-full border-collapse text-[#1a2b47]">
 									<thead>
-										<tr class="bg-orange-50">
-											<th class="border border-gray-200 p-3 text-center font-bold">ADVANTAGES</th>
-											<th class="border border-gray-200 p-3 text-center font-bold">DISADVANTAGES</th
+										<tr class="bg-white">
+											<th class="border-2 border-black p-4 text-center font-bold uppercase"
+												>ADVANTAGES</th
+											>
+											<th class="border-2 border-black p-4 text-center font-bold uppercase"
+												>DISADVANTAGES</th
 											>
 										</tr>
 									</thead>
 									<tbody>
-										<tr class="odd:bg-white even:bg-gray-50">
-											<td class="border border-gray-200 p-3">Simplicity in Manufacture</td>
-											<td class="border border-gray-200 p-3"
-												>Large frontal area required for a given airflow increases aerodynamic drag.</td
+										<tr class="bg-white">
+											<td class="border-2 border-black p-4 text-center"
+												>Simplicity in Manufacture</td
+											>
+											<td class="border-2 border-black p-4 text-center align-middle" rowspan="2"
+												>Large frontal area required for a<br />given airflow increases aerodynamic
+												drag.</td
 											>
 										</tr>
-										<tr class="odd:bg-white even:bg-gray-50">
-											<td class="border border-gray-200 p-3">Relatively Low Cost</td>
-											<td class="border border-gray-200 p-3"></td>
+										<tr class="bg-white">
+											<td class="border-2 border-black p-4 text-center">Relatively Low Cost</td>
 										</tr>
-										<tr class="odd:bg-white even:bg-gray-50">
-											<td class="border border-gray-200 p-3">Low Weight</td>
-											<td class="border border-gray-200 p-3"></td>
-										</tr>
-										<tr class="odd:bg-white even:bg-gray-50">
-											<td class="border border-gray-200 p-3">Low Starting Power Requirements</td>
-											<td class="border border-gray-200 p-3"
-												>Practical limits on the number of stages restrict its usefulness when
-												designing larger and more powerful engines.</td
+										<tr class="bg-white">
+											<td class="border-2 border-black p-4 text-center">Low Weight</td>
+											<td class="border-2 border-black p-4 text-center align-middle" rowspan="2"
+												>Practical limits on the number of stages restrict<br />its usefulness when
+												designing larger and more<br />powerful engines.</td
 											>
 										</tr>
-										<tr class="odd:bg-white even:bg-gray-50">
-											<td class="border border-gray-200 p-3"
-												>Operating Efficiency over a wide range of rotational speed</td
+										<tr class="bg-white">
+											<td class="border-2 border-black p-4 text-center"
+												>Low Starting Power Requirements</td
 											>
-											<td class="border border-gray-200 p-3"></td>
+										</tr>
+										<tr class="bg-white">
+											<td class="border-2 border-black p-4 text-center"
+												>Operating Efficiency over a wide<br />range of rotational speed</td
+											>
+											<td class="border-2 border-black p-4"></td>
 										</tr>
 									</tbody>
 								</table>
@@ -1053,7 +1038,7 @@
 					<section class="opacity-100">
 						<SectionHeader title="Axial Flow Compressor" color="#B34700" />
 						<div
-							class="relative z-[1] rounded-b-3xl border-[3px] border-[#B34700] bg-white p-6 text-[#1a2b47] md:p-8"
+							class="relative z-[1] rounded-b-3xl border-[5px] border-[#B34700] bg-white p-6 text-[#1a2b47] md:p-8"
 						>
 							<p class="mb-6 text-justify text-lg leading-loose text-[#2c3e50]">
 								In an axial flow compressor, the airflow is along the horizontal axis of the
@@ -1323,40 +1308,47 @@
 							<h5 class="font-heading my-8 text-center text-xl font-bold text-[#B34700] uppercase">
 								AXIAL FLOW COMPRESSOR
 							</h5>
-							<div class="overflow-x-auto rounded-xl border border-gray-200 shadow-md">
+							<div
+								class="mx-auto max-w-4xl overflow-x-auto rounded-xl border-2 border-black shadow-md"
+							>
 								<table class="w-full border-collapse text-[#1a2b47]">
 									<thead>
-										<tr class="bg-orange-50">
-											<th class="border border-gray-200 p-3 text-center font-bold">ADVANTAGES</th>
-											<th class="border border-gray-200 p-3 text-center font-bold">DISADVANTAGES</th
+										<tr class="bg-white">
+											<th class="border-2 border-black p-4 text-center font-bold uppercase"
+												>ADVANTAGES</th
+											>
+											<th class="border-2 border-black p-4 text-center font-bold uppercase"
+												>DISADVANTAGES</th
 											>
 										</tr>
 									</thead>
 									<tbody>
-										<tr class="odd:bg-white even:bg-gray-50">
-											<td class="border border-gray-200 p-3">High peak efficiencies</td>
-											<td class="border border-gray-200 p-3"
-												>Good efficiencies over only narrow rotational speed range</td
+										<tr class="bg-white">
+											<td class="border-2 border-black p-4 text-center">High peak efficiencies</td>
+											<td class="border-2 border-black p-4 text-center"
+												>Good efficiencies over only narrow<br />rotational speed range</td
 											>
 										</tr>
-										<tr class="odd:bg-white even:bg-gray-50">
-											<td class="border border-gray-200 p-3">Small frontal area</td>
-											<td class="border border-gray-200 p-3"
+										<tr class="bg-white">
+											<td class="border-2 border-black p-4 text-center">Small frontal area</td>
+											<td class="border-2 border-black p-4 text-center"
 												>Difficulty of manufacture and high cost</td
 											>
 										</tr>
-										<tr class="odd:bg-white even:bg-gray-50">
-											<td class="border border-gray-200 p-3"
-												>Straight through flow, allowing high ram efficiency</td
+										<tr class="bg-white">
+											<td class="border-2 border-black p-4 text-center"
+												>Straight through flow, allowing high<br />ram efficiency</td
 											>
-											<td class="border border-gray-200 p-3">Relatively high weight</td>
+											<td class="border-2 border-black p-4 text-center">Relatively high weight</td>
 										</tr>
-										<tr class="odd:bg-white even:bg-gray-50">
-											<td class="border border-gray-200 p-3"
-												>Increased pressure rise by increasing number of stages, with negligible
-												loses</td
+										<tr class="bg-white">
+											<td class="border-2 border-black p-4 text-center"
+												>Increased pressure rise by increasing<br />number of stages, with
+												negligible loses</td
 											>
-											<td class="border border-gray-200 p-3">High starting power requirements</td>
+											<td class="border-2 border-black p-4 text-center"
+												>High starting power requirements</td
+											>
 										</tr>
 									</tbody>
 								</table>
@@ -1420,16 +1412,14 @@
 				<section class="opacity-100">
 					<SectionHeader title="HOT SECTION: COMBUSTION" color="#B34700" />
 					<div
-						class="relative z-[1] rounded-tr-3xl rounded-b-3xl border-[3px] border-[#B34700] bg-white p-6 text-[#1a2b47] md:p-8"
+						class="relative z-[1] rounded-3xl border-[5px] border-[#B34700] bg-white p-6 text-[#1a2b47] md:p-8"
 					>
 						<div
 							class="relative mb-6 h-[400px] w-full rounded-xl border border-gray-200 bg-gray-50 shadow-inner"
 						>
 							<ModelViewer modelPath="/models/Combustion.glb" autoLoad={true} />
 						</div>
-						<p class="mb-6 text-center text-sm text-gray-500 italic">
-							(3D SECTIONED VIEW OF COMBUSTION SECTION ONLY)
-						</p>
+
 						<ul class="my-8 list-none pl-0">
 							<li
 								class="relative mb-5 pl-10 text-lg leading-relaxed text-[#2c3e50] before:absolute before:left-2 before:text-2xl before:font-bold before:text-[#B34700] before:content-['▸']"
@@ -1498,7 +1488,7 @@
 				<section class="opacity-100">
 					<SectionHeader title="Types of Combustion Chambers" color="#B34700" />
 					<div
-						class="relative z-[1] rounded-tr-3xl rounded-b-3xl border-[3px] border-[#B34700] bg-white p-6 text-[#1a2b47] md:p-8"
+						class="relative z-[1] rounded-3xl border-[5px] border-[#B34700] bg-white p-6 text-[#1a2b47] md:p-8"
 					>
 						<h5
 							class="font-heading mb-4 text-lg font-bold text-[#B34700] underline decoration-2 underline-offset-4"
@@ -1576,7 +1566,7 @@
 				<section class="opacity-100">
 					<SectionHeader title="Characteristics of a Good Combustion Chamber" color="#B34700" />
 					<div
-						class="relative z-[1] rounded-tr-3xl rounded-b-3xl border-[3px] border-[#B34700] bg-white p-6 text-[#1a2b47] md:p-8"
+						class="relative z-[1] rounded-3xl border-[5px] border-[#B34700] bg-white p-6 text-[#1a2b47] md:p-8"
 					>
 						<ul class="my-8 list-none pl-0">
 							<li
@@ -1606,7 +1596,7 @@
 				<section class="opacity-100">
 					<SectionHeader title="Primary and Secondary Air" color="#B34700" />
 					<div
-						class="relative z-[1] rounded-tr-3xl rounded-b-3xl border-[3px] border-[#B34700] bg-white p-6 text-[#1a2b47] md:p-8"
+						class="relative z-[1] rounded-3xl border-[5px] border-[#B34700] bg-white p-6 text-[#1a2b47] md:p-8"
 					>
 						<ul class="my-8 list-none pl-0">
 							<li
@@ -1649,7 +1639,7 @@
 				<section class="opacity-100">
 					<SectionHeader title="Flameout" color="#B34700" />
 					<div
-						class="relative z-[1] rounded-tr-3xl rounded-b-3xl border-[3px] border-[#B34700] bg-white p-6 text-[#1a2b47] md:p-8"
+						class="relative z-[1] rounded-3xl border-[5px] border-[#B34700] bg-white p-6 text-[#1a2b47] md:p-8"
 					>
 						<ul class="my-8 list-none pl-0">
 							<li
@@ -1685,7 +1675,7 @@
 				<section class="opacity-100">
 					<SectionHeader title="Combustion Process" color="#B34700" />
 					<div
-						class="relative z-[1] rounded-tr-3xl rounded-b-3xl border-[3px] border-[#B34700] bg-white p-6 text-[#1a2b47] md:p-8"
+						class="relative z-[1] rounded-3xl border-[5px] border-[#B34700] bg-white p-6 text-[#1a2b47] md:p-8"
 					>
 						<p class="mb-6 text-justify text-lg leading-loose text-[#2c3e50]"></p>
 						<p class="mb-6 text-justify text-lg leading-loose text-[#2c3e50]">
@@ -1709,7 +1699,7 @@
 				<section class="opacity-100">
 					<SectionHeader title="TURBINE" color="#B34700" />
 					<div
-						class="relative z-[1] rounded-tr-3xl rounded-b-3xl border-[3px] border-[#B34700] bg-white p-6 text-[#1a2b47] md:p-8"
+						class="relative z-[1] rounded-3xl border-[5px] border-[#B34700] bg-white p-6 text-[#1a2b47] md:p-8"
 					>
 						<div
 							class="mb-6 h-[250px] w-full overflow-hidden rounded-xl border border-white/20 shadow-inner md:h-[400px]"
@@ -1813,7 +1803,7 @@
 				<section class="opacity-100">
 					<SectionHeader title="Turbine Blades" color="#B34700" />
 					<div
-						class="relative z-[1] rounded-tr-3xl rounded-b-3xl border-[3px] border-[#B34700] bg-white p-6 text-[#1a2b47] md:p-8"
+						class="relative z-[1] rounded-3xl border-[5px] border-[#B34700] bg-white p-6 text-[#1a2b47] md:p-8"
 					>
 						<p class="mb-6 text-justify text-lg leading-loose text-[#2c3e50]">
 							Turbine blades are airfoil-shaped components designed to extract the maximum amount of
@@ -1881,7 +1871,7 @@
 				<section class="opacity-100">
 					<SectionHeader title="Cooling of the Turbine Section" color="#B34700" />
 					<div
-						class="relative z-[1] rounded-tr-3xl rounded-b-3xl border-[3px] border-[#B34700] bg-white p-6 text-[#1a2b47] md:p-8"
+						class="relative z-[1] rounded-3xl border-[5px] border-[#B34700] bg-white p-6 text-[#1a2b47] md:p-8"
 					>
 						<p class="mb-6 text-justify text-lg leading-loose text-[#2c3e50]">
 							The most common ways of cooling the components in the turbine section is to use engine
@@ -1934,7 +1924,7 @@
 				<section class="opacity-100">
 					<SectionHeader title="EXHAUST SECTION" color="#B34700" />
 					<div
-						class="relative z-[1] rounded-tr-3xl rounded-b-3xl border-[3px] border-[#B34700] bg-white p-6 text-[#1a2b47] md:p-8"
+						class="relative z-[1] rounded-3xl border-[5px] border-[#B34700] bg-white p-6 text-[#1a2b47] md:p-8"
 					>
 						<div
 							class="mb-6 h-[250px] w-full overflow-hidden rounded-xl border border-white/20 shadow-inner md:h-[400px]"
@@ -2087,7 +2077,7 @@
 				<section class="opacity-100">
 					<SectionHeader title="Accessory Section" color="#B34700" />
 					<div
-						class="relative z-[1] rounded-tr-3xl rounded-b-3xl border-[3px] border-[#B34700] bg-white p-6 text-[#1a2b47] md:p-8"
+						class="relative z-[1] rounded-3xl border-[5px] border-[#B34700] bg-white p-6 text-[#1a2b47] md:p-8"
 					>
 						<p class="mb-6 text-justify text-lg leading-loose text-[#2c3e50]">
 							The accessory section, or accessory drive, of a gas turbine engine is used to power
@@ -2118,7 +2108,7 @@
 				<section class="opacity-100">
 					<SectionHeader title="Auxiliary Power Units" color="#B34700" />
 					<div
-						class="relative z-[1] rounded-tr-3xl rounded-b-3xl border-[3px] border-[#B34700] bg-white p-6 text-[#1a2b47] md:p-8"
+						class="relative z-[1] rounded-3xl border-[5px] border-[#B34700] bg-white p-6 text-[#1a2b47] md:p-8"
 					>
 						<p class="mb-6 text-justify text-lg leading-loose text-[#2c3e50]">
 							The Auxiliary Power Unit (APU) is a constant-speed gas turbine engine. The APU is a

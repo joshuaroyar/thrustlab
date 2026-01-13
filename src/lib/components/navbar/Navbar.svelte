@@ -225,20 +225,29 @@
 
 <style>
 	.navbar {
-		/* Glassmorphism / Liquid Glass Effect */
-		background: var(--navbar-bg-color, rgba(135, 206, 235, 0.15));
-		backdrop-filter: blur(20px) saturate(180%);
-		-webkit-backdrop-filter: blur(20px) saturate(180%);
-		box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
-		border-bottom: 1px solid rgba(255, 255, 255, 0.18);
-		position: sticky;
+		/* Fully transparent and fixed */
+		background: transparent !important;
+		backdrop-filter: none !important;
+		-webkit-backdrop-filter: none !important;
+		box-shadow: none !important;
+		border-bottom: none !important;
+		position: fixed;
 		top: 0;
+		left: 0;
+		right: 0;
 		z-index: 1000;
 		width: 100%;
-		transition: all 0.5s ease;
+
+		/* Persistent and interactive */
+		opacity: 1;
+		transform: translateY(0);
+		pointer-events: auto;
+		transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
 	}
 
-	/* Disable frosted glass on Dashboard and Profile pages */
+	/* Force transparency for all states */
+	.navbar.transparent,
+	.navbar.scrolled,
 	:global(body.dashboard-page) .navbar,
 	:global(body.profile-page) .navbar {
 		background: transparent !important;
@@ -246,22 +255,6 @@
 		-webkit-backdrop-filter: none !important;
 		box-shadow: none !important;
 		border-bottom: none !important;
-	}
-
-	.navbar.transparent {
-		background: transparent;
-		backdrop-filter: none;
-		-webkit-backdrop-filter: none;
-		box-shadow: none;
-		border-bottom: none;
-	}
-
-	.navbar.scrolled {
-		background: var(--navbar-bg-color, rgba(135, 206, 235, 0.15));
-		backdrop-filter: blur(20px) saturate(180%);
-		-webkit-backdrop-filter: blur(20px) saturate(180%);
-		box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
-		border-bottom: 1px solid rgba(255, 255, 255, 0.2);
 	}
 
 	.navbar-container {

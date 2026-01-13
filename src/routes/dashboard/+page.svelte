@@ -399,7 +399,7 @@
 	<div class="dashboard-container hidden md:flex">
 		<!-- Scrollable Content Wrapper -->
 		<div class="dashboard-scroll-content">
-			<!-- Header Section -->
+			<!-- Header Section - Full Width -->
 			<header class="header-section animate-on-scroll" in:fly={{ y: -20, duration: 800 }}>
 				<div class="pilot-info">
 					<div class="avatar-ring">
@@ -430,179 +430,212 @@
 				</div>
 			</header>
 
-			<!-- 1. Stats Row (Top) -->
-			<!-- 1. Stats Row (Top) -->
-			<section class="stats-row animate-on-scroll animate-delay-100">
-				<!-- Progress Card (Full Width) -->
-				<div class="stat-card progress-card" in:scale={{ duration: 500, delay: 200, start: 0.9 }}>
-					<div class="stat-icon-wrapper blue">
-						<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-							<path
-								d="M22 11.08V12a10 10 0 1 1-5.93-9.14"
-								stroke-linecap="round"
-								stroke-linejoin="round"
-							/>
-							<polyline
-								points="22 4 12 14.01 9 11.01"
-								stroke-linecap="round"
-								stroke-linejoin="round"
-							/>
-						</svg>
-					</div>
-					<div class="stat-details">
-						<span class="stat-label">Training Progress</span>
-						<div class="stat-value-row">
-							<span class="stat-number">{data.stats.progress}%</span>
+			<!-- 2-Column Grid Layout -->
+			<div class="dashboard-grid">
+				<!-- LEFT COLUMN: Mission Log -->
+				<div class="left-column">
+					<!-- 2. Main Content Stack (Middle: Activity) -->
+					<!-- 2. Main Content Stack (Middle: Activity) -->
+					<section class="panel activity-panel animate-on-scroll animate-delay-200">
+						<div class="panel-header">
+							<h2>Mission Log</h2>
+							<a href="/dashboard/history" class="view-all">View History →</a>
 						</div>
-						<div class="progress-track">
-							<div class="progress-bar" style="width: {data.stats.progress}%"></div>
-						</div>
-					</div>
-				</div>
 
-				<!-- Modules Card -->
-				<div class="stat-card" in:scale={{ duration: 500, delay: 300, start: 0.9 }}>
-					<div class="stat-icon-wrapper green">
-						<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-							<path
-								d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"
-								stroke-linecap="round"
-								stroke-linejoin="round"
-							/>
-							<polyline points="14 2 14 8 20 8" stroke-linecap="round" stroke-linejoin="round" />
-							<line x1="16" y1="13" x2="8" y2="13" stroke-linecap="round" stroke-linejoin="round" />
-							<line x1="16" y1="17" x2="8" y2="17" stroke-linecap="round" stroke-linejoin="round" />
-							<polyline points="10 9 9 9 8 9" stroke-linecap="round" stroke-linejoin="round" />
-						</svg>
-					</div>
-					<div class="stat-details">
-						<span class="stat-label">Modules Completed</span>
-						<div class="stat-value-row">
-							<span class="stat-number">{data.stats.totalTests}</span>
-							<span class="stat-unit">missions</span>
-						</div>
-					</div>
-				</div>
-
-				<!-- Performance Card -->
-				<div class="stat-card" in:scale={{ duration: 500, delay: 400, start: 0.9 }}>
-					<div class="stat-icon-wrapper orange">
-						<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-							<circle cx="12" cy="12" r="10" />
-							<path d="M8 14s1.5 2 4 2 4-2 4-2" />
-							<line x1="9" y1="9" x2="9.01" y2="9" />
-							<line x1="15" y1="9" x2="15.01" y2="9" />
-						</svg>
-					</div>
-					<div class="stat-details">
-						<span class="stat-label">Performance Rating</span>
-						<div class="stat-value-row">
-							<span class="stat-number">{data.stats.averageScore}%</span>
-							<span class="stat-grade">
-								{#if data.stats.averageScore >= 90}A
-								{:else if data.stats.averageScore >= 80}B
-								{:else if data.stats.averageScore >= 70}C
-								{:else}D{/if}
-							</span>
-						</div>
-					</div>
-				</div>
-			</section>
-
-			<!-- 2. Main Content Stack (Middle: Activity) -->
-			<!-- 2. Main Content Stack (Middle: Activity) -->
-			<section class="panel activity-panel animate-on-scroll animate-delay-200">
-				<div class="panel-header">
-					<h2>Mission Log</h2>
-					<a href="/dashboard/history" class="view-all">View History →</a>
-				</div>
-
-				<div class="activity-list">
-					{#if data.recentActivity.length > 0}
-						{#each data.recentActivity as activity, i}
-							<div
-								class="activity-row"
-								in:slide={{ axis: 'y', duration: 300, delay: 500 + i * 50 }}
-							>
-								<div class="activity-status-indicator {activity.passed ? 'pass' : 'fail'}"></div>
-								<div class="activity-main">
-									<div class="activity-info">
-										<span class="activity-type"
-											>{activity.type === 'test' ? 'Assessment' : 'Simulation'}</span
-										>
-										<h3 class="activity-title">{activity.moduleName}</h3>
-									</div>
-									<div class="activity-meta">
-										<span class="activity-date">{new Date(activity.date).toLocaleDateString()}</span
-										>
-										<span class="activity-score {activity.passed ? 'score-pass' : 'score-fail'}">
-											{activity.score}%
-										</span>
-									</div>
-								</div>
-								{#if activity.type === 'test'}
-									<button
-										class="btn-icon"
-										onclick={() => openFeedback(activity)}
-										aria-label="View Feedback"
+						<div class="activity-list">
+							{#if data.recentActivity.length > 0}
+								{#each data.recentActivity as activity, i}
+									<div
+										class="activity-row"
+										in:slide={{ axis: 'y', duration: 300, delay: 500 + i * 50 }}
 									>
+										<div
+											class="activity-status-indicator {activity.passed ? 'pass' : 'fail'}"
+										></div>
+										<div class="activity-main">
+											<div class="activity-info">
+												<span class="activity-type"
+													>{activity.type === 'test' ? 'Assessment' : 'Simulation'}</span
+												>
+												<h3 class="activity-title">{activity.moduleName}</h3>
+											</div>
+											<div class="activity-meta">
+												<span class="activity-date"
+													>{new Date(activity.date).toLocaleDateString()}</span
+												>
+												<span
+													class="activity-score {activity.passed ? 'score-pass' : 'score-fail'}"
+												>
+													{activity.score}%
+												</span>
+											</div>
+										</div>
+										{#if activity.type === 'test'}
+											<button
+												class="btn-icon"
+												onclick={() => openFeedback(activity)}
+												aria-label="View Feedback"
+											>
+												<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+													<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+													<polyline points="14 2 14 8 20 8" />
+													<line x1="16" y1="13" x2="8" y2="13" />
+													<line x1="16" y1="17" x2="8" y2="17" />
+													<polyline points="10 9 9 9 8 9" />
+												</svg>
+											</button>
+										{/if}
+									</div>
+								{/each}
+							{:else}
+								<div class="empty-state">
+									<div class="empty-icon-box">
 										<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-											<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-											<polyline points="14 2 14 8 20 8" />
-											<line x1="16" y1="13" x2="8" y2="13" />
-											<line x1="16" y1="17" x2="8" y2="17" />
-											<polyline points="10 9 9 9 8 9" />
+											<circle cx="12" cy="12" r="10"></circle>
+											<line x1="12" y1="8" x2="12" y2="12"></line>
+											<line x1="12" y1="16" x2="12.01" y2="16"></line>
 										</svg>
-									</button>
-								{/if}
-							</div>
-						{/each}
-					{:else}
-						<div class="empty-state">
-							<div class="empty-icon-box">
+									</div>
+									<p>No missions recorded yet.</p>
+									<a href="/test-bay" class="btn-primary-small">Start First Mission</a>
+								</div>
+							{/if}
+						</div>
+					</section>
+				</div>
+
+				<!-- RIGHT COLUMN: Stats + Quick Access -->
+				<div class="right-column">
+					<!-- Stats Cards (Stacked Vertically) -->
+					<section class="stats-column animate-on-scroll animate-delay-100">
+						<!-- Progress Card -->
+						<div
+							class="stat-card progress-card"
+							in:scale={{ duration: 500, delay: 200, start: 0.9 }}
+						>
+							<div class="stat-icon-wrapper blue">
 								<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-									<circle cx="12" cy="12" r="10"></circle>
-									<line x1="12" y1="8" x2="12" y2="12"></line>
-									<line x1="12" y1="16" x2="12.01" y2="16"></line>
+									<path
+										d="M22 11.08V12a10 10 0 1 1-5.93-9.14"
+										stroke-linecap="round"
+										stroke-linejoin="round"
+									/>
+									<polyline
+										points="22 4 12 14.01 9 11.01"
+										stroke-linecap="round"
+										stroke-linejoin="round"
+									/>
 								</svg>
 							</div>
-							<p>No missions recorded yet.</p>
-							<a href="/test-bay" class="btn-primary-small">Start First Mission</a>
+							<div class="stat-details">
+								<span class="stat-label">Training Progress</span>
+								<div class="stat-value-row">
+									<span class="stat-number">{data.stats.progress}%</span>
+								</div>
+								<div class="progress-track">
+									<div class="progress-bar" style="width: {data.stats.progress}%"></div>
+								</div>
+							</div>
 						</div>
-					{/if}
-				</div>
-			</section>
 
-			<!-- 3. Actions Row (Bottom) -->
-			<!-- 3. Actions Row (Bottom) -->
-			<section class="panel actions-panel animate-on-scroll animate-delay-300">
-				<div class="panel-header">
-					<h2>Quick Access</h2>
-				</div>
-				<div class="actions-grid">
-					<a href="/test-bay" class="action-tile">
-						<img src="/icons/test-bay.png" alt="Test Bay" class="tile-icon" />
-						<span>Test Bay</span>
-					</a>
-					<a href="/hangar-zone" class="action-tile">
-						<img src="/icons/hangar-zone.png" alt="Hangar Zone" class="tile-icon" />
-						<span>Hangar Zone</span>
-					</a>
-					<a href="/turbofan-engine" class="action-tile">
-						<img src="/icons/turbofan-engine.png" alt="Turbofan Engine" class="tile-icon" />
-						<span>Turbofan Engine</span>
-					</a>
-					<a href="/overhaul-station" class="action-tile">
-						<img src="/icons/overhaul-station.png" alt="Overhaul Station" class="tile-icon" />
-						<span>Overhaul Station</span>
-					</a>
+						<!-- Modules Card -->
+						<div class="stat-card" in:scale={{ duration: 500, delay: 300, start: 0.9 }}>
+							<div class="stat-icon-wrapper green">
+								<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+									<path
+										d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"
+										stroke-linecap="round"
+										stroke-linejoin="round"
+									/>
+									<polyline
+										points="14 2 14 8 20 8"
+										stroke-linecap="round"
+										stroke-linejoin="round"
+									/>
+									<line
+										x1="16"
+										y1="13"
+										x2="8"
+										y2="13"
+										stroke-linecap="round"
+										stroke-linejoin="round"
+									/>
+									<line
+										x1="16"
+										y1="17"
+										x2="8"
+										y2="17"
+										stroke-linecap="round"
+										stroke-linejoin="round"
+									/>
+									<polyline points="10 9 9 9 8 9" stroke-linecap="round" stroke-linejoin="round" />
+								</svg>
+							</div>
+							<div class="stat-details">
+								<span class="stat-label">Modules Completed</span>
+								<div class="stat-value-row">
+									<span class="stat-number">{data.stats.totalTests}</span>
+									<span class="stat-unit">missions</span>
+								</div>
+							</div>
+						</div>
 
-					<a href="/profile" class="action-tile">
-						<img src="/icons/profile.svg" alt="Profile" class="tile-icon" />
-						<span>Profile</span>
-					</a>
+						<!-- Performance Card -->
+						<div class="stat-card" in:scale={{ duration: 500, delay: 400, start: 0.9 }}>
+							<div class="stat-icon-wrapper orange">
+								<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+									<circle cx="12" cy="12" r="10" />
+									<path d="M8 14s1.5 2 4 2 4-2 4-2" />
+									<line x1="9" y1="9" x2="9.01" y2="9" />
+									<line x1="15" y1="9" x2="15.01" y2="9" />
+								</svg>
+							</div>
+							<div class="stat-details">
+								<span class="stat-label">Performance Rating</span>
+								<div class="stat-value-row">
+									<span class="stat-number">{data.stats.averageScore}%</span>
+									<span class="stat-grade">
+										{#if data.stats.averageScore >= 90}A
+										{:else if data.stats.averageScore >= 80}B
+										{:else if data.stats.averageScore >= 70}C
+										{:else}D{/if}
+									</span>
+								</div>
+							</div>
+						</div>
+					</section>
+
+					<!-- Quick Access -->
+					<section class="panel actions-panel animate-on-scroll animate-delay-300">
+						<div class="panel-header">
+							<h2>Quick Access</h2>
+						</div>
+						<div class="actions-grid">
+							<a href="/test-bay" class="action-tile">
+								<img src="/icons/test-bay.png" alt="Test Bay" class="tile-icon" />
+								<span>Test Bay</span>
+							</a>
+							<a href="/hangar-zone" class="action-tile">
+								<img src="/icons/hangar-zone.png" alt="Hangar Zone" class="tile-icon" />
+								<span>Hangar Zone</span>
+							</a>
+							<a href="/turbofan-engine" class="action-tile">
+								<img src="/icons/turbofan-engine.png" alt="Turbofan Engine" class="tile-icon" />
+								<span>Turbofan Engine</span>
+							</a>
+							<a href="/overhaul-station" class="action-tile">
+								<img src="/icons/overhaul-station.png" alt="Overhaul Station" class="tile-icon" />
+								<span>Overhaul Station</span>
+							</a>
+
+							<a href="/profile" class="action-tile">
+								<img src="/icons/profile.svg" alt="Profile" class="tile-icon" />
+								<span>Profile</span>
+							</a>
+						</div>
+					</section>
 				</div>
-			</section>
+			</div>
 		</div>
 	</div>
 </div>
@@ -779,29 +812,60 @@
 
 	.dashboard-container {
 		width: 100%;
-		max-width: 1200px;
+		max-width: 1400px; /* Increased from 1200px for wider layout */
 		min-height: auto;
 		background: #ffffff;
 		border-radius: 24px;
 		box-shadow:
 			0 25px 50px -12px rgba(0, 0, 0, 0.25),
 			0 10px 15px -3px rgba(0, 0, 0, 0.1);
-		/* display: flex; <-- REMOVED to allow Tailwind control */
 		flex-direction: column;
-		flex-direction: column;
-		flex-direction: column;
-		margin: 6rem auto 2rem auto; /* Adjusted for compact layout */
+		margin: 4rem auto 2rem auto; /* Reduced top margin from 6rem to 4rem */
 	}
 
 	.dashboard-scroll-content {
 		flex: 1;
 		overflow-y: auto;
-		padding: 2rem; /* Reduced padding */
+		padding: 1.5rem; /* Reduced from 2rem */
 		display: flex;
 		flex-direction: column;
-		gap: 1.5rem; /* Reduced gap */
-		/* Ensure content doesn't get cut off at the bottom */
+		gap: 1rem; /* Reduced from 1.5rem */
 		min-height: min-content;
+	}
+
+	/* 2-Column Grid Layout */
+	.dashboard-grid {
+		display: grid;
+		grid-template-columns: 1.6fr 1fr; /* Left column wider than right */
+		gap: 1.5rem;
+		align-items: start;
+	}
+
+	/* Left Column - Mission Log */
+	.left-column {
+		display: flex;
+		flex-direction: column;
+	}
+
+	/* Right Column - Stats + Quick Access */
+	.right-column {
+		display: flex;
+		flex-direction: column;
+		gap: 1.5rem;
+	}
+
+	/* Stats Column (Vertical Stack) */
+	.stats-column {
+		display: flex;
+		flex-direction: column;
+		gap: 1rem;
+	}
+
+	/* Responsive: Single column on smaller screens */
+	@media (max-width: 1024px) {
+		.dashboard-grid {
+			grid-template-columns: 1fr;
+		}
 	}
 
 	.header-section {
@@ -880,20 +944,7 @@
 		opacity: 0.5;
 	}
 
-	/* --- Stats Row --- */
-	.stats-row {
-		display: grid;
-		grid-template-columns: repeat(3, 1fr);
-		gap: 1.5rem;
-	}
-
 	@media (max-width: 768px) {
-		.stats-row {
-			display: flex;
-			flex-direction: column;
-			gap: 1rem;
-		}
-
 		/* Ensure cards are solid white on mobile */
 		.stat-card {
 			background: #ffffff !important;
@@ -913,11 +964,11 @@
 	.stat-card {
 		background: #f8fafc;
 		border: 1px solid #e2e8f0;
-		border-radius: 20px;
-		padding: 1.5rem;
+		border-radius: 16px; /* Reduced from 20px */
+		padding: 1rem; /* Reduced from 1.5rem */
 		display: flex;
 		align-items: center;
-		gap: 1rem;
+		gap: 0.875rem; /* Reduced from 1rem */
 		transition: transform 0.2s ease;
 	}
 
@@ -1041,10 +1092,10 @@
 	.activity-row {
 		display: flex;
 		align-items: center;
-		gap: 1rem;
-		padding: 1rem;
+		gap: 0.875rem; /* Reduced from 1rem */
+		padding: 0.875rem; /* Reduced from 1rem */
 		background: #f8fafc;
-		border-radius: 14px;
+		border-radius: 12px; /* Reduced from 14px */
 		border: 1px solid #e2e8f0;
 		transition: all 0.2s;
 	}
@@ -1167,19 +1218,19 @@
 	/* --- Quick Actions --- */
 	.actions-grid {
 		display: grid;
-		grid-template-columns: repeat(6, 1fr);
-		gap: 1rem;
+		grid-template-columns: repeat(2, 1fr); /* Changed from 6 to 2 columns */
+		gap: 0.875rem; /* Reduced from 1rem */
 	}
 
 	.action-tile {
 		background: #f8fafc;
 		border: 1px solid #e2e8f0;
-		border-radius: 16px;
-		padding: 1.25rem 0.5rem;
+		border-radius: 14px; /* Reduced from 16px */
+		padding: 1rem 0.5rem; /* Reduced from 1.25rem */
 		display: flex;
 		flex-direction: column;
 		align-items: center;
-		gap: 0.75rem;
+		gap: 0.625rem; /* Reduced from 0.75rem */
 		text-decoration: none;
 		color: var(--font-primary);
 		transition: all 0.2s;

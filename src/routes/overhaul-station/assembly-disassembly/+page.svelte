@@ -13,7 +13,7 @@
 
 <!-- Page Container -->
 <div
-	class="relative z-10 mx-auto flex min-h-screen w-full max-w-7xl flex-col px-4 pt-32 pb-24 md:px-8 md:pt-40 md:pb-16"
+	class="relative z-10 mx-auto flex min-h-screen w-full flex-col px-4 pt-16 pb-24 md:px-12 md:pt-20 md:pb-16"
 >
 	{#if !data.session || !data.user}
 		<!-- Auth Required Section -->
@@ -62,11 +62,13 @@
 		</div>
 	{:else}
 		<!-- Header Section -->
-		<div class="relative z-20 mb-4 flex w-full flex-col items-center">
-			<div class="relative mb-[-1.5rem] flex flex-col items-center gap-4 md:flex-row md:items-end">
+		<div class="relative z-20 mb-8 flex w-full flex-col items-center">
+			<div
+				class="relative mb-[-1.5rem] flex w-full flex-col items-center gap-4 md:flex-row md:items-end md:justify-between"
+			>
 				<!-- Speech Bubble Box -->
 				<div
-					class="relative w-full max-w-[760px] overflow-hidden rounded-[1.5rem] border border-white/20 bg-gradient-to-br from-white/15 to-white/10 p-6 shadow-[0_18px_40px_rgba(0,0,0,0.22)] backdrop-blur-xl md:mr-6 md:mb-10 md:p-8"
+					class="relative w-full overflow-hidden rounded-[1.5rem] border border-white/20 bg-gradient-to-br from-white/15 to-white/10 p-6 shadow-[0_18px_40px_rgba(0,0,0,0.22)] backdrop-blur-xl md:mb-8 md:flex-1 md:p-8"
 				>
 					<div
 						class="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_20%_20%,rgba(255,255,255,0.2),transparent_50%)]"
@@ -80,7 +82,7 @@
 				</div>
 
 				<!-- Character Image -->
-				<div class="relative z-20 h-64 w-auto shrink-0 md:h-[24rem] md:w-auto">
+				<div class="relative z-20 h-48 w-auto shrink-0 md:ml-4 md:h-[18rem] md:w-auto">
 					<img
 						src="/images/jaja-vest.png"
 						alt="Jaja Character"
@@ -91,10 +93,10 @@
 
 			<!-- Title Card -->
 			<div
-				class="relative z-10 w-full max-w-4xl rounded-[1.5rem] border border-white/10 bg-[#1e3a5f]/60 p-8 text-center shadow-md backdrop-blur-xl md:p-12"
+				class="relative z-10 w-full rounded-[1.5rem] border border-white/10 bg-[#1e3a5f]/60 p-8 text-center shadow-md backdrop-blur-xl md:p-12"
 			>
 				<h1
-					class="animate-gradient-flash font-heading mb-6 bg-gradient-to-r from-blue-400 via-cyan-400 to-blue-400 bg-clip-text text-4xl leading-tight font-black text-transparent drop-shadow-sm md:text-6xl"
+					class="font-heading animate-gradient-flash gradient-animated mb-6 text-4xl leading-tight font-black drop-shadow-[0_4px_10px_rgba(255,191,0,0.4)] md:text-7xl"
 				>
 					Assembly and Disassembly Activity
 				</h1>

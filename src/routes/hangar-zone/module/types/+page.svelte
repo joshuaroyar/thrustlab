@@ -75,7 +75,7 @@
 	<!-- Header Section -->
 	<div class="mb-12 flex flex-col items-center gap-6">
 		<h1
-			class="font-heading animate-gradient-flash bg-gradient-to-r from-[#FFD966] via-[#00CED1] to-[#FFD966] bg-clip-text text-center text-4xl leading-tight font-black text-transparent uppercase drop-shadow-md md:text-6xl"
+			class="font-heading animate-gradient-flash gradient-animated text-center text-4xl leading-tight font-black uppercase drop-shadow-md md:text-6xl"
 		>
 			Learning Module 02:<br />Types of Gas Turbine Engines
 		</h1>

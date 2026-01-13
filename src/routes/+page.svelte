@@ -88,7 +88,10 @@
 	<section class="hero">
 		<div class="hero-content">
 			<h1 class="hero-title animate-in">
-				Welcome to <span class="gradient-text gradient-animated">ThrustLab</span>
+				Welcome to <span
+					class="gradient-text gradient-animated"
+					style="--active-gradient: var(--logo-gradient)">ThrustLab</span
+				>
 			</h1>
 			<p class="hero-subtitle animate-in delay-1">Experience Learning at Full Thrust</p>
 			<p class="hero-description animate-in delay-2">
@@ -255,6 +258,27 @@
 			</div>
 		</div>
 	</section>
+
+	<!-- Footer -->
+	<footer class="footer animate-on-scroll">
+		<div class="footer-content">
+			<div class="footer-brand">
+				<img src="/icons/thrustlab-logo.png" alt="ThrustLab" class="footer-logo" />
+			</div>
+			<div class="copyright-container">
+				<p class="copyright-text">
+					<span class="copyright-accent">© 2026 Group 7.</span> Website platform owned by Group 7,
+					Institute of Engineering and Technology.
+					<span class="mt-2 block md:mt-0">
+						AE 325 - Powerplant II content <span class="copyright-accent"
+							>© National Aviation Academy of the Philippines.</span
+						>
+						All rights reserved.
+					</span>
+				</p>
+			</div>
+		</div>
+	</footer>
 </div>
 
 <style>
@@ -296,12 +320,7 @@
 	}
 
 	.gradient-text {
-		background: linear-gradient(
-			90deg,
-			var(--navbar-accent, var(--ui-yellow)) 0%,
-			var(--font-accent-cyan) 50%,
-			var(--navbar-accent, var(--ui-yellow)) 100%
-		);
+		background: var(--active-gradient, var(--hangar-gradient));
 		background-size: 200% 100%;
 		-webkit-background-clip: text;
 		-webkit-text-fill-color: transparent;
@@ -502,12 +521,7 @@
 		text-align: center;
 		margin: 0 0 3rem 0;
 		line-height: 1.2;
-		background: linear-gradient(
-			90deg,
-			var(--navbar-accent, var(--ui-yellow)) 0%,
-			var(--font-accent-cyan) 50%,
-			var(--navbar-accent, var(--ui-yellow)) 100%
-		);
+		background: var(--active-gradient, var(--hangar-gradient));
 		background-size: 200% 100%;
 		-webkit-background-clip: text;
 		-webkit-text-fill-color: transparent;
@@ -624,12 +638,7 @@
 		font-weight: 900;
 		margin: 0 0 0.75rem 0;
 		line-height: 1.3;
-		background: linear-gradient(
-			90deg,
-			var(--navbar-accent, var(--ui-yellow)) 0%,
-			var(--font-accent-yellow) 50%,
-			var(--navbar-accent, var(--ui-yellow)) 100%
-		);
+		background: var(--active-gradient, var(--hangar-gradient));
 		background-size: 200% 100%;
 		-webkit-background-clip: text;
 		-webkit-text-fill-color: transparent;
@@ -1147,6 +1156,99 @@
 		.photo-wrapper img {
 			width: 140px;
 			height: 140px;
+		}
+	}
+
+	/* Footer Styles */
+	.footer {
+		padding: 6rem var(--container-side-padding) 4rem;
+		background: rgba(10, 47, 53, 0.4);
+		backdrop-filter: blur(20px) saturate(180%);
+		-webkit-backdrop-filter: blur(20px) saturate(180%);
+		border-top: 1px solid rgba(135, 206, 235, 0.2);
+		position: relative;
+		z-index: 10;
+		margin-top: 4rem;
+		overflow: hidden;
+	}
+
+	.footer::before {
+		content: '';
+		position: absolute;
+		top: 0;
+		left: 50%;
+		transform: translateX(-50%);
+		width: 100%;
+		max-width: 1200px;
+		height: 1px;
+		background: linear-gradient(90deg, transparent, var(--ui-light-blue), transparent);
+		opacity: 0.3;
+	}
+
+	.footer-content {
+		max-width: 1200px;
+		margin: 0 auto;
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: 3rem;
+		text-align: center;
+	}
+
+	.footer-logo {
+		width: 240px;
+		height: auto;
+		object-fit: contain;
+		filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.5));
+		transition: all 0.4s ease;
+		opacity: 0.9;
+		margin-bottom: 1rem;
+	}
+
+	.footer-logo:hover {
+		transform: scale(1.05);
+		opacity: 1;
+		filter: drop-shadow(0 6px 20px rgba(var(--navbar-accent-rgb, 255, 217, 102), 0.4));
+	}
+
+	.copyright-text {
+		color: rgba(255, 255, 255, 0.7);
+		font-family: var(--font-body);
+		font-size: 1rem;
+		line-height: 1.8;
+		max-width: 800px;
+		text-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+	}
+
+	.copyright-accent {
+		color: var(--navbar-accent, var(--ui-yellow));
+		font-weight: 700;
+		letter-spacing: 0.5px;
+	}
+
+	.block {
+		display: block;
+	}
+
+	.mt-2 {
+		margin-top: 0.5rem;
+	}
+
+	@media (max-width: 768px) {
+		.footer {
+			padding: 4rem var(--container-side-padding) 3rem;
+		}
+
+		.footer-logo {
+			width: 180px;
+		}
+
+		.copyright-text {
+			font-size: 0.9rem;
+		}
+
+		.md\:mt-0 {
+			margin-top: 0;
 		}
 	}
 </style>

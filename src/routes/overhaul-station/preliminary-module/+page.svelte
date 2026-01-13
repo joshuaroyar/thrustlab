@@ -6,9 +6,19 @@
 	import ImageModal from '$lib/components/ui/ImageModal.svelte';
 	import ImageGrid from '$lib/components/ui/ImageGrid.svelte';
 	import SectionHeader from '$lib/components/ui/SectionHeader.svelte';
+	import { searchQuery, showSearchModal, performSearch } from '$lib/stores/searchStore';
+	import { MODULE_CONTENT } from '$lib/data/searchContent';
+	import SearchModal from '$lib/components/SearchModal.svelte';
 
 	let totalPages = 3;
 	$: currentPage = parseInt($page.url.searchParams.get('page') || '1');
+
+	function handleSearch() {
+		if ($searchQuery.trim()) {
+			performSearch($searchQuery, MODULE_CONTENT);
+			showSearchModal.set(true);
+		}
+	}
 
 	function scrollToTop() {
 		window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -42,6 +52,8 @@
 			prevPage();
 		} else if (event.key === 'ArrowRight') {
 			nextPage();
+		} else if (event.key === 'Enter') {
+			handleSearch();
 		}
 	}
 
@@ -58,14 +70,46 @@
 	class="relative z-10 mx-auto min-h-screen max-w-7xl px-4 pt-32 pb-24 md:px-8 md:pt-40 md:pb-16"
 >
 	<ImageModal />
+	<SearchModal />
 
 	<!-- Header Section -->
 	<div class="mb-12 flex flex-col items-center gap-6">
 		<h1
-			class="animate-gradient-flash font-heading bg-gradient-to-r from-blue-400 via-cyan-400 to-blue-400 bg-clip-text text-center text-5xl font-black tracking-tight text-transparent drop-shadow-lg md:text-6xl"
+			class="animate-gradient-flash font-heading text-center text-5xl font-black tracking-tight drop-shadow-lg md:text-6xl"
+			style="background: var(--overhaul-gradient); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;"
 		>
 			PRELIMINARY LABORATORY MODULE:<br class="hidden md:block" /> GAS TURBINE ENGINE OVERHAUL
 		</h1>
+
+		<!-- Search Bar -->
+		<div
+			class="mx-auto flex w-full max-w-md min-w-[300px] items-center gap-4 rounded-full border-2 border-[#5da8cb]/30 bg-white/95 px-4 py-2 shadow-sm backdrop-blur-md transition-all focus-within:border-[#5da8cb] focus-within:shadow-[0_0_20px_rgba(93,168,203,0.3)]"
+		>
+			<input
+				type="text"
+				placeholder="Search modules..."
+				bind:value={$searchQuery}
+				onkeydown={(e) => e.key === 'Enter' && handleSearch()}
+				class="flex-1 bg-transparent text-base text-[#0A1628] placeholder-[#0A1628]/50 outline-none"
+			/>
+			<button
+				onclick={handleSearch}
+				class="flex items-center justify-center p-1 text-[#5da8cb] transition-colors hover:text-[#FFD966]"
+				aria-label="Search"
+			>
+				<svg
+					width="20"
+					height="20"
+					viewBox="0 0 24 24"
+					fill="none"
+					stroke="currentColor"
+					stroke-width="2"
+				>
+					<circle cx="11" cy="11" r="8"></circle>
+					<path d="m21 21-4.35-4.35"></path>
+				</svg>
+			</button>
+		</div>
 	</div>
 
 	<!-- Content Sections -->
@@ -76,7 +120,7 @@
 				<section class="opacity-100">
 					<SectionHeader title="Gas Turbine Engine Overhaul" color="#5da8cb" />
 					<div
-						class="relative z-[1] min-h-[300px] rounded-tr-3xl rounded-b-3xl border-[3px] border-[#5da8cb] bg-white p-6 text-[#1a2b47] md:p-8"
+						class="relative z-[1] min-h-[300px] rounded-tr-3xl rounded-b-3xl border-[5px] border-[#5da8cb] bg-white p-6 text-[#1a2b47] md:p-8"
 					>
 						<div class="mb-6 leading-loose">
 							<p class="mb-6 pr-4 text-justify text-lg leading-loose text-[#2c3e50]">
@@ -144,7 +188,7 @@
 				<section class="opacity-100">
 					<SectionHeader title="Overhaul Procedures" color="#5da8cb" />
 					<div
-						class="relative z-[1] min-h-[300px] rounded-tr-3xl rounded-b-3xl border-[3px] border-[#5da8cb] bg-white p-6 text-[#1a2b47] md:p-8"
+						class="relative z-[1] min-h-[300px] rounded-tr-3xl rounded-b-3xl border-[5px] border-[#5da8cb] bg-white p-6 text-[#1a2b47] md:p-8"
 					>
 						<div class="mb-6 leading-loose">
 							<p class="mb-6 pr-4 text-justify text-lg leading-loose text-[#2c3e50]">
@@ -307,7 +351,7 @@
 				<section class="opacity-100">
 					<SectionHeader title="Balancing, Assembly & Testing" color="#5da8cb" />
 					<div
-						class="relative z-[1] min-h-[300px] rounded-tr-3xl rounded-b-3xl border-[3px] border-[#5da8cb] bg-white p-6 text-[#1a2b47] md:p-8"
+						class="relative z-[1] min-h-[300px] rounded-tr-3xl rounded-b-3xl border-[5px] border-[#5da8cb] bg-white p-6 text-[#1a2b47] md:p-8"
 					>
 						<div class="mb-6 leading-loose">
 							<h3

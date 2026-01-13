@@ -258,13 +258,25 @@
 	 */
 	async function loadComponent(component: Component, shelfIndex: number) {
 		try {
-			console.log(`Loading ${component.displayName} from ${component.modelPath}...`);
-			const result = await SceneLoader.ImportMeshAsync('', component.modelPath, '', scene);
+			console.log(`[Babylon] Loading ${component.displayName}...`);
+
+			// Explicitly split path into base and filename for better cross-browser reliability
+			const lastSlash = component.modelPath.lastIndexOf('/');
+			const basePath = component.modelPath.substring(0, lastSlash + 1);
+			const fileName = component.modelPath.substring(lastSlash + 1);
+
+			console.log(`[Babylon] Attempting to load: ${basePath} | ${fileName}`);
+
+			const result = await SceneLoader.ImportMeshAsync(null, basePath, fileName, scene);
 
 			if (!result.meshes || result.meshes.length === 0) {
-				console.error(`No meshes loaded for ${component.name}`);
+				console.error(`[Babylon] No meshes loaded for ${component.name}`);
 				return;
 			}
+
+			console.log(
+				`[Babylon] Successfully loaded ${result.meshes.length} meshes for ${component.displayName}`
+			);
 
 			// Find the appropriate root mesh
 			const rootMesh = findMeshByKeywords(result.meshes, component.keywords);
@@ -325,7 +337,7 @@
 			componentMeshes.set(component.id, rootMesh);
 			loadedComponents++;
 
-			console.log(`Loaded ${component.displayName} at shelf position ${shelfIndex}`);
+			console.log(`[Babylon] Ready: ${component.displayName} at position`, rootMesh.position);
 		} catch (error) {
 			console.error(`Error loading ${component.name}:`, error);
 			loadingError = `Failed to load ${component.displayName}. Check console for details.`;
@@ -523,18 +535,29 @@
 			// Make Vector3 and Quaternion globally available for assemblyConfig
 			(window as any).BABYLON = { Vector3, Quaternion };
 
-			// Create engine
-			engine = new Engine(canvas, true, { preserveDrawingBuffer: true, stencil: true });
+			// Create engine with better cross-browser compatibility
+			engine = new Engine(canvas, true, {
+				preserveDrawingBuffer: true,
+				stencil: true,
+				antialias: true,
+				adaptToDeviceRatio: true
+			});
+
 			scene = new Scene(engine);
 			scene.clearColor = new Color4(0, 0, 0, 0);
 
-			// Setup camera - positioned to see both shelf and assembly area
+			// Explicitly set canvas size based on container for high-DPI and Firefox
+			const rect = canvas.getBoundingClientRect();
+			canvas.width = rect.width * (window.devicePixelRatio || 1);
+			canvas.height = rect.height * (window.devicePixelRatio || 1);
+
+			// Setup camera - centered on the casing at its static position
 			camera = new ArcRotateCamera(
 				'camera',
 				Math.PI / 2,
-				Math.PI / 3,
-				120,
-				new Vector3(-60, 0, 0), // Shift view left to center the casing on screen
+				Math.PI / 2.5,
+				150,
+				new Vector3(-60, 0, 0), // Centered on the casing
 				scene
 			);
 			camera.attachControl(canvas, true);
@@ -556,13 +579,19 @@
 			if (document.activeElement === (canvas as unknown as Element)) {
 				wheelInput?.attachControl?.(canvas);
 			}
-			camera.lowerRadiusLimit = 30;
-			camera.upperRadiusLimit = 150;
+			camera.lowerRadiusLimit = 50;
+			camera.upperRadiusLimit = 500;
 			camera.panningSensibility = 50;
 
-			// Lighting
-			const light = new HemisphericLight('light', new Vector3(1, 1, 0.5), scene);
-			light.intensity = 1.5;
+			// Lighting - High intensity multi-directional lighting
+			const light = new HemisphericLight('light1', new Vector3(1, 1, 1), scene);
+			light.intensity = 1.6;
+
+			const light2 = new HemisphericLight('light2', new Vector3(-1, -1, -1), scene);
+			light2.intensity = 1.0;
+
+			const ambientLight = new HemisphericLight('ambient', new Vector3(0, 1, 0), scene);
+			ambientLight.intensity = 0.5;
 
 			// Start render loop
 			engine.runRenderLoop(() => {
@@ -570,7 +599,13 @@
 			});
 
 			// Handle resize
-			window.addEventListener('resize', () => engine.resize());
+			const resizeHandler = () => {
+				if (engine) engine.resize();
+			};
+			window.addEventListener('resize', resizeHandler);
+
+			// Initial resize to catch any browser quirks
+			setTimeout(() => engine.resize(), 100);
 
 			// Load all components
 			console.log('Loading components...');
@@ -1065,16 +1100,17 @@
 	}
 
 	.instructions-modal {
-		background: linear-gradient(135deg, #2d3561 0%, #1f2544 100%);
+		background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+		border: 2px solid rgba(93, 168, 203, 0.3);
 		border-radius: 16px;
 		padding: 2rem;
-		max-width: 600px;
-		width: 90%;
-		/* max-height removed to allow growth */
-		/* overflow-y removed to prevent internal scrollbar */
+		max-width: 650px;
+		width: 95%;
+		max-height: 90vh;
+		overflow: hidden;
+		position: relative;
 		box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
-		border: 2px solid rgba(255, 255, 255, 0.1);
-		margin: auto; /* Helps center vertically if content is small, but respects flex-start if large */
+		animation: modalPop 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 	}
 
 	.instructions-modal h2 {
@@ -1228,9 +1264,18 @@
 		}
 
 		.babylon-canvas {
-			order: 1;
 			flex: 1;
-			min-height: 0;
+			width: 100%;
+			height: 100%;
+			min-height: 600px;
+			background: transparent;
+			cursor: grab;
+			border-radius: 20px;
+			box-shadow: inset 0 0 50px rgba(0, 0, 0, 0.2);
+		}
+
+		.babylon-canvas:active {
+			cursor: grabbing;
 		}
 
 		.controls-overlay {
@@ -1291,13 +1336,29 @@
 		border-radius: 16px;
 		padding: 1.25rem;
 		max-width: 600px;
-		width: 90%;
-		max-height: calc(100vh - 140px);
-		overflow: hidden;
+		width: 95%;
+		max-height: 90vh;
+		overflow-y: auto;
 		display: flex;
 		flex-direction: column;
 		box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
 		animation: slideUp 0.3s ease;
+		scrollbar-width: thin;
+		scrollbar-color: #5da8cb rgba(255, 255, 255, 0.1);
+	}
+
+	.feedback-modal::-webkit-scrollbar {
+		width: 6px;
+	}
+
+	.feedback-modal::-webkit-scrollbar-track {
+		background: rgba(255, 255, 255, 0.05);
+		border-radius: 3px;
+	}
+
+	.feedback-modal::-webkit-scrollbar-thumb {
+		background: #5da8cb;
+		border-radius: 3px;
 	}
 
 	@keyframes slideUp {

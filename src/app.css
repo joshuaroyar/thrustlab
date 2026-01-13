@@ -8,7 +8,13 @@
 	--font-body: 'Inter', sans-serif;
 	/* Concert One for special elements */
 	--font-special: 'Concert One', cursive;
+}
 
+.font-special {
+	font-family: var(--font-special) !important;
+}
+
+:root {
 	/* Background Colors - From Color Palette */
 	--bg-primary: #223A5E;
 	/* Deep Blue/Navy */
@@ -44,12 +50,6 @@
 	/* Yellow */
 	--ui-light-blue: #87CEEB;
 	/* Light Blue */
-	--learning-label-gradient: linear-gradient(120deg,
-			#ffd966 0%,
-			#ffe66d 25%,
-			#74b3d4 55%,
-			#00ced1 80%,
-			#ffd966 100%);
 
 	/* Zone-Specific Accent Colors */
 	--hangar-accent: #1b3558;
@@ -61,12 +61,17 @@
 	--overhaul-accent: #5da8cb;
 	--overhaul-accent-rgb: 93, 168, 203;
 	/* Overhaul Station Light Blue */
-	--testbay-accent: #76667f;
-	--testbay-accent-rgb: 118, 102, 127;
-	/* Test Bay Dawn Purple */
+	--testbay-accent: #8461f4;
+	--testbay-accent-rgb: 132, 97, 244;
+	/* Test Bay Purple */
+
+	/* Zone Gradients (90 degrees, moving horizontally) */
+	--hangar-gradient: linear-gradient(90deg, #004aad 0%, #5de0e6 50%, #004aad 100%);
+	--turbofan-gradient: linear-gradient(90deg, #ce5508 0%, #ff8c42 50%, #ce5508 100%);
+	--overhaul-gradient: linear-gradient(90deg, #FFB000 0%, #FFD966 50%, #FFB000 100%);
+	--testbay-gradient: linear-gradient(90deg, #8461f4 0%, #81d8e5 50%, #8461f4 100%);
+	--logo-gradient: linear-gradient(90deg, #FFD966 0%, #00CED1 50%, #FFD966 100%);
 }
-
-
 
 /* Apply default font family and reduce base scaling */
 html {
@@ -200,11 +205,8 @@ h6 {
 
 /* Reusable gradient class applied to titles and headings: opt-in only via `.gradient-animated` */
 .gradient-animated {
-	/* Use per-zone navbar accent by default, fall back to ui-yellow for legacy pages */
-	background: linear-gradient(90deg, var(--navbar-accent, var(--ui-yellow)) 0%, var(--font-accent-cyan) 50%, var(--navbar-accent, var(--ui-yellow)) 100%);
+	background: var(--active-gradient, var(--hangar-gradient));
 	background-size: 200% 100%;
-	color: var(--navbar-accent, var(--ui-yellow));
-	/* Fallback color */
 	-webkit-background-clip: text;
 	-webkit-text-fill-color: transparent;
 	background-clip: text;
@@ -212,25 +214,35 @@ h6 {
 	filter: drop-shadow(0 4px 20px rgba(0, 0, 0, 0.9));
 }
 
+.background-gradient-animated {
+	background: var(--active-gradient, var(--hangar-gradient));
+	background-size: 200% 100%;
+	animation: gradient-flash var(--gradient-duration) ease-in-out infinite;
+}
+
 /* Zone-specific body classes that set the navbar accent (and its rgb) for top-level navbar */
 body.zone-hangar {
 	--navbar-accent: var(--hangar-accent);
 	--navbar-accent-rgb: var(--hangar-accent-rgb);
+	--active-gradient: var(--hangar-gradient);
 }
 
 body.zone-turbofan {
 	--navbar-accent: var(--turbofan-accent);
 	--navbar-accent-rgb: var(--turbofan-accent-rgb);
+	--active-gradient: var(--turbofan-gradient);
 }
 
 body.zone-overhaul {
 	--navbar-accent: var(--overhaul-accent);
 	--navbar-accent-rgb: var(--overhaul-accent-rgb);
+	--active-gradient: var(--overhaul-gradient);
 }
 
 body.zone-testbay {
 	--navbar-accent: var(--testbay-accent);
 	--navbar-accent-rgb: var(--testbay-accent-rgb);
+	--active-gradient: var(--testbay-gradient);
 }
 
 /* Layout spacing tokens */
@@ -378,7 +390,7 @@ main {
 
 /* Custom Clip Path for Section Headers */
 .clip-path-custom {
-	clip-path: polygon(0 0, 92% 0, 100% 100%, 0% 100%);
+	clip-path: polygon(0 0, 88% 0, 96% 100%, 0% 100%);
 }
 
 /* Global Scroll Animations */
@@ -394,8 +406,22 @@ main {
 	transform: translateY(0);
 }
 
-.animate-delay-100 { transition-delay: 100ms; }
-.animate-delay-200 { transition-delay: 200ms; }
-.animate-delay-300 { transition-delay: 300ms; }
-.animate-delay-400 { transition-delay: 400ms; }
-.animate-delay-500 { transition-delay: 500ms; }
+.animate-delay-100 {
+	transition-delay: 100ms;
+}
+
+.animate-delay-200 {
+	transition-delay: 200ms;
+}
+
+.animate-delay-300 {
+	transition-delay: 300ms;
+}
+
+.animate-delay-400 {
+	transition-delay: 400ms;
+}
+
+.animate-delay-500 {
+	transition-delay: 500ms;
+}

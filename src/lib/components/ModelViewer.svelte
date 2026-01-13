@@ -997,7 +997,9 @@
 		border: 1px solid rgba(255, 255, 255, 0.1);
 		pointer-events: none;
 		box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
-		max-width: 250px;
+		max-width: 280px;
+		max-height: 80vh;
+		overflow-y: auto;
 	}
 
 	.control-item {

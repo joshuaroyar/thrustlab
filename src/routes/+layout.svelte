@@ -148,9 +148,35 @@
 		// Initial observation
 		observeElements();
 
+		// MutationObserver to handle HMR and dynamically added elements
+		const mutationObserver = new MutationObserver((mutations) => {
+			const hasNewElements = mutations.some(
+				(mutation) =>
+					mutation.addedNodes.length > 0 &&
+					Array.from(mutation.addedNodes).some(
+						(node) =>
+							node instanceof HTMLElement &&
+							(node.classList?.contains('animate-on-scroll') ||
+								node.querySelector?.(
+									'.animate-on-scroll, .animate-slide-left, .animate-slide-right, .animate-scale, .animate-fade'
+								))
+					)
+			);
+
+			if (hasNewElements) {
+				observeElements();
+			}
+		});
+
+		mutationObserver.observe(document.body, {
+			childList: true,
+			subtree: true
+		});
+
 		return () => {
 			subscription.unsubscribe();
 			observer.disconnect();
+			mutationObserver.disconnect();
 			if (scrollGuardId) {
 				clearInterval(scrollGuardId);
 			}

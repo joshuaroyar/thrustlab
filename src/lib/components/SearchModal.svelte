@@ -8,6 +8,8 @@
 	import { highlightText } from '$lib/stores/searchStore';
 	import { goto } from '$app/navigation';
 	import { onDestroy } from 'svelte';
+	import { fade, scale, fly } from 'svelte/transition';
+	import { cubicOut } from 'svelte/easing';
 
 	let restoreScrollLock: null | (() => void) = null;
 
@@ -64,42 +66,186 @@
 			handleClose();
 		}
 	}
+
+	function getModuleStyle(module: string) {
+		if (module.includes('History') || module.includes('01')) {
+			return {
+				bg: 'bg-cyan-50/50 hover:bg-cyan-50',
+				border: 'border-cyan-100 hover:border-cyan-300',
+				tag: 'bg-cyan-100 text-cyan-800',
+				iconBg: 'bg-cyan-100',
+				iconColor: 'text-cyan-600'
+			};
+		}
+		if (module.includes('Types') || module.includes('02')) {
+			return {
+				bg: 'bg-violet-50/50 hover:bg-violet-50',
+				border: 'border-violet-100 hover:border-violet-300',
+				tag: 'bg-violet-100 text-violet-800',
+				iconBg: 'bg-violet-100',
+				iconColor: 'text-violet-600'
+			};
+		}
+		if (module.includes('Turbofan') || module.includes('03')) {
+			return {
+				bg: 'bg-orange-50/50 hover:bg-orange-50',
+				border: 'border-orange-100 hover:border-orange-300',
+				tag: 'bg-orange-100 text-orange-800',
+				iconBg: 'bg-orange-100',
+				iconColor: 'text-orange-600'
+			};
+		}
+		return {
+			bg: 'bg-gray-50/50 hover:bg-gray-50',
+			border: 'border-gray-100 hover:border-gray-300',
+			tag: 'bg-gray-100 text-gray-800',
+			iconBg: 'bg-gray-100',
+			iconColor: 'text-gray-600'
+		};
+	}
+
+	function getModuleIcon(module: string) {
+		if (module.includes('History') || module.includes('01')) {
+			return `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />`;
+		}
+		if (module.includes('Types') || module.includes('02')) {
+			return `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />`;
+		}
+		if (module.includes('Turbofan') || module.includes('03')) {
+			return `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z" />`;
+		}
+		return `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />`;
+	}
 </script>
 
 {#if $showSearchModal}
 	<!-- svelte-ignore a11y_click_events_have_key_events -->
 	<!-- svelte-ignore a11y_no_static_element_interactions -->
-	<div class="modal-backdrop" on:click={handleBackdropClick}>
-		<div class="search-modal">
+	<div class="modal-backdrop" on:click={handleBackdropClick} transition:fade={{ duration: 200 }}>
+		<div
+			class="search-modal"
+			transition:scale={{ duration: 300, start: 0.95, opacity: 0, easing: cubicOut }}
+		>
 			<div class="modal-header">
-				<h2>Search Results</h2>
-				<button class="close-btn" on:click={handleClose}>×</button>
+				<div class="flex items-center gap-3">
+					<div
+						class="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-[#B34700] to-orange-600 text-white shadow-lg shadow-orange-500/30"
+					>
+						<svg
+							xmlns="http://www.w3.org/2000/svg"
+							class="h-6 w-6"
+							fill="none"
+							viewBox="0 0 24 24"
+							stroke="currentColor"
+						>
+							<path
+								stroke-linecap="round"
+								stroke-linejoin="round"
+								stroke-width="2"
+								d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+							/>
+						</svg>
+					</div>
+					<div>
+						<h2
+							class="bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-2xl font-black text-transparent"
+						>
+							Search Results
+						</h2>
+						<p class="text-xs font-medium tracking-widest text-gray-500 uppercase">
+							Knowledge Base
+						</p>
+					</div>
+				</div>
+				<button class="close-btn group" on:click={handleClose}>
+					<span class="relative z-10 transition-transform duration-300 group-hover:rotate-90"
+						>×</span
+					>
+					<div
+						class="absolute inset-0 rounded-lg bg-gray-100 opacity-0 transition-opacity group-hover:opacity-100"
+					></div>
+				</button>
 			</div>
 
-			<div class="modal-content">
+			<div class="modal-content custom-scrollbar">
 				{#if $isSearching}
-					<div class="loading">Searching...</div>
+					<div class="flex flex-col items-center justify-center py-20 text-gray-500">
+						<div
+							class="mb-4 h-8 w-8 animate-spin rounded-full border-4 border-gray-200 border-t-[#B34700]"
+						></div>
+						<p class="text-sm font-medium tracking-wider uppercase">Searching...</p>
+					</div>
 				{:else if $searchResults.length === 0}
-					<div class="no-results">
-						<p>No results found for "{$searchQuery}"</p>
-						<p class="hint">Try different keywords or check your spelling</p>
+					<div class="no-results flex flex-col items-center py-20">
+						<div class="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-gray-50">
+							<svg
+								xmlns="http://www.w3.org/2000/svg"
+								class="h-8 w-8 text-gray-400"
+								fill="none"
+								viewBox="0 0 24 24"
+								stroke="currentColor"
+							>
+								<path
+									stroke-linecap="round"
+									stroke-linejoin="round"
+									stroke-width="2"
+									d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+								/>
+							</svg>
+						</div>
+						<p class="text-lg font-medium text-gray-900">No results found for "{$searchQuery}"</p>
+						<p class="text-sm text-gray-500">Try checking for typos or using different keywords</p>
 					</div>
 				{:else}
-					<div class="results-count">
-						Found {$searchResults.length} result{$searchResults.length === 1 ? '' : 's'}
+					<div class="mb-4 flex items-center justify-between px-2">
+						<div class="text-xs font-bold tracking-widest text-gray-400 uppercase">
+							Found {$searchResults.length} result{$searchResults.length === 1 ? '' : 's'}
+						</div>
 					</div>
 					<div class="results-list">
-						{#each $searchResults as result}
-							<button class="result-item" on:click={() => handleResultClick(result.url)}>
-								<div class="result-header">
-									<h3 class="result-title">{@html highlightText(result.title, $searchQuery)}</h3>
-									<span class="result-module">{result.module}</span>
-								</div>
-								{#if result.section}
-									<div class="result-section">{result.section}</div>
-								{/if}
-								<div class="result-content">
-									{@html highlightText(result.content.slice(0, 200), $searchQuery)}...
+						{#each $searchResults as result, i}
+							{@const style = getModuleStyle(result.module)}
+							<button
+								class="result-item group relative w-full overflow-hidden rounded-xl border border-transparent p-4 text-left transition-all duration-300 hover:-translate-y-1 hover:shadow-lg {style.bg} {style.border}"
+								on:click={() => handleResultClick(result.url)}
+								in:fly={{ y: 20, duration: 400, delay: i * 50 }}
+							>
+								<div class="relative z-10 flex gap-4">
+									<div
+										class="mt-1 flex h-10 w-10 shrink-0 items-center justify-center rounded-lg {style.iconBg} {style.iconColor} shadow-sm transition-transform duration-300 group-hover:scale-110"
+									>
+										<svg
+											xmlns="http://www.w3.org/2000/svg"
+											class="h-5 w-5"
+											fill="none"
+											viewBox="0 0 24 24"
+											stroke="currentColor"
+										>
+											{@html getModuleIcon(result.module)}
+										</svg>
+									</div>
+									<div class="min-w-0 flex-1">
+										<div class="mb-1 flex items-start justify-between gap-4">
+											<h3 class="result-title truncate text-lg font-bold text-gray-900">
+												{@html highlightText(result.title, $searchQuery)}
+											</h3>
+											<span
+												class="shrink-0 rounded-full px-2.5 py-0.5 text-[10px] font-bold tracking-wider uppercase {style.tag}"
+											>
+												{result.module.replace('Module ', '')}
+											</span>
+										</div>
+										{#if result.section}
+											<div class="mb-2 flex items-center gap-1.5 text-xs font-medium text-gray-500">
+												<span class="h-1 w-1 rounded-full bg-gray-400"></span>
+												<span class="tracking-wide text-gray-400 uppercase">Section:</span>
+												<span class={style.iconColor}>{result.section}</span>
+											</div>
+										{/if}
+										<div class="result-content line-clamp-2 text-sm leading-relaxed text-gray-600">
+											{@html highlightText(result.content, $searchQuery)}...
+										</div>
+									</div>
 								</div>
 							</button>
 						{/each}
@@ -117,7 +263,8 @@
 		left: 0;
 		right: 0;
 		bottom: 0;
-		background: rgba(0, 0, 0, 0.7);
+		background: rgba(0, 0, 0, 0.6);
+		backdrop-filter: blur(8px);
 		display: flex;
 		align-items: flex-start;
 		justify-content: center;
@@ -128,14 +275,18 @@
 	}
 
 	.search-modal {
-		background: white;
-		border-radius: 12px;
+		background: rgba(255, 255, 255, 0.95);
+		backdrop-filter: blur(20px);
+		border: 1px solid rgba(255, 255, 255, 0.5);
+		border-radius: 24px;
 		width: 90%;
 		max-width: 800px;
 		max-height: 85vh;
 		display: flex;
 		flex-direction: column;
-		box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+		box-shadow:
+			0 20px 50px -12px rgba(0, 0, 0, 0.25),
+			0 0 0 1px rgba(255, 255, 255, 0.5) inset;
 		margin-bottom: 5vh;
 	}
 
@@ -143,169 +294,90 @@
 		display: flex;
 		justify-content: space-between;
 		align-items: center;
-		padding: var(--spacing-md) var(--spacing-lg);
-		border-bottom: 1px solid #e5e7eb;
-	}
-
-	.modal-header h2 {
-		margin: 0;
-		font-size: 1.5rem;
-		color: #111827;
+		padding: 1.5rem 2rem;
+		border-bottom: 1px solid rgba(0, 0, 0, 0.05);
 	}
 
 	.close-btn {
-		background: none;
-		border: none;
-		font-size: 2rem;
-		color: #6b7280;
+		position: relative;
 		cursor: pointer;
-		padding: 0;
-		width: 32px;
-		height: 32px;
+		width: 36px;
+		height: 36px;
 		display: flex;
 		align-items: center;
 		justify-content: center;
-		border-radius: 4px;
-		transition: all 0.2s;
+		font-size: 1.75rem;
+		line-height: 1;
+		color: #9ca3af;
+		border-radius: 8px;
+		background: transparent;
+		border: none;
 	}
 
 	.close-btn:hover {
-		background: #f3f4f6;
 		color: #111827;
 	}
 
 	.modal-content {
-		padding: var(--spacing-md) var(--spacing-lg);
+		padding: 1.5rem 2rem;
 		overflow-y: auto;
 		flex: 1;
 		overscroll-behavior: contain;
 	}
 
-	.loading,
-	.no-results {
-		text-align: center;
-		padding: var(--spacing-xl) var(--spacing-lg);
-		color: #6b7280;
+	/* Custom Scrollbar */
+	.custom-scrollbar::-webkit-scrollbar {
+		width: 8px;
 	}
 
-	.no-results p {
-		margin: 0.5rem 0;
+	.custom-scrollbar::-webkit-scrollbar-track {
+		background: transparent;
 	}
 
-	.no-results .hint {
-		font-size: 0.875rem;
-		color: #9ca3af;
+	.custom-scrollbar::-webkit-scrollbar-thumb {
+		background: rgba(0, 0, 0, 0.1);
+		border-radius: 4px;
 	}
 
-	.results-count {
-		font-size: 0.875rem;
-		color: #6b7280;
-		margin-bottom: 1rem;
-	}
-
-	.results-list {
-		display: flex;
-		flex-direction: column;
-		gap: 1rem;
-	}
-
-	.result-item {
-		background: #f9fafb;
-		border: 1px solid #e5e7eb;
-		border-radius: 8px;
-		padding: var(--spacing-sm);
-		cursor: pointer;
-		transition: all 0.2s;
-		text-align: left;
-		width: 100%;
-	}
-
-	.result-item:hover {
-		background: #f3f4f6;
-		border-color: #3b82f6;
-		box-shadow: 0 2px 8px rgba(59, 130, 246, 0.1);
-	}
-
-	.result-header {
-		display: flex;
-		justify-content: space-between;
-		align-items: flex-start;
-		gap: 1rem;
-		margin-bottom: 0.5rem;
-	}
-
-	.result-title {
-		margin: 0;
-		font-size: 1.125rem;
-		color: #111827;
-		font-weight: 600;
-	}
-
-	.result-module {
-		font-size: 0.75rem;
-		color: #6b7280;
-		background: white;
-		padding: 0.25rem 0.75rem;
-		border-radius: 12px;
-		white-space: nowrap;
-		flex-shrink: 0;
-	}
-
-	.result-section {
-		font-size: 0.875rem;
-		color: #3b82f6;
-		margin-bottom: 0.5rem;
-	}
-
-	.result-content {
-		font-size: 0.875rem;
-		color: #4b5563;
-		line-height: 1.6;
+	.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+		background: rgba(0, 0, 0, 0.2);
 	}
 
 	.result-content :global(mark) {
-		background: #fef3c7;
+		background: rgba(254, 243, 199, 1);
 		color: #92400e;
-		padding: 0.1rem 0.2rem;
-		border-radius: 2px;
+		padding: 0 0.25rem;
+		border-radius: 4px;
+		font-weight: 600;
 	}
 
 	.result-title :global(mark) {
-		background: #fef3c7;
+		background: rgba(254, 243, 199, 1);
 		color: #92400e;
-		padding: 0.1rem 0.2rem;
-		border-radius: 2px;
+		padding: 0 0.25rem;
+		border-radius: 4px;
 	}
 
 	@media (max-width: 768px) {
 		.modal-backdrop {
-			padding-top: 2vh;
+			padding-top: 0;
+			align-items: flex-end; /* Show as bottom sheet on mobile */
 		}
 
 		.search-modal {
-			width: 95%;
+			width: 100%;
+			max-width: 100%;
+			border-radius: 24px 24px 0 0;
+			margin-bottom: 0;
 			max-height: 90vh;
 		}
 
 		.modal-header {
-			padding: var(--spacing-sm) var(--spacing-sm);
-		}
-
-		.modal-header h2 {
-			font-size: 1.25rem;
+			padding: 1.25rem;
 		}
 
 		.modal-content {
-			padding: var(--spacing-sm) var(--spacing-sm);
-		}
-
-		.result-header {
-			flex-direction: column;
-			gap: 0.5rem;
-		}
-
-		.result-module {
-			align-self: flex-start;
+			padding: 1rem;
 		}
 	}
 </style>

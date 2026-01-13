@@ -13,7 +13,9 @@
 	<div class="max-w-2xl text-center">
 		<!-- Large Error Code -->
 		<div class="mb-8">
-			<h1 class="mb-4 text-9xl font-black tracking-tighter text-white drop-shadow-2xl">
+			<h1
+				class="animate-gradient-flash gradient-animated mb-4 text-9xl font-black tracking-tighter drop-shadow-2xl"
+			>
 				{errorCode}
 			</h1>
 			<div
