@@ -32,7 +32,8 @@
 >
 	<div class="mb-12 text-center md:px-4">
 		<h1
-			class="animate-gradient-flash gradient-animated font-heading mb-6 bg-gradient-to-r from-yellow-400 via-orange-400 to-yellow-400 bg-clip-text text-5xl font-black tracking-tight text-transparent drop-shadow-[0_4px_10px_rgba(255,191,0,0.4)] md:text-8xl"
+			class="animate-gradient-flash gradient-animated font-heading mb-6 bg-clip-text text-5xl font-black tracking-tight text-transparent drop-shadow-[0_4px_10px_rgba(14,165,233,0.4)] md:text-8xl"
+			style="--active-gradient: linear-gradient(90deg, #0ea5e9 0%, #e0f7fa 50%, #0ea5e9 100%);"
 		>
 			Overhaul Station
 		</h1>
@@ -41,7 +42,7 @@
 			style="font-family: 'Gotham', 'Gotham Bold', sans-serif;"
 		>
 			Step into the Overhaul Station, where hands-on learning takes flight. In this interactive
-			zone, students <span class="text-[#FFD966]"
+			zone, students <span class="text-[#00CED1]"
 				>dive into the intricate process of assembling and disassembling turbofan engine components</span
 			>—gaining a deeper understanding of each part's role and the essential principles of gas
 			turbine engine overhaul. It's where theory meets practice, transforming knowledge into
@@ -52,15 +53,12 @@
 	<div class="mx-auto mt-12 grid max-w-6xl grid-cols-1 gap-6 md:grid-cols-2">
 		<a
 			href="/overhaul-station/preliminary-module"
-			class="group relative flex min-h-[300px] flex-col items-center justify-center overflow-hidden rounded-[40px] border-4 border-[#5da8cb] bg-white p-8 text-center shadow-xl transition-all duration-300 hover:-translate-y-2 hover:border-[#FFD966] hover:bg-white hover:shadow-[0_20px_40px_rgba(255,217,102,0.2)]"
+			class="group relative flex min-h-[300px] flex-col items-center justify-center overflow-hidden rounded-[40px] border-4 border-[#0ea5e9] bg-white p-8 text-center shadow-xl transition-all duration-300 hover:-translate-y-2 hover:border-[#FFD966] hover:bg-white hover:shadow-[0_20px_40px_rgba(255,217,102,0.2)]"
 		>
 			<div
-				class="relative z-10 flex flex-col items-center gap-3 transition-all duration-300 group-hover:drop-shadow-[0_0_15px_rgba(255,217,102,0.8)]"
+				class="relative z-10 flex flex-col items-center gap-3 transition-all duration-300 group-hover:drop-shadow-[0_0_15px_rgba(14,165,233,0.8)]"
 			>
-				<h3
-					class="text-2xl leading-tight font-black tracking-wide text-[#5da8cb] md:text-6xl"
-					style="font-family: 'Concert One', cursive;"
-				>
+				<h3 class="font-heading text-2xl leading-tight tracking-wide text-[#0ea5e9] md:text-6xl">
 					PRELIMINARY<br />LABORATORY<br />MODULE
 				</h3>
 				<p
@@ -73,7 +71,7 @@
 				</p>
 			</div>
 			<div
-				class="absolute right-8 bottom-8 text-[#5da8cb] transition-all duration-300 group-hover:scale-[1.5] group-hover:text-[#FFD966]"
+				class="absolute right-8 bottom-8 text-[#0ea5e9] transition-all duration-300 group-hover:scale-[1.5] group-hover:text-[#FFD966]"
 			>
 				<svg
 					width="32"
@@ -93,15 +91,12 @@
 
 		<a
 			href="/overhaul-station/assembly-disassembly"
-			class="group relative flex min-h-[300px] flex-col items-center justify-center overflow-hidden rounded-[40px] border-4 border-[#5da8cb] bg-white p-8 text-center shadow-xl transition-all duration-300 hover:-translate-y-2 hover:border-[#FFD966] hover:bg-white hover:shadow-[0_20px_40px_rgba(255,217,102,0.2)]"
+			class="group relative flex min-h-[300px] flex-col items-center justify-center overflow-hidden rounded-[40px] border-4 border-[#0ea5e9] bg-white p-8 text-center shadow-xl transition-all duration-300 hover:-translate-y-2 hover:border-[#FFD966] hover:bg-white hover:shadow-[0_20px_40px_rgba(255,217,102,0.2)]"
 		>
 			<div
-				class="relative z-10 flex flex-col items-center gap-3 transition-all duration-300 group-hover:drop-shadow-[0_0_15px_rgba(255,217,102,0.8)]"
+				class="relative z-10 flex flex-col items-center gap-3 transition-all duration-300 group-hover:drop-shadow-[0_0_15px_rgba(14,165,233,0.8)]"
 			>
-				<h3
-					class="text-2xl leading-tight font-black tracking-wide text-[#5da8cb] md:text-6xl"
-					style="font-family: 'Concert One', cursive;"
-				>
+				<h3 class="font-heading text-2xl leading-tight tracking-wide text-[#0ea5e9] md:text-6xl">
 					ASSEMBLY &<br />DISASSEMBLY<br />ACTIVITY
 				</h3>
 				<p
@@ -114,7 +109,7 @@
 				</p>
 			</div>
 			<div
-				class="absolute right-8 bottom-8 text-[#5da8cb] transition-all duration-300 group-hover:scale-[1.5] group-hover:text-[#FFD966]"
+				class="absolute right-8 bottom-8 text-[#0ea5e9] transition-all duration-300 group-hover:scale-[1.5] group-hover:text-[#00CED1]"
 			>
 				<svg
 					width="32"

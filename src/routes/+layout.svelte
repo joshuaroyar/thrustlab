@@ -258,6 +258,5 @@
 	/* Add padding for non-home pages */
 	main:not(.home-page) {
 		padding-top: 5rem;
-		margin-top: -5rem;
 	}
 </style>

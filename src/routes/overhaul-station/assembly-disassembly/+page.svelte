@@ -76,8 +76,8 @@
 					<p
 						class="font-body relative pr-4 text-lg leading-relaxed font-semibold text-[#1b3558] md:text-xl"
 					>
-						<span class="font-extrabold text-[var(--ui-yellow)]">JAJA:</span> Yey! You've mastered the
-						fundamentals of the turbofan engine! Now it's time to put that knowledge into action.
+						<span class="font-extrabold text-[#00CED1]">JAJA:</span> Yey! You've mastered the fundamentals
+						of the turbofan engine! Now it's time to put that knowledge into action.
 					</p>
 				</div>
 
@@ -96,16 +96,17 @@
 				class="relative z-10 w-full rounded-[1.5rem] border border-white/10 bg-[#1e3a5f]/60 p-8 text-center shadow-md backdrop-blur-xl md:p-12"
 			>
 				<h1
-					class="font-heading animate-gradient-flash gradient-animated mb-6 text-4xl leading-tight font-black drop-shadow-[0_4px_10px_rgba(255,191,0,0.4)] md:text-7xl"
+					class="font-heading animate-gradient-flash gradient-animated mb-6 text-4xl leading-tight font-black drop-shadow-lg md:text-7xl"
+					style="--active-gradient: linear-gradient(90deg, #0ea5e9 0%, #e0f7fa 50%, #0ea5e9 100%); filter: drop-shadow(0 2px 4px rgba(0,0,0,0.8)) drop-shadow(0 4px 15px rgba(14,165,233,0.6));"
 				>
 					Assembly and Disassembly Activity
 				</h1>
 				<p
 					class="font-body mx-auto max-w-[1000px] text-lg leading-relaxed text-white/90 md:text-xl"
 				>
-					<span class="font-bold text-[var(--ui-yellow)]">Instruction:</span> Drag and drop each component
-					of the turbofan engine to its correct position inside the casing. Pay attention to the order
-					and orientation — each part has its special place in the engine!
+					<span class="font-bold text-[#00CED1]">Instruction:</span> Drag and drop each component of the
+					turbofan engine to its correct position inside the casing. Pay attention to the order and orientation
+					— each part has its special place in the engine!
 				</p>
 			</div>
 		</div>

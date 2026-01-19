@@ -55,7 +55,7 @@
 	}
 </script>
 
-<div class="relative flex min-h-screen flex-col p-2 md:p-4">
+<div class="relative flex h-[calc(100vh-5rem)] flex-col p-2 md:p-4">
 	<div
 		class="z-10 mb-4 flex flex-col flex-wrap items-stretch justify-between gap-4 md:flex-row md:items-center"
 	>
@@ -180,14 +180,14 @@
 	<!-- Instructions Modal -->
 	{#if showInstructions}
 		<div
-			class="fixed inset-0 z-[1000] flex items-start justify-center overflow-y-auto bg-black/85 p-8 backdrop-blur-sm"
+			class="fixed inset-0 top-20 z-[1100] flex items-start justify-center overflow-y-auto bg-black/85 p-8 backdrop-blur-sm"
 			role="button"
 			tabindex="0"
 			onclick={() => (showInstructions = false)}
 			onkeydown={(e) => e.key === 'Enter' && (showInstructions = false)}
 		>
 			<div
-				class="m-auto w-[90%] max-w-[420px] rounded-2xl border-2 border-white/10 bg-gradient-to-br from-[#2d3561] to-[#1f2544] p-5 shadow-[0_20px_60px_rgba(0,0,0,0.5)]"
+				class="m-auto w-[95%] max-w-[800px] rounded-2xl border-2 border-white/10 bg-gradient-to-br from-[#2d3561] to-[#1f2544] p-5 shadow-[0_20px_60px_rgba(0,0,0,0.5)]"
 				role="button"
 				tabindex="0"
 				onclick={(e) => e.stopPropagation()}
@@ -203,8 +203,8 @@
 						Explore your 3D Turbofan Engine:
 					</p>
 
-					<div class="mb-4 flex flex-col gap-3">
-						{#each [{ icon: 'zoom', title: 'Zoom In & Out', desc: 'Use your mouss scroll to get closer or step back for the full view.' }, { icon: 'rotate', title: 'Rotate the Engine', desc: 'Hold the left mouse button and move around to inspect every angle.' }, { icon: 'explore', title: 'Explore Components', desc: 'Click any part to see its definition and hear a voice explanation.' }, { icon: 'labels', title: 'Toggle Labels', desc: 'Turn component labels on or off to reduce clutter or check details.' }] as item}
+					<div class="mb-4 grid grid-cols-1 gap-3 md:grid-cols-2">
+						{#each [{ icon: 'zoom', title: 'Zoom In & Out', desc: 'Use your mouse scroll to get closer or step back for the full view.' }, { icon: 'rotate', title: 'Rotate the Engine', desc: 'Hold the left mouse button and move around to inspect every angle.' }, { icon: 'explore', title: 'Explore Components', desc: 'Click any part to see its definition and hear a voice explanation.' }, { icon: 'labels', title: 'Toggle Labels', desc: 'Turn component labels on or off to reduce clutter or check details.' }] as item}
 							<div
 								class="flex items-start gap-4 rounded-2xl border border-white/10 bg-white/5 p-4 transition-all hover:translate-x-1 hover:border-sky-300/40 hover:bg-white/10"
 							>

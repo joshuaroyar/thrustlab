@@ -798,21 +798,18 @@
 {/if}
 
 <style>
-	/* Removed :global(body) override to allow natural scrolling */
-
 	.page-overlay {
 		position: relative;
-		/* display: block;  <-- REMOVED to allow Tailwind control */
 		padding: 2rem;
-		padding-top: 6rem;
-		min-height: 100vh;
+		padding-top: 2rem;
+		min-height: calc(100vh - 5rem);
 		width: 100%;
 		box-sizing: border-box;
 	}
 
 	.dashboard-container {
 		width: 100%;
-		max-width: 1400px; /* Increased from 1200px for wider layout */
+		max-width: 1400px;
 		min-height: auto;
 		background: #ffffff;
 		border-radius: 24px;
@@ -820,7 +817,7 @@
 			0 25px 50px -12px rgba(0, 0, 0, 0.25),
 			0 10px 15px -3px rgba(0, 0, 0, 0.1);
 		flex-direction: column;
-		margin: 4rem auto 2rem auto; /* Reduced top margin from 6rem to 4rem */
+		margin: auto;
 	}
 
 	.dashboard-scroll-content {
@@ -1404,14 +1401,4 @@
 	}
 
 	/* Responsive Overlay & Layout handled above */
-	.page-overlay {
-		position: fixed;
-		inset: 0;
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		z-index: 100;
-		padding: 2rem;
-		overflow-y: auto;
-	}
 </style>

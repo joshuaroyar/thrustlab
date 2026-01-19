@@ -32,7 +32,7 @@
 		"@types/dompurify": "^3.0.5",
 		"@types/marked": "^5.0.2",
 		"@types/node": "^22",
-		"drizzle-kit": "^0.31.5",
+		"drizzle-kit": "^0.31.8",
 		"drizzle-orm": "^0.44.6",
 		"eslint": "^9.38.0",
 		"eslint-config-prettier": "^10.1.8",
@@ -82,7 +82,6 @@
 	"overrides": {
 		"cookie": "^1.0.2",
 		"esbuild": "^0.27.0",
-		"@pinecone-database/pinecone": "^5.0.2",
-		"jsdom": "^22.1.0"
+		"@pinecone-database/pinecone": "^5.0.2"
 	}
 }

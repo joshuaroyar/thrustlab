@@ -28,7 +28,8 @@
 >
 	<div class="mb-12 text-center">
 		<h1
-			class="animate-gradient-flash gradient-animated font-heading mb-6 pb-4 text-6xl font-black tracking-tight drop-shadow-[0_0_25px_rgba(14,165,233,0.6)] md:text-8xl"
+			class="animate-gradient-flash gradient-animated font-heading mb-6 bg-clip-text pb-4 text-6xl font-black tracking-tight text-transparent drop-shadow-[0_0_25px_rgba(14,165,233,0.6)] md:text-8xl"
+			style="--active-gradient: linear-gradient(90deg, #0ea5e9 0%, #e0f7fa 50%, #0ea5e9 100%);"
 		>
 			Hangar Zone
 		</h1>
@@ -49,7 +50,7 @@
 		<a
 			href="/hangar-zone/module/history"
 			class="group relative flex min-h-[300px] flex-col items-center justify-center overflow-hidden rounded-[40px] border-4 border-[#1b3558] bg-white p-8 text-center shadow-xl transition-all duration-300 hover:-translate-y-2 hover:border-[#FFD966] hover:bg-white hover:shadow-[0_20px_40px_rgba(255,217,102,0.2)]"
-			style="font-family: var(--font-special); color: #1b3558;"
+			style="color: #1b3558;"
 		>
 			<div
 				class="relative z-10 flex flex-col items-center gap-2 transition-all duration-300 group-hover:drop-shadow-[0_0_15px_rgba(255,217,102,0.8)]"
@@ -57,7 +58,7 @@
 				<span class="text-3xl font-normal tracking-widest uppercase">LEARNING</span>
 				<span class="mb-1 text-3xl font-bold tracking-wider uppercase">MODULE 01:</span>
 				<h3
-					class="font-special text-xl leading-tight font-bold tracking-wide uppercase drop-shadow-[0_2px_4px_rgba(0,0,0,0.05)] md:text-4xl"
+					class="font-heading text-xl leading-tight font-bold tracking-wide uppercase drop-shadow-[0_2px_4px_rgba(0,0,0,0.05)] md:text-5xl"
 				>
 					HISTORY OF<br />GAS TURBINE<br />ENGINES
 				</h3>
@@ -84,7 +85,7 @@
 		<a
 			href="/hangar-zone/module/types"
 			class="group relative flex min-h-[300px] flex-col items-center justify-center overflow-hidden rounded-[40px] border-4 border-[#1b3558] bg-white p-8 text-center shadow-xl transition-all duration-300 hover:-translate-y-2 hover:border-[#FFD966] hover:bg-white hover:shadow-[0_20px_40px_rgba(255,217,102,0.2)]"
-			style="font-family: var(--font-special); color: #1b3558;"
+			style="color: #1b3558;"
 		>
 			<div
 				class="relative z-10 flex flex-col items-center gap-2 transition-all duration-300 group-hover:drop-shadow-[0_0_15px_rgba(255,217,102,0.8)]"
@@ -92,7 +93,7 @@
 				<span class="text-3xl font-normal tracking-widest uppercase">LEARNING</span>
 				<span class="mb-1 text-3xl font-bold tracking-wider uppercase">MODULE 02:</span>
 				<h3
-					class="font-special text-xl leading-tight font-bold tracking-wide uppercase drop-shadow-[0_2px_4px_rgba(0,0,0,0.05)] md:text-4xl"
+					class="font-heading text-xl leading-tight font-bold tracking-wide uppercase drop-shadow-[0_2px_4px_rgba(0,0,0,0.05)] md:text-5xl"
 				>
 					TYPES OF GAS<br />TURBINE<br />ENGINES
 				</h3>

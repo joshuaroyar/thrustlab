@@ -75,15 +75,15 @@
 	<!-- Header Section -->
 	<div class="mb-12 flex flex-col items-center gap-6">
 		<h1
-			class="animate-gradient-flash font-heading text-center text-5xl font-black tracking-tight drop-shadow-lg md:text-6xl"
-			style="background: var(--overhaul-gradient); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;"
+			class="animate-gradient-flash gradient-animated font-heading text-center text-5xl font-black tracking-tight drop-shadow-lg md:text-6xl"
+			style="--active-gradient: linear-gradient(90deg, #0ea5e9 0%, #e0f7fa 50%, #0ea5e9 100%); filter: drop-shadow(0 2px 4px rgba(0,0,0,0.8)) drop-shadow(0 4px 15px rgba(14,165,233,0.6));"
 		>
 			PRELIMINARY LABORATORY MODULE:<br class="hidden md:block" /> GAS TURBINE ENGINE OVERHAUL
 		</h1>
 
 		<!-- Search Bar -->
 		<div
-			class="mx-auto flex w-full max-w-md min-w-[300px] items-center gap-4 rounded-full border-2 border-[#5da8cb]/30 bg-white/95 px-4 py-2 shadow-sm backdrop-blur-md transition-all focus-within:border-[#5da8cb] focus-within:shadow-[0_0_20px_rgba(93,168,203,0.3)]"
+			class="mx-auto flex w-full max-w-md min-w-[300px] items-center gap-4 rounded-full border-2 border-[#0ea5e9]/30 bg-white/95 px-4 py-2 shadow-sm backdrop-blur-md transition-all focus-within:border-[#0ea5e9] focus-within:shadow-[0_0_20px_rgba(14,165,233,0.3)]"
 		>
 			<input
 				type="text"
@@ -94,7 +94,7 @@
 			/>
 			<button
 				onclick={handleSearch}
-				class="flex items-center justify-center p-1 text-[#5da8cb] transition-colors hover:text-[#FFD966]"
+				class="flex items-center justify-center p-1 text-[#0ea5e9] transition-colors hover:text-[#00CED1]"
 				aria-label="Search"
 			>
 				<svg
@@ -118,9 +118,9 @@
 		{#if currentPage === 1}
 			<div in:fly={{ y: 20, duration: 400, delay: 200 }} out:fade={{ duration: 200 }}>
 				<section class="opacity-100">
-					<SectionHeader title="Gas Turbine Engine Overhaul" color="#5da8cb" />
+					<SectionHeader title="Gas Turbine Engine Overhaul" color="#0ea5e9" />
 					<div
-						class="relative z-[1] min-h-[300px] rounded-tr-3xl rounded-b-3xl border-[5px] border-[#5da8cb] bg-white p-6 text-[#1a2b47] md:p-8"
+						class="relative z-[1] min-h-[300px] rounded-tr-3xl rounded-b-3xl border-[5px] border-[#0ea5e9] bg-white p-6 text-[#1a2b47] md:p-8"
 					>
 						<div class="mb-6 leading-loose">
 							<p class="mb-6 pr-4 text-justify text-lg leading-loose text-[#2c3e50]">
@@ -186,9 +186,9 @@
 		{#if currentPage === 2}
 			<div in:fly={{ y: 20, duration: 400, delay: 200 }} out:fade={{ duration: 200 }}>
 				<section class="opacity-100">
-					<SectionHeader title="Overhaul Procedures" color="#5da8cb" />
+					<SectionHeader title="Overhaul Procedures" color="#0ea5e9" />
 					<div
-						class="relative z-[1] min-h-[300px] rounded-tr-3xl rounded-b-3xl border-[5px] border-[#5da8cb] bg-white p-6 text-[#1a2b47] md:p-8"
+						class="relative z-[1] min-h-[300px] rounded-tr-3xl rounded-b-3xl border-[5px] border-[#0ea5e9] bg-white p-6 text-[#1a2b47] md:p-8"
 					>
 						<div class="mb-6 leading-loose">
 							<p class="mb-6 pr-4 text-justify text-lg leading-loose text-[#2c3e50]">
@@ -349,9 +349,9 @@
 		{#if currentPage === 3}
 			<div in:fly={{ y: 20, duration: 400, delay: 200 }} out:fade={{ duration: 200 }}>
 				<section class="opacity-100">
-					<SectionHeader title="Balancing, Assembly & Testing" color="#5da8cb" />
+					<SectionHeader title="Balancing, Assembly & Testing" color="#0ea5e9" />
 					<div
-						class="relative z-[1] min-h-[300px] rounded-tr-3xl rounded-b-3xl border-[5px] border-[#5da8cb] bg-white p-6 text-[#1a2b47] md:p-8"
+						class="relative z-[1] min-h-[300px] rounded-tr-3xl rounded-b-3xl border-[5px] border-[#0ea5e9] bg-white p-6 text-[#1a2b47] md:p-8"
 					>
 						<div class="mb-6 leading-loose">
 							<h3
@@ -479,9 +479,9 @@
 		<div class="mx-auto grid max-w-7xl grid-cols-[1fr_auto_1fr] items-center gap-4">
 			<button
 				onclick={prevPage}
-				class="group flex items-center gap-2 justify-self-start rounded-xl border-2 border-[#5da8cb]/30 bg-white/90 px-4 py-3 font-bold text-[#1b3558] backdrop-blur-md transition-all hover:-translate-y-1 hover:border-[#5da8cb] hover:shadow-lg md:px-6"
+				class="group flex items-center gap-2 justify-self-start rounded-xl border-2 border-[#0ea5e9]/30 bg-white/90 px-4 py-3 font-bold text-[#1b3558] backdrop-blur-md transition-all hover:-translate-y-1 hover:border-[#0ea5e9] hover:shadow-lg md:px-6"
 			>
-				<span class="text-xl text-[#5da8cb]">←</span>
+				<span class="text-xl text-[#0ea5e9]">←</span>
 				<span class="hidden font-bold text-[#0A1628] md:inline"
 					>{currentPage === 1 ? 'Previous: Overhaul Station' : 'Previous'}</span
 				>
@@ -492,7 +492,7 @@
 					<button
 						class="flex h-10 w-10 items-center justify-center rounded-full font-bold transition-all {currentPage ===
 						i + 1
-							? 'scale-110 bg-[#5da8cb] text-white'
+							? 'scale-110 bg-[#0ea5e9] text-white'
 							: 'bg-[#1b3558] text-white hover:bg-[#1b3558]/80'}"
 						onclick={() => goToPage(i + 1)}
 						aria-label="Go to page {i + 1}"
@@ -504,12 +504,12 @@
 
 			<button
 				onclick={nextPage}
-				class="group flex items-center gap-2 justify-self-end rounded-xl border-2 border-[#5da8cb]/30 bg-white/90 px-4 py-3 font-bold text-[#1b3558] backdrop-blur-md transition-all hover:-translate-y-1 hover:border-[#5da8cb] hover:shadow-lg md:px-6"
+				class="group flex items-center gap-2 justify-self-end rounded-xl border-2 border-[#0ea5e9]/30 bg-white/90 px-4 py-3 font-bold text-[#1b3558] backdrop-blur-md transition-all hover:-translate-y-1 hover:border-[#0ea5e9] hover:shadow-lg md:px-6"
 			>
 				<span class="hidden font-bold text-[#0A1628] md:inline"
 					>{currentPage === totalPages ? 'Next: Assembly & Disassembly' : 'Next'}</span
 				>
-				<span class="text-xl text-[#5da8cb]">→</span>
+				<span class="text-xl text-[#0ea5e9]">→</span>
 			</button>
 		</div>
 	</div>
