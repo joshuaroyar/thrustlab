@@ -267,13 +267,17 @@
 			</div>
 			<div class="copyright-container">
 				<p class="copyright-text">
-					<span class="copyright-accent">© 2026 Group 7.</span> Website platform owned by Group 7,
-					Institute of Engineering and Technology.
 					<span class="mt-2 block md:mt-0">
-						AE 325 - Powerplant II content <span class="copyright-accent"
-							>© National Aviation Academy of the Philippines.</span
-						>
-						All rights reserved.
+						Developed and maintained by <span class="copyright-accent">
+							<a
+								href="https://proton-developers.vercel.app"
+								target="_blank"
+								rel="noopener noreferrer">Proton Developers</a
+							>
+						</span>
+						<span class="block">
+							<a href="mailto:protondevelopers7@gmail.com" class="copyright-accent">Email - protondevelopers7@gmail.com</a>
+						</span>
 					</span>
 				</p>
 			</div>
